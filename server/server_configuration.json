@@ -1,0 +1,11 @@
+{
+		"web_port": 8000,
+		"web_dir": "../web/build",
+		"ssl_cert": "cert.pem",
+		"ssl_key": "key.pem",
+		"default_username": "Admin",
+		"default_password": "Password",
+		"database_name": "hsmDB",
+		"database_username": "root",
+		"database_password": "password",
+}

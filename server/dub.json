@@ -1,0 +1,26 @@
+{
+	"configurations": [
+		{
+			"name": "release",
+			"targetName": "restServer",
+			"targetType": "executable",
+			"versions": [
+				"release"
+			]
+		},
+		{
+			"name": "testing",
+			"targetName": "restTest",
+			"targetType": "executable",
+			"versions": [
+				"integration"
+			]
+		}
+	],
+	"dependencies": {
+		"mysql-native": ">=2.3.0",
+		"vibe-d": "~>0.8.6",
+		"vibe-d:tls": ">=0.0.0"
+	},
+	"name": "restserver",
+}
