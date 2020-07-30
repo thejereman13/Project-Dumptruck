@@ -4,6 +4,10 @@ declare namespace StyleCssNamespace {
         playButton: string;
         progress: string;
         room: string;
+        sidePanel: string;
+        splitPane: string;
+        videoDiv: string;
+        videoPanel: string;
     }
 }
 

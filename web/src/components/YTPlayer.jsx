@@ -2,6 +2,11 @@ import { h, Component } from 'preact';
 
 class YouTubeVideo extends Component {
 
+  constructor(props) {
+    super(props);
+    this.YTLoaded = false;
+  }
+
   componentDidMount = () => {
     // On mount, check to see if the API script is already loaded
 
@@ -10,7 +15,7 @@ class YouTubeVideo extends Component {
       tag.src = 'https://www.youtube.com/iframe_api';
 
       // onYouTubeIframeAPIReady will load the video after the script is loaded
-      window.onYouTubeIframeAPIReady = this.loadVideo;
+      window.onYouTubeIframeAPIReady = this.scriptLoaded;
 
       const firstScriptTag = document.getElementsByTagName('script')[0];
       firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
@@ -28,17 +33,27 @@ class YouTubeVideo extends Component {
     }
   }
 
+  scriptLoaded = () => {
+    this.YTLoaded = true;
+    this.loadVideo();
+  }
+
   loadVideo = () => {
     const { id } = this.props;
     this.id = id;
     console.log('YT: ', id);
+    if (!id || !this.YTLoaded) return;
+
     // the Player object is created uniquely based on the id in props
     this.player = new window.YT.Player(`youtube-player-${id}`, {
       videoId: id,
       host: "https://www.youtube-nocookie.com",
       events: {
         onReady: this.onPlayerReady,
-        onError: (e) => console.log(e),
+        onError: (e) => {
+          console.warn('Youtube Error:', e);
+          this.loadVideo();
+        },
       },
     });
   };
@@ -48,9 +63,9 @@ class YouTubeVideo extends Component {
   };
 
   render = () => {
-      const { id } = this.props;
+      const { id, className } = this.props;
     return (
-      <div>
+      <div class={className}>
         <div id={`youtube-player-${id}`} />
       </div>
     );

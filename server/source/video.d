@@ -1,6 +1,8 @@
 module video;
 
 import vibe.http.client;
+import vibe.core.core;
+import vibe.core.log;
 import std.conv;
 import std.regex;
 import std.array;
@@ -17,22 +19,28 @@ const APIKey = "AIzaSyDXi-XaQWWjDR2yH8MoM31IZ3inE4OvrpM";
 
 void getVideoInformation(string videoID, void delegate(YoutubeVideoInformation) callback) {
     const string url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&key=" ~ APIKey ~ "&id=" ~ videoID;
-
-    requestHTTP(url,
-        (scope req) {
-            req.method = HTTPMethod.GET;
-        },
-        (scope res) {
-            const js = res.readJson();
-            if (js["items"].length > 0) {
-                auto ret = YoutubeVideoInformation("", "");
-                const snip = js["items"][0]["snippet"];
-                const cont = js["items"][0]["contentDetails"];
-                ret.title = snip["localized"]["title"].get!string;
-                ret.channel = snip["channelTitle"].get!string;
-                ret.duration = secondsFromDuration(cont["duration"].get!string);
-                callback(ret);
-            }
+    runTask({
+        try {
+            //  TODO: investigate failed HTTP attempts
+            requestHTTP(url,
+                (scope req) {
+                    req.method = HTTPMethod.GET;
+                },
+                (scope res) {
+                    const js = res.readJson();
+                    if (js["items"].length > 0) {
+                        auto ret = YoutubeVideoInformation("", "");
+                        const snip = js["items"][0]["snippet"];
+                        const cont = js["items"][0]["contentDetails"];
+                        ret.title = snip["localized"]["title"].get!string;
+                        ret.channel = snip["channelTitle"].get!string;
+                        ret.duration = secondsFromDuration(cont["duration"].get!string);
+                        callback(ret);
+                    }
+            });
+        } catch (Exception e) {
+            logException(e, "Failed to Request Youtube API");
+        }
     });
 }
 const reg = regex(r"^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$");

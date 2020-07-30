@@ -34,14 +34,24 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	const UUID id = userInfo["ID"].get!UUID;
 	socket.send(userInfo.toString());
 	auto eventWait = runTask({
+		size_t lastMessage = r.latestMessage;
 		while(socket.connected) {
-			const s = r.waitForMessage();
+			const size_t newLatest = r.waitForMessage(lastMessage);
+			const messages = r.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
-				socket.send(s);
+				foreach(s; messages) {
+					socket.send(s);
+				}
 			}
+			lastMessage = newLatest;
 		}
 		writeln("Socket Disconnected");
 	});
+
+	scope(exit) {
+		socket.close();
+		eventWait.joinUninterruptible();
+	}
 
 	while(socket.waitForData()) {
 		if (r.activeUser(id)) {

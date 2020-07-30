@@ -23,4 +23,5 @@
 		"vibe-d:tls": ">=0.0.0"
 	},
 	"name": "restserver",
+	"buildOptions": ["debugInfo"],
 }

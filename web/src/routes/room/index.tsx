@@ -21,6 +21,7 @@ function synchronizeYoutube(player: YT.Player, videoTime: number, playing: boole
     }
     if (player.getPlayerState() === 0) {
         console.log('Video Ended');
+        //  TODO: end playback if ws disconnects
     } else if (player.getPlayerState() !== 2 && !playing) {
         player.pauseVideo();
         console.log('pause');
@@ -33,11 +34,13 @@ function synchronizeYoutube(player: YT.Player, videoTime: number, playing: boole
 function Room({ roomID }: RoomProps) {
 
     const [roomTitle, setRoomTitle] = useState('');
+    const [currentUsers, setCurrentUsers] = useState<User[]>([]);
+    const [videoPlaylist, setVideoPlaylist] = useState<Video[]>([]);
+
     const [videoTitle, setVideoTitle] = useState('');
     const [videoID, setVideoID] = useState('');
     const [videoDuration, setVideoDuration] = useState(0);
     const [videoTime, setVideoTime] = useState(0);
-    const [currentUsers, setCurrentUsers] = useState<User[]>([]);
     const [playing, setPlaying] = useState(false);
     const [playerState, setPlayerState] = useState(-1);
 
@@ -55,20 +58,8 @@ function Room({ roomID }: RoomProps) {
         setPlaying(true);
     }, []);
 
-    const addUser = useCallback((usr: User) => {
-        setCurrentUsers((oldUsers) => {
-            const usrs = [...oldUsers];
-            usrs.push(usr);
-            return usrs;
-        });
-    }, []);
-    const removeUser = useCallback((usr: User) => {
-        setCurrentUsers((oldUsers) => oldUsers.filter((u) => u.id !== usr.id));
-    }, []);
-
     const getPlayer = useCallback((player: YT.Player) => {
         youtubePlayer.current = player;
-        console.log(videoTime, playing);
         player.addEventListener('onStateChange', (e) => {
             setPlayerState(e.target.getPlayerState());
         });
@@ -88,6 +79,7 @@ function Room({ roomID }: RoomProps) {
                     setRoomTitle(msg.Room.roomName);
                     setCurrentUsers(msg.Room.userList);
                     setVideoInformation(msg.Room.video);
+                    setVideoPlaylist(msg.Room.playlist);
                 }
                 break;
             case MessageType.Video:
@@ -102,11 +94,11 @@ function Room({ roomID }: RoomProps) {
             case MessageType.Sync:
                 setVideoTime(Number(msg.data));
                 break;
-            case MessageType.UserJoin:
-                console.log('User Joined');
+            case MessageType.UserList:
+                setCurrentUsers(msg.data);
                 break;
-            case MessageType.UserLeft:
-                console.log('User Left');
+            case MessageType.QueueOrder:
+                setVideoPlaylist(msg.data);
                 break;
             default:
                 console.warn('Invalid Websocket Type Received');
@@ -121,38 +113,54 @@ function Room({ roomID }: RoomProps) {
     };
 
     const submitNewVideo = (): void => {
-        console.log(newVideoID);
-        if (ws) ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideoID }));
+        if (ws) {
+            ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideoID }));
+            setNewVideoID('');
+        }
     }
 
     const updateVideoID = (
         e: JSX.TargetedEvent<HTMLInputElement, Event>
     ): void => {
-        setNewVideoID(e.currentTarget.value);
+        const val = e.currentTarget.value;
+        setNewVideoID(val);
     };
 
     return (
         <div class={style.room}>
             <h1>{roomTitle}</h1>
-            <h2>
-                {videoTitle ? `Now Playing ${videoTitle}` : `Nothing Currently Playing`}
-                <IconButton class={style.playButton} onClick={togglePlay}>{playing ? <Icon>pause_circle_outline</Icon> : <Icon>play_arrow</Icon>}</IconButton>
-            </h2>
-            <LinearProgress class={style.progress} progress={videoDuration && videoTime ? videoTime / videoDuration : 0} />
-            <YouTubeVideo id={videoID} getPlayer={getPlayer} />
-            <h2>Current Users:</h2>
-            {currentUsers.map((usr) => (
-                <Menu.Item>
-                    {usr.name}
-                </Menu.Item>
-            ))}
-            <h2>Set Video: (enter youtube ID)</h2>
-            <TextField
-                label="Video ID"
-                value={newVideoID}
-                onInput={updateVideoID}
-            />
-            <Button onClick={submitNewVideo}>Submit</Button>
+            <div class={style.splitPane}>
+                <div class={style.videoPanel}>
+                    <h2>
+                        {videoTitle ? `Now Playing ${videoTitle}` : `Nothing Currently Playing`}
+                        <IconButton class={style.playButton} onClick={togglePlay}>{playing ? <Icon>pause_circle_outline</Icon> : <Icon>play_arrow</Icon>}</IconButton>
+                    </h2>
+                    <LinearProgress class={style.progress} progress={videoDuration && videoTime ? videoTime / videoDuration : 0} />
+                    <YouTubeVideo className={style.videoDiv} id={videoID} getPlayer={getPlayer} />
+                </div>
+                <div class={style.sidePanel}>
+                    <h2>Current Users:</h2>
+                    {currentUsers.map((usr) => (
+                        <Menu.Item>
+                            {usr.name}
+                        </Menu.Item>
+                    ))}
+                    <h2>Upcoming Videos:</h2>
+                    {videoPlaylist.map((v) => (
+                        <Menu.Item>
+                            {v.title}
+                        </Menu.Item>
+                    ))}
+                    <br />
+                    <h3>Set Video: (enter youtube ID)</h3>
+                    <TextField
+                        label="Video ID"
+                        value={newVideoID}
+                        onInput={updateVideoID}
+                    />
+                    <Button onClick={submitNewVideo}>Submit</Button>
+                </div>
+            </div>
         </div>
     );
 }

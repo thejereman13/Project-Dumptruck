@@ -46,18 +46,14 @@ void main()
 	// router.post("/user", &createUser);
 	// router.put("/user", &updateUser);
 	// router.delete_("/user", &removeUser);
-	listenHTTP(settings, router);
+	auto l = listenHTTP(settings, router);
+	scope(exit) l.stopListening();
 
-	runApplication();
+	runEventLoop();
 	writeln("Server Closing\n");
 }
 
 void setup() {
 	setupSockets();
 	// initializeDBConnection();
-	// initializeDBConfig();
-	// testConnection();
-	// readPayloadsFromDB();
-    // checkDefaultUser();
-	// alertMutex = new shared Mutex();
 }

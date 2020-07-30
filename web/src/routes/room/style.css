@@ -2,12 +2,41 @@
 	padding: 56px 20px;
 	min-height: 100%;
 	width: 100%;
+	display: flex;
+	flex-flow: column;
 }
 
 .progress {
-    width: 30%;
+    width: 100%;
 }
 
 .playButton {
 	vertical-align: middle;
+}
+
+.splitPane {
+	display: flex;
+	flex-direction: row;
+	flex: auto;
+}
+
+.videoPanel {
+	width: 100%;
+	display: flex;
+	flex-flow: column;
+	padding: 1rem;
+}
+
+.sidePanel {
+	width: 50%;
+	padding: 1rem;
+}
+
+.videoDiv {
+	height: 100%;
+	display: flex;
+}
+.videoDiv iframe {
+	width: 100%;
+	height: 100%;
 }
