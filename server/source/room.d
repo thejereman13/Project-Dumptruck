@@ -11,11 +11,13 @@ import std.conv;
 
 import video;
 import user;
+import sockets;
 
 import std.stdio;
 
 enum MessageType {
     Sync = "sync", // Server synchronizing connected clients
+    Error = "error", // Server responding with an error code
     Ping = "ping", // Client updating connection status
     UserJoin = "userJoined", // Client joining the room
     UserLeft = "userLeft", // Client leaving the room
@@ -58,15 +60,16 @@ final class Room {
 
     private LocalManualEvent pingEvent;
     public shared size_t latestMessage = 0;
-    private string[64] messageQueue;
+    private Message[64] messageQueue;
 
-    private UserList roomUsers = new UserList();
+    private UserList roomUsers;
 
     private Video currentVideo;
     private Video[] playlist;
 
     this(long ID) {
         this.roomID = ID;
+        this.roomUsers = new UserList(ID);
         pingEvent = createManualEvent();
         roomLoop = runTask({
             writeln("Creating New Room: ", ID);
@@ -76,26 +79,26 @@ final class Room {
         });
     }
 
-    private @trusted nothrow void postMessage(MessageType type, string msg = "", string key = "data") {
+    private @trusted nothrow void postMessage(MessageType type, string msg = "", UUID[] targetUsers = [], string key = "data") {
         try {
             Json j = Json.emptyObject;
             j["type"] = type;
             if (msg.length > 0 && key.length > 0) j[key] = msg;
             latestMessage = (latestMessage + 1) % messageQueue.length;
-            messageQueue[latestMessage] = j.toString();
+            messageQueue[latestMessage] = Message(j.toString(), targetUsers);
             pingEvent.emit();
         } catch (Exception e) {
             logException(e, "Failed to send Websocket Message");
         }
     }
 
-    private @trusted nothrow void postJson(MessageType type, Json msg, string key = "data") {
+    private @trusted nothrow void postJson(MessageType type, Json msg, UUID[] targetUsers = [], string key = "data") {
         try {
             Json j = Json.emptyObject;
             j["type"] = type;
             j[key] = msg;
             latestMessage = (latestMessage + 1) % messageQueue.length;
-            messageQueue[latestMessage] = j.toString();
+            messageQueue[latestMessage] = Message(j.toString(), targetUsers);
             pingEvent.emit();
         } catch (Exception e) {
             logException(e, "Failed to send Websocket Json");
@@ -128,7 +131,7 @@ final class Room {
             // TODO: move to async method to wait for clients to declare ready
             try {
                 writeln("Room ", roomID, " Now Playing ", currentVideo.title);
-                postJson(MessageType.Video, serializeToJson(currentVideo), "Video");
+                postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
                 postPlaylist();
             } catch (Exception e) {
                 logException(e, "Failed to Serialize Websocket Json");
@@ -152,6 +155,7 @@ final class Room {
     private nothrow void videoSyncLoop() {
         if (userCount <= 0)  {
             videoLoop.stop();
+            currentVideo = Video.init;
             return;
         }
         if (currentVideo.playing) {
@@ -166,7 +170,10 @@ final class Room {
         }
     }
 
-    private void queueVideo(string videoID) {
+    // TODO: check stability behind REST endpoint instead of websocket
+    //  Otherwise move to client-side and send all the video information to queue
+    //  Client side may work better in the future for YT playlists anyway
+    private void queueVideo(string videoID, UUID userID) {
         getVideoInformation(videoID, (info) {
             if (!playlist.any!((a) => a.youtubeID == videoID)) {
                 writeln("Queuing up Video: ", info.title);
@@ -175,11 +182,14 @@ final class Room {
                 if (!currentVideo.playing) queueNextVideo();
             } else {
                 writeln("Skipping duplicate queue of ", info.title);
+                postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
             }
+        }, (error) {
+            postMessage(MessageType.Error, "Failed to Queue Video: Network Error", [userID], "error");
         });
     }
 
-    public Json addUser() {
+    public Json addUser(UUID clientID) {
         userCount++;
         if (!roomLoop.running) {
             roomLoop = runTask({
@@ -187,8 +197,8 @@ final class Room {
             });
         }
         if (!currentVideo.playing)
-            queueVideo("C0DPdy98e4c");
-        UUID id = roomUsers.addGuestUser();
+            queueVideo("C0DPdy98e4c", randomUUID());
+        UUID id = roomUsers.addUser(clientID);
         Json j = Json.emptyObject;
         j["type"] = MessageType.Init;
         j["ID"] = id.toString();
@@ -218,10 +228,10 @@ final class Room {
             pingEvent.wait();
         return latestMessage;
     }
-    public string[] retrieveLatestMessages(size_t last, size_t latest) {
+    public Message[] retrieveLatestMessages(size_t last, size_t latest) {
         const wrappedLast = (last + 1) % messageQueue.length;
         const wrappedLatest = (latest + 1);
-        string[] arr;
+        Message[] arr;
         if (wrappedLast <= wrappedLatest) {
             arr ~= messageQueue[wrappedLast .. wrappedLatest];
         } else if (wrappedLast > wrappedLatest) {
@@ -247,7 +257,7 @@ final class Room {
                 break;
             case MessageType.QueueAdd:
                 const vid = j["data"].get!string;
-                queueVideo(vid);
+                queueVideo(vid, id);
                 break;
             default:
                 writeln("Invalid Message Type", message);

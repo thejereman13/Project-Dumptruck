@@ -13,11 +13,10 @@ const string[] configItems = [
     "web_dir",                      //root directory for serving the website
     "ssl_cert",                     //SSL certificate chain file name
     "ssl_key",                      //SSL private key file name
-    "default_username",             //default Admin account to generate on startup if none exist
-    "default_password",             //password to use for the default Admin account
     "database_username",            //username to use for the database
     "database_password",            //password for the database
     "database_name",                //name of the database to connect to
+    "youtube_api_key",              //API key used by the Youtube API v3
 ];
 
 const string configFileName = "server_configuration.json";

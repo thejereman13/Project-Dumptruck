@@ -11,6 +11,8 @@ import core.sync.mutex;
 import sockets;
 import configuration;
 import authentication;
+import video;
+import user;
 
 const WebServerVersion = "1.0.5";
 
@@ -35,10 +37,12 @@ void main()
 
 	auto router = new URLRouter;
 	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string));
-	router.get("/ws", handleWebSockets(&handleWebsocketConnection));
-	router.post("/login", &userLogin);
-	router.get("/login", &getUserLogin);
-	router.post("/logout", &userLogout);
+	router.get("/api/ws", handleWebSockets(&handleWebsocketConnection));
+	router.post("/api/login", &userLogin);
+	router.get("/api/login", &getUserLogin);
+	router.post("/api/logout", &userLogout);
+	router.get("/api/video/:id", &videoInfoRequest);
+	router.get("/api/user", &getUserInfo);
 
 	// router.any("*", &checkUserLogin);
 	// router.get("/userData", &getUserJSON);
@@ -54,6 +58,5 @@ void main()
 }
 
 void setup() {
-	setupSockets();
 	// initializeDBConnection();
 }

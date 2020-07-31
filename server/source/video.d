@@ -8,6 +8,7 @@ import std.regex;
 import std.array;
 
 import std.stdio;
+import configuration;
 
 struct YoutubeVideoInformation {
     string title;
@@ -15,13 +16,17 @@ struct YoutubeVideoInformation {
     int duration;
 }
 
-const APIKey = "AIzaSyDXi-XaQWWjDR2yH8MoM31IZ3inE4OvrpM";
-
-void getVideoInformation(string videoID, void delegate(YoutubeVideoInformation) callback) {
-    const string url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&key=" ~ APIKey ~ "&id=" ~ videoID;
+void getVideoInformation(string videoID, void delegate(YoutubeVideoInformation) callback, void delegate(Exception) errorCallback) {
+    if (videoID.length < 11) {
+        errorCallback(new Exception("Invalid ID"));
+        return;
+    }
+    const string url = "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&key="
+        ~ server_configuration["youtube_api_key"].get!string ~ "&id=" ~ videoID;
     runTask({
         try {
             //  TODO: investigate failed HTTP attempts
+            //  Likely due to incorrect video IDs
             requestHTTP(url,
                 (scope req) {
                     req.method = HTTPMethod.GET;
@@ -40,9 +45,24 @@ void getVideoInformation(string videoID, void delegate(YoutubeVideoInformation) 
             });
         } catch (Exception e) {
             logException(e, "Failed to Request Youtube API");
+            errorCallback(e);
         }
     });
 }
+
+import vibe.vibe;
+void videoInfoRequest(HTTPServerRequest req, HTTPServerResponse res) {
+    string id = req.params["id"].to!string;
+
+    getVideoInformation(id, (info) {
+        writeln(info);
+    }, (error) {
+        writeln(error);
+    });
+}
+
+
+
 const reg = regex(r"^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$");
 
 int secondsFromDuration(string isoDuration) {

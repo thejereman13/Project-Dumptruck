@@ -23,7 +23,7 @@ module.exports = {
     },
     rules: {
         "react/no-unknown-property": ["error", { ignore: ["class"] }],
-        "react/prop-tyopes": "none",
+        "@typescript-eslint/no-explicit-any": 0,
     },
     settings: {
         react: {

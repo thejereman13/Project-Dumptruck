@@ -1,5 +1,8 @@
+import { RoomUser } from "./BackendTypes";
+
 export enum MessageType {
     Sync = "sync", // Server synchronizing connected clients
+    Error = "error", // Server responding with an error code
     Ping = "ping", // Client updating connection status
     UserJoin = "userJoined", // Client joining the room
     UserLeft = "userLeft", // Client leaving the room
@@ -14,12 +17,6 @@ export enum MessageType {
     QueueOrder = "orderQueue" // Server updating the client playlist
 }
 
-export interface User {
-    id: string; //Technically a UUID
-    name: string;
-    role: number;
-}
-
 export interface Video {
     youtubeID: string;
     title: string;
@@ -31,7 +28,7 @@ export interface Video {
 
 export interface RoomInfo {
     roomName: string;
-    userList: User[];
+    userList: RoomUser[];
     video: Video;
     playlist: Video[];
 }

@@ -54,5 +54,5 @@
         "skipLibCheck": true,
         "esModuleInterop": true
     },
-    "include": ["src/**/*.tsx", "src/**/*.ts", "src/components/YTPlayer.jsx"]
+    "include": ["src/**/*.tsx", "src/**/*.ts"]
 }

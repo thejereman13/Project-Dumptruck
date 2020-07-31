@@ -22,12 +22,16 @@ html, body {
 	height: 100%;
 }
 
-.mdc-text-field:not(.mdc-text-field--disabled) {
-	background-color: transparent;
+.mui-textfield {
+	display: inline-block;
 }
-.mdc-floating-label {
-	color: var(--mdc-theme-primary-light) !important;
+
+.mui-btn {
+	margin: 1rem;
 }
-.mdc-button {
-	text-transform: none;
+
+.mui-btn--fab {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
 }

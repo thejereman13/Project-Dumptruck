@@ -31,8 +31,13 @@ export default {
         config.devServer = {
             https: true,
             historyApiFallback: true,
+            proxy: {
+                "/api": {
+                    target: "https://localhost:8000",
+                    secure: false
+                }
+            }
         };
-
 
         // Use any `index` file, not just index.js
         config.resolve.alias["preact-cli-entrypoint"] = resolve(

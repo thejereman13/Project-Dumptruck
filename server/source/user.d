@@ -1,11 +1,13 @@
 module user;
 
+import vibe.vibe;
 import std.uuid;
 import std.stdio;
+import std.algorithm;
 
 
 struct User {
-    UUID id;
+    UUID clientID;
     string name;
     int role;
 }
@@ -13,16 +15,25 @@ struct User {
 final class UserList {
     private User[UUID] roomUsers;
     private shared bool[UUID] roomUserStatus;
+    private long roomID;
+
+    public this(long roomID) {
+        this.roomID = roomID;
+    }
 
     @property public User[] getUserList() {
         return roomUsers.values;
     }
     alias getUserList this;
 
-    public UUID addGuestUser() {
-        const id = randomUUID();
-        roomUsers[id] = User(id, "Guest-" ~ id.toString(), 1);
+    public UUID addUser(UUID clientID) {
+        const id = clientID.empty ? randomUUID() : clientID;
+        const name = clientID.empty ? "Guest-" ~ id.toString() : getSiteUser(clientID).name;
+        roomUsers[id] = User(id, name, 1);
         roomUserStatus[id] = true;
+        if (!clientID.empty) {
+            addRecentRoomToUser(clientID, roomID);
+        }
         return id;
     }
 
@@ -40,15 +51,65 @@ final class UserList {
     public bool updateUserStatus() {
         bool didRemove = false;
         foreach (User u; roomUsers) {
-            if (u.id in roomUserStatus) {
-                if (!roomUserStatus[u.id]) {
-                    writeln("Lost User ", u.id);
-                    removeUser(u.id);
+            if (u.clientID in roomUserStatus) {
+                if (!roomUserStatus[u.clientID]) {
+                    writeln("Lost User ", u.clientID);
+                    removeUser(u.clientID);
                     didRemove = true;
                 }
-                roomUserStatus[u.id] = false;
+                roomUserStatus[u.clientID] = false;
             }
         }
         return didRemove;
     }
 }
+
+struct SiteUser {
+    UUID id;
+    string googleID;
+    string name;
+    string email;
+    long[] recentRooms;
+}
+
+//Not yet a database
+private SiteUser[UUID] siteUserList;
+
+UUID makeSiteUser(string googleID, string name, string email) {
+    foreach(u; siteUserList) {
+        if (u.googleID == googleID) {
+            return u.id;
+        }
+    }
+    SiteUser newUser = SiteUser(randomUUID(), googleID, name, email, []);
+    siteUserList[newUser.id] = newUser;
+    return newUser.id;
+}
+
+void addRecentRoomToUser(UUID clientID, long roomID) {
+    if (clientID in siteUserList) {
+        auto u = &siteUserList[clientID];
+        writeln(u);
+        if (!u.recentRooms.any!(r => r == roomID)) {
+            u.recentRooms ~= roomID;
+            writeln(roomID, siteUserList[clientID].recentRooms);
+        }
+        return;
+    }
+}
+
+SiteUser getSiteUser(UUID clientID) {
+    return siteUserList[clientID];
+}
+
+void getUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
+    if (req.session && req.session.isKeySet("clientID")) {
+        auto id = req.session.get!UUID("clientID");
+        if (id in siteUserList) {
+            res.writeJsonBody(serializeToJson(siteUserList[id]), 201, false);
+            return;
+        }
+    }
+    res.writeJsonBody("{}", 400, false);
+}
+

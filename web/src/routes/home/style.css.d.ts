@@ -2,6 +2,7 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         home: string;
+        roomRow: string;
     }
 }
 

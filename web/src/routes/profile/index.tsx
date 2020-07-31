@@ -1,44 +1,63 @@
-import { FunctionalComponent, h } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { h, JSX } from "preact";
+import { useGoogleClientAPI } from "../../utils/GAPI";
+import { useCallback, useState, useEffect } from "preact/hooks";
+import { SiteUser } from "../../utils/BackendTypes";
+import { GetCurrentUser } from "../../utils/RestCalls";
+import { route } from "preact-router";
+import { parsePlaylistJSON, PlaylistInfo } from "../../utils/YoutubeTypes";
 import * as style from "./style.css";
 
-interface Props {
-    user: string;
-}
+function Profile(): JSX.Element {
+    const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
+    const [user, setUser] = useState<SiteUser | null>(null);
 
-const Profile: FunctionalComponent<Props> = (props: Props) => {
-    const { user } = props;
-    const [time, setTime] = useState<number>(Date.now());
-    const [count, setCount] = useState<number>(0);
-
-    // gets called when this route is navigated to
-    useEffect(() => {
-        const timer = window.setInterval(() => setTime(Date.now()), 1000);
-
-        // gets called just before navigating away from the route
-        return () => {
-            clearInterval(timer);
-        };
+    const requestPlaylists = useCallback(() => {
+        gapi.client
+            .request({
+                path: "https://www.googleapis.com/youtube/v3/playlists",
+                params: {
+                    part: "snippet",
+                    mine: true,
+                    maxResults: 50
+                }
+            })
+            .then(resp => {
+                //  TODO: handle more than one page
+                console.log(resp.result.pageInfo);
+                setUserPlaylists(resp.result.items.map(parsePlaylistJSON));
+            });
     }, []);
 
-    // update the current time
-    const increment = () => {
-        setCount(count + 1);
-    };
+    useGoogleClientAPI((success: boolean) => {
+        if (success) requestPlaylists();
+    });
+
+    useEffect(() => {
+        GetCurrentUser().then(usr => {
+            if (usr !== null) setUser(usr);
+            else route("/login");
+        });
+    }, []);
 
     return (
-        <div class={style.profile}>
-            <h1>Profile: {user}</h1>
-            <p>This is the user profile for a user named {user}.</p>
-
-            <div>Current time: {new Date(time).toLocaleString()}</div>
-
-            <p>
-                <button onClick={increment}>Click Me</button> Clicked {count}{" "}
-                times.
-            </p>
+        <div class={style.root}>
+            {user === null ? (
+                <div>
+                    <h2>Not Currently Signed In</h2>
+                    <h3>Please Wait for Redirect to SignIn Page</h3>
+                </div>
+            ) : (
+                <div>
+                    <h2>{`Signed in as ${user.name}`}</h2>
+                    <br />
+                    <h3>User Playlists:</h3>
+                    {userPlaylists.map(list => {
+                        return <div key={list.id}>{list.title}</div>;
+                    })}
+                </div>
+            )}
         </div>
-    );
-};
+    )
+}
 
 export default Profile;

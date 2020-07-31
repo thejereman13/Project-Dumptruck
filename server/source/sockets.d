@@ -4,33 +4,29 @@ import vibe.http.websockets;
 import vibe.core.sync;
 import std.stdio;
 import std.uuid;
+import std.algorithm;
 
 import room;
 
-void setupSockets() {
-	alertEvent = createManualEvent();
+struct Message {
+	string message;
+	UUID[] targets;
 }
-
-void sendCommand(Json comm) {
-	comm["type"] = "command";
-	latestAlert = (latestAlert + 1) % alerts.length;
-    alerts[latestAlert] = comm.toString();
-    alertEvent.emit();
-}
-LocalManualEvent alertEvent;
-size_t waitForAlert(size_t lastAlert) {
-	while (lastAlert == latestAlert)
-		alertEvent.wait();
-	return latestAlert;
-}
-string[32] alerts;
-shared size_t latestAlert = 0;
 
 void handleWebsocketConnection(scope WebSocket socket) {
 	const long roomID = socket.request.queryString.to!long;
 	writeln("New Socket for Room: ", roomID);
+	UUID userID = UUID.init;
+	auto session = (cast(HTTPServerRequest)(socket.request)).session;
+	if (session) {
+		writeln(session.get!UUID("clientID"));
+		userID = session.get!UUID("clientID");
+	}
+	if (!userID.empty) {
+		writeln("Current User is ", userID);
+	}
 	Room r = getOrCreateRoom(roomID);
-	const Json userInfo = r.addUser();
+	const Json userInfo = r.addUser(userID);
 	const UUID id = userInfo["ID"].get!UUID;
 	socket.send(userInfo.toString());
 	auto eventWait = runTask({
@@ -40,7 +36,8 @@ void handleWebsocketConnection(scope WebSocket socket) {
 			const messages = r.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
 				foreach(s; messages) {
-					socket.send(s);
+					if (s.targets.length == 0 || s.targets.any!((s) => s == id))
+						socket.send(s.message);
 				}
 			}
 			lastMessage = newLatest;

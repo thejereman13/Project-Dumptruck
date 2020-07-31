@@ -2,6 +2,7 @@
   "private": true,
   "name": "web",
   "version": "0.0.0",
+  "proxy": "https://localhost:8000",
   "license": "MIT",
   "scripts": {
     "build": "preact build",
@@ -23,14 +24,17 @@
     "build/*"
   ],
   "dependencies": {
+    "@types/gapi": "0.0.39",
     "@types/material__base": "^0.35.2",
     "@types/material__ripple": "^0.35.2",
     "@types/youtube": "0.0.39",
     "preact": "^10.3.1",
     "preact-jsx-chai": "^3.0.0",
     "preact-markup": "^2.0.0",
+    "preact-mui": "^0.1.1",
     "preact-render-to-string": "^5.1.4",
-    "preact-router": "^3.2.1"
+    "preact-router": "^3.2.1",
+    "react-google-login": "^5.1.21"
   },
   "devDependencies": {
     "@teamsupercell/typings-for-css-modules-loader": "^2.2.0",
@@ -52,7 +56,6 @@
     "jest-preset-preact": "^1.0.0",
     "lint-staged": "^10.0.7",
     "preact-cli": "^3.0.0",
-    "preact-material-components": "^1.6.1",
     "prettier": "^1.19.1",
     "sirv-cli": "^1.0.0-next.3",
     "terser-webpack-plugin": "^3.0.7",

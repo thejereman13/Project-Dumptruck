@@ -2,8 +2,10 @@ module authentication;
 
 import vibe.vibe;
 import std.stdio;
+import std.uuid;
 
 import database;
+import user;
 
 
 void createUser(HTTPServerRequest req, HTTPServerResponse res) {
@@ -53,23 +55,44 @@ void checkUserLogin(HTTPServerRequest req, HTTPServerResponse res) {
     }
 }
 
+void validateToken(string clientId, string token, HTTPServerResponse response) {
+    //  TODO: use JWT token validation of API calls
+    //  https://developers.google.com/identity/sign-in/web/backend-auth#calling-the-tokeninfo-endpoint
+    try {
+        requestHTTP("https://oauth2.googleapis.com/tokeninfo?id_token=" ~ token, (scope req) {
+            req.method = HTTPMethod.GET;
+        }, (scope res) {
+            const b = res.readJson();
+            if (b["aud"].get!string == "841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com" &&
+                b["sub"] == clientId) {
+                Json userResponse = Json.emptyObject;
+                auto id = makeSiteUser(b["sub"].get!string, b["name"].get!string, b["email"].get!string);
+                auto session = response.startSession();
+                session.set("clientID", id);
+                userResponse["Username"] = b["name"];
+                userResponse["userID"] = id.toString();
+                userResponse["googleID"] = b["sub"];
+                response.writeJsonBody(userResponse, 200, false);
+            }
+        });
+    } catch (Exception e) {
+        logException(e, "Failed to Verify User Token");
+        response.writeJsonBody("{}", 401, false);
+    }
+}
+
 //Authenticates and logs in a user
 void userLogin(HTTPServerRequest req, HTTPServerResponse res) {
-    string userName = req.json["User"].to!string;
-    string pass = req.json["Pass"].to!string;
-    if (auto r = database.authenticateUser(userName, pass)) {
-        Json userResponse = Json.emptyObject;
-        if (req.session)
-            res.terminateSession();
-        auto session = res.startSession();
-        session.set("username", userName);
-        session.set("role", r);
-        userResponse["User"] = userName;
-        userResponse["Role"] = r;
-        res.writeJsonBody(userResponse, 200, false);
+    if (req.session) {
+        writeln("Already Signed In: ", req.session.get!UUID("clientID"));
+        res.writeJsonBody("{}", 200, false);
     } else {
-        res.writeJsonBody("{}", 401, false);
+        writeln("Logging in User");
+        validateToken(req.json["clientId"].get!string, req.json["token"].get!string, res);
     }
+    // authenticate with google using token id, associate the api id with the session
+    // new(?) websocket sessions read a valid api id to determine if guest
+    // or can find the DB information for a logged-in user
 }
 
 //Returns the username of the current session if logged in
@@ -78,7 +101,7 @@ void getUserLogin(HTTPServerRequest req, HTTPServerResponse res) {
     
     if (req.session) {
         currentUser["User"] = req.session.get!string("username");
-        currentUser["Role"] =req.session.get!int("role");
+        currentUser["Role"] = req.session.get!int("role");
     } else {
         currentUser["User"] = null;
     }
