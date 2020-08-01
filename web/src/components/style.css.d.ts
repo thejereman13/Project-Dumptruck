@@ -5,6 +5,8 @@ declare namespace StyleCssNamespace {
         dropdownMenu: string;
         header: string;
         headerNav: string;
+        headerRight: string;
+        headerUserIcon: string;
     }
 }
 

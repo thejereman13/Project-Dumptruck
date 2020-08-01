@@ -7,6 +7,7 @@ import Profile from "./routes/profile";
 import NotFoundPage from "./routes/notfound";
 import { Header } from "./components/header";
 import Room from "./routes/room";
+import { useGoogleLoginAPI, GAPIContext } from "./utils/GAPI";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 if ((module as any).hot) {
@@ -15,22 +16,27 @@ if ((module as any).hot) {
 }
 
 const App: FunctionalComponent = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let currentUrl: string;
-    const handleRoute = (e: RouterOnChangeArgs) => {
+    const handleRoute = (e: RouterOnChangeArgs): void => {
         currentUrl = e.url;
     };
 
+    const GAPI = useGoogleLoginAPI();
+
     return (
-        <div id="app">
-            <Header />
-            <Router onChange={handleRoute}>
-                <Route path="/" component={Home} />
-                <Route path="/profile" component={Profile} />
-                <Route path="/login" component={Login} />
-                <Route path="room/:roomID" component={Room} />
-                <NotFoundPage default />
-            </Router>
-        </div>
+        <GAPIContext.Provider value={GAPI}>
+            <div id="app">
+                <Header />
+                <Router onChange={handleRoute}>
+                    <Route path="/" component={Home} />
+                    <Route path="/profile" component={Profile} />
+                    <Route path="/login" component={Login} />
+                    <Route path="room/:roomID" component={Room} />
+                    <NotFoundPage default />
+                </Router>
+            </div>
+        </GAPIContext.Provider>
     );
 };
 

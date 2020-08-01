@@ -17,7 +17,7 @@ export function Login(): JSX.Element {
             <h2>You are not currently signed in</h2>
             <h3>Please Authenticate with Google</h3>
             <GoogleLogin
-                clientId="841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com"
+                clientId={CLIENTID}
                 scope="https://www.googleapis.com/auth/youtube.readonly"
                 onSuccess={onSignIn}
                 onFailure={onSignInFailure}

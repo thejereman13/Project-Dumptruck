@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useGoogleClientAPI } from "../../utils/GAPI";
+import { useGoogleClientAPI, useGAPIContext } from "../../utils/GAPI";
 import { useCallback, useState, useEffect } from "preact/hooks";
 import { SiteUser } from "../../utils/BackendTypes";
 import { GetCurrentUser } from "../../utils/RestCalls";
@@ -10,6 +10,8 @@ import * as style from "./style.css";
 export function Profile(): JSX.Element {
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
     const [user, setUser] = useState<SiteUser | null>(null);
+
+    const currentAPI = useGAPIContext();
 
     const requestPlaylists = useCallback(() => {
         gapi.client
@@ -28,9 +30,9 @@ export function Profile(): JSX.Element {
             });
     }, []);
 
-    useGoogleClientAPI((success: boolean) => {
-        if (success) requestPlaylists();
-    });
+    useEffect(() => {
+        if (currentAPI?.getUser() && currentAPI.isAPILoaded()) requestPlaylists();
+    }, [currentAPI, requestPlaylists]);
 
     useEffect(() => {
         GetCurrentUser().then(usr => {

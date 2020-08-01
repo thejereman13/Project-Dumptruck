@@ -41,6 +41,18 @@
 	background: rgba(0,0,0,0.4);
 }
 
+.headerRight {
+	float: right;
+	padding-right: 0.5rem;
+}
+
+.headerUserIcon {
+	width: 5rem;
+	height: 5rem;
+	border-radius: 2.5rem;
+	margin-left: 1rem;
+}
+
 .dropdownMenu {
 	z-index: 1024;
 	background: white;

@@ -5,7 +5,7 @@ import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import YouTubeVideo from "../../components/YTPlayer";
 import { useWebsockets } from "../../utils/Websockets";
-import { WSMessage, MessageType, Video } from "../../utils/WebsocketTypes";
+import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomUser } from "../../utils/BackendTypes";
 
 export interface RoomProps {
@@ -31,7 +31,8 @@ function synchronizeYoutube(player: YT.Player, videoTime: number, playing: boole
 export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
-    const [videoPlaylist, setVideoPlaylist] = useState<Video[]>([]);
+    const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
+    const [userQueue, setUserQueue] = useState<string[]>([]);
 
     const [videoTitle, setVideoTitle] = useState("");
     const [videoID, setVideoID] = useState("");
@@ -99,6 +100,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 case MessageType.QueueOrder:
                     setVideoPlaylist(msg.data);
                     break;
+                case MessageType.UserOrder:
+                    setUserQueue(msg.data);
+                    break;
                 default:
                     console.warn("Invalid Websocket Type Received");
                     break;
@@ -138,7 +142,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     <h2>
                         {videoTitle ? `Now Playing ${videoTitle}` : `Nothing Currently Playing`}
                         <Button size="small" variant="fab" onClick={togglePlay}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">{playing ? "pause" : "play_arrow"}</i>
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                {playing ? "pause" : "play_arrow"}
+                            </i>
                         </Button>
                     </h2>
                     {/* <LinearProgress
@@ -151,14 +157,24 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 <div class={style.sidePanel}>
                     <h2>Current Users:</h2>
                     {currentUsers.map(usr => (
-                        <div class="mui--text-title" key={usr.clientID}>{usr.name}</div>
+                        <div class="mui--text-title" key={usr.clientID}>
+                            {usr.name}
+                        </div>
                     ))}
                     <h2>Upcoming Videos:</h2>
-                    {videoPlaylist.map(v => (
-                        <div class="mui--text-title" key={v.youtubeID}>{v.title}</div>
-                    ))}
+                    {userQueue.map(clientID => {
+                        // <div class="mui--text-title" key={v.youtubeID}>{v.title}</div>
+                        const playlist = videoPlaylist[clientID];
+                        const playlistUser = currentUsers.find(u => u.clientID == clientID);
+                        return (
+                            <div key={clientID}>
+                                <Button variant="flat">{playlistUser?.name ?? "Unknown User"}</Button>
+                                {playlist && playlist.map(v => <div key={v.youtubeID}>{v.title}</div>)}
+                            </div>
+                        );
+                    })}
                     <br />
-                    <h3>Set Video: (enter youtube ID)</h3>
+                    <h3>Queue Video: (enter youtube ID)</h3>
                     <Input floatingLabel label="Video ID" value={newVideoID} onChange={updateVideoID} />
                     <Button onClick={submitNewVideo}>Submit</Button>
                 </div>

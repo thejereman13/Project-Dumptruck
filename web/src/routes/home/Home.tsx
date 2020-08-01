@@ -3,29 +3,11 @@ import Button from "preact-mui/lib/button";
 import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { route } from "preact-router";
-import { useGoogleClientAPI } from "../../utils/GAPI";
 import { GetCurrentUser } from "../../utils/RestCalls";
 import { SiteUser } from "../../utils/BackendTypes";
 
 export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);
-
-    useGoogleClientAPI((success: boolean) => {
-        if (!success) {
-            console.warn("User Is Not Signed In");
-        }
-        window.gapi.client
-            .request({
-                path: "https://www.googleapis.com/youtube/v3/videos",
-                params: {
-                    part: "snippet,contentDetails",
-                    id: "C0DPdy98e4c"
-                }
-            })
-            .then(resp => {
-                console.log(resp);
-            });
-    });
 
     useEffect(() => {
         GetCurrentUser().then(usr => {

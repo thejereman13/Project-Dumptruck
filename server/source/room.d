@@ -8,6 +8,8 @@ import core.time;
 import std.uuid;
 import std.algorithm;
 import std.conv;
+import std.array;
+import std.exception;
 
 import video;
 import user;
@@ -29,32 +31,19 @@ enum MessageType {
     Room = "room", // Server sending all room information
     QueueAdd = "addQueue", // Client adding a video id to queue
     QueueRemove = "removeQueue", // Client removing a video id from queue
-    QueueOrder = "orderQueue" // Server updating the client playlist
-}
-
-/**
-Youtube Video Information
-*/
-struct Video {
-    string youtubeID;
-    string title;
-    string channelName;
-    bool playing;
-    int timeStamp;
-    int duration;
+    QueueOrder = "orderQueue", // Server updating the client playlist
+    UserOrder = "userQueue" // Server updating the room user queue order
 }
 
 struct RoomInfo {
     string roomName;
     User[] userList;
     Video video;
-    Video[] playlist;
+    Video[][string] playlist;
 }
 
 final class Room {
-
     private long roomID;
-    private int userCount = 0;
     private Task roomLoop;
     private Timer videoLoop;
 
@@ -65,7 +54,7 @@ final class Room {
     private UserList roomUsers;
 
     private Video currentVideo;
-    private Video[] playlist;
+    private VideoPlaylist playlist = new VideoPlaylist();
 
     this(long ID) {
         this.roomID = ID;
@@ -113,26 +102,25 @@ final class Room {
     }
 
     private Json getRoomJson() {
-        return serializeToJson(RoomInfo("Room " ~ roomID.to!string, roomUsers, currentVideo, playlist));
+        return serializeToJson(RoomInfo("Room " ~ roomID.to!string, roomUsers.getUserList(), currentVideo, playlist.getPlaylist()));
     }
 
     private @trusted void postUserList() {
         postSerializedJson!(User[])(MessageType.UserList, roomUsers.getUserList());
     }
-    private @trusted void postPlaylist() {
-        postSerializedJson!(Video[])(MessageType.QueueOrder, playlist);
+    private @trusted nothrow void postPlaylist() {
+        postSerializedJson!(Video[][string])(MessageType.QueueOrder, playlist.getPlaylist());
+        postSerializedJson!(string[])(MessageType.UserOrder, playlist.getUserQueue());
     }
 
     private @trusted nothrow void queueNextVideo() {
-        if (playlist.length > 0) {
-            currentVideo = playlist[0];
+        if (playlist.hasNextVideo()) {
+            currentVideo = playlist.getNextVideo();
             currentVideo.playing = true;
-            playlist = playlist[1..$];
             // TODO: move to async method to wait for clients to declare ready
             try {
                 writeln("Room ", roomID, " Now Playing ", currentVideo.title);
                 postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
-                postPlaylist();
             } catch (Exception e) {
                 logException(e, "Failed to Serialize Websocket Json");
             }
@@ -141,10 +129,11 @@ final class Room {
             }
             videoLoop.rearm(1.seconds, true);
         }
+        postPlaylist();
     }
 
     private void roomLoopOperation() {
-        while(userCount > 0) {
+        while(roomUsers.userCount > 0) {
             if (roomUsers.updateUserStatus())
                 postUserList();
             sleep(10.seconds);
@@ -153,13 +142,13 @@ final class Room {
 
     @safe
     private nothrow void videoSyncLoop() {
-        if (userCount <= 0)  {
+        if (roomUsers.userCount <= 0)  {
             videoLoop.stop();
             currentVideo = Video.init;
             return;
         }
         if (currentVideo.playing) {
-            if (currentVideo.timeStamp <= currentVideo.duration) { 
+            if (currentVideo.timeStamp <= (currentVideo.duration + currentVideo.trim)) { 
                 postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
             } else {
                 postMessage(MessageType.Pause);
@@ -175,9 +164,7 @@ final class Room {
     //  Client side may work better in the future for YT playlists anyway
     private void queueVideo(string videoID, UUID userID) {
         getVideoInformation(videoID, (info) {
-            if (!playlist.any!((a) => a.youtubeID == videoID)) {
-                writeln("Queuing up Video: ", info.title);
-                playlist ~= Video(videoID, info.title, info.channel, false, 0, info.duration);
+            if (playlist.addVideoToQueue(userID, info)) {
                 postPlaylist();
                 if (!currentVideo.playing) queueNextVideo();
             } else {
@@ -190,7 +177,6 @@ final class Room {
     }
 
     public Json addUser(UUID clientID) {
-        userCount++;
         if (!roomLoop.running) {
             roomLoop = runTask({
                 roomLoopOperation();
@@ -207,15 +193,15 @@ final class Room {
         return j;
     }
     public void removeUser(UUID id) {
-        userCount--;
-        if (userCount == 0) {
-            roomLoop.join();
-        }
         if (roomUsers.removeUser(id)) {
+            playlist.removeUser(id);
             postUserList();
             writeln("User Left: ", id.toString());
         } else {
             writeln("Failed to Remove User: ", id.toString());
+        }
+        if (roomUsers.userCount == 0) {
+            roomLoop.join();
         }
     }
 

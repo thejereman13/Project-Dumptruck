@@ -65,14 +65,10 @@ void validateToken(string clientId, string token, HTTPServerResponse response) {
             const b = res.readJson();
             if (b["aud"].get!string == "841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com" &&
                 b["sub"] == clientId) {
-                Json userResponse = Json.emptyObject;
-                auto id = makeSiteUser(b["sub"].get!string, b["name"].get!string, b["email"].get!string);
+                auto user = makeSiteUser(b["sub"].get!string, b["name"].get!string, b["email"].get!string);
                 auto session = response.startSession();
-                session.set("clientID", id);
-                userResponse["Username"] = b["name"];
-                userResponse["userID"] = id.toString();
-                userResponse["googleID"] = b["sub"];
-                response.writeJsonBody(userResponse, 200, false);
+                session.set("clientID", user.id);
+                response.writeJsonBody(serializeToJson(user), 200, false);
             }
         });
     } catch (Exception e) {
@@ -85,7 +81,7 @@ void validateToken(string clientId, string token, HTTPServerResponse response) {
 void userLogin(HTTPServerRequest req, HTTPServerResponse res) {
     if (req.session) {
         writeln("Already Signed In: ", req.session.get!UUID("clientID"));
-        res.writeJsonBody("{}", 200, false);
+        getUserInfo(req, res);
     } else {
         writeln("Logging in User");
         validateToken(req.json["clientId"].get!string, req.json["token"].get!string, res);

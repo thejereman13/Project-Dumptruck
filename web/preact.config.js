@@ -1,6 +1,7 @@
 import { resolve } from "path";
 
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require("webpack");
 
 export default {
     /**
@@ -38,6 +39,12 @@ export default {
                 }
             }
         };
+
+        config.plugins.push(
+            new webpack.DefinePlugin({
+                CLIENTID: JSON.stringify("841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com")
+            })
+        );
 
         // Use any `index` file, not just index.js
         config.resolve.alias["preact-cli-entrypoint"] = resolve(

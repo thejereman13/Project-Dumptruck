@@ -22,9 +22,6 @@ void handleWebsocketConnection(scope WebSocket socket) {
 		writeln(session.get!UUID("clientID"));
 		userID = session.get!UUID("clientID");
 	}
-	if (!userID.empty) {
-		writeln("Current User is ", userID);
-	}
 	Room r = getOrCreateRoom(roomID);
 	const Json userInfo = r.addUser(userID);
 	const UUID id = userInfo["ID"].get!UUID;

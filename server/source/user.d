@@ -16,6 +16,8 @@ final class UserList {
     private User[UUID] roomUsers;
     private shared bool[UUID] roomUserStatus;
     private long roomID;
+    
+    public int userCount = 0;
 
     public this(long roomID) {
         this.roomID = roomID;
@@ -24,7 +26,8 @@ final class UserList {
     @property public User[] getUserList() {
         return roomUsers.values;
     }
-    alias getUserList this;
+
+    // TODO: support updating a user with a SiteUser after they log in
 
     public UUID addUser(UUID clientID) {
         const id = clientID.empty ? randomUUID() : clientID;
@@ -34,11 +37,16 @@ final class UserList {
         if (!clientID.empty) {
             addRecentRoomToUser(clientID, roomID);
         }
+        userCount++;
         return id;
     }
 
     public bool removeUser(UUID id) {
-        return roomUsers.remove(id) && roomUserStatus.remove(id);
+        if (roomUsers.remove(id) && roomUserStatus.remove(id)) {
+            userCount--;
+            return true;
+        }
+        return false;
     }
 
     public bool activeUser(UUID id) {
@@ -75,24 +83,22 @@ struct SiteUser {
 //Not yet a database
 private SiteUser[UUID] siteUserList;
 
-UUID makeSiteUser(string googleID, string name, string email) {
+SiteUser makeSiteUser(string googleID, string name, string email) {
     foreach(u; siteUserList) {
         if (u.googleID == googleID) {
-            return u.id;
+            return u;
         }
     }
     SiteUser newUser = SiteUser(randomUUID(), googleID, name, email, []);
     siteUserList[newUser.id] = newUser;
-    return newUser.id;
+    return newUser;
 }
 
 void addRecentRoomToUser(UUID clientID, long roomID) {
     if (clientID in siteUserList) {
         auto u = &siteUserList[clientID];
-        writeln(u);
         if (!u.recentRooms.any!(r => r == roomID)) {
             u.recentRooms ~= roomID;
-            writeln(roomID, siteUserList[clientID].recentRooms);
         }
         return;
     }
