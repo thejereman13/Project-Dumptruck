@@ -7,7 +7,7 @@ import { useGoogleClientAPI } from "../../utils/GAPI";
 import { GetCurrentUser } from "../../utils/RestCalls";
 import { SiteUser } from "../../utils/BackendTypes";
 
-function Home(): JSX.Element {
+export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);
 
     useGoogleClientAPI((success: boolean) => {
@@ -49,5 +49,3 @@ function Home(): JSX.Element {
         </div>
     );
 }
-
-export default Home;

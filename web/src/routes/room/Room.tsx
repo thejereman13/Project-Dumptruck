@@ -28,7 +28,7 @@ function synchronizeYoutube(player: YT.Player, videoTime: number, playing: boole
     }
 }
 
-function Room({ roomID }: RoomProps): JSX.Element {
+export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
     const [videoPlaylist, setVideoPlaylist] = useState<Video[]>([]);
@@ -125,7 +125,7 @@ function Room({ roomID }: RoomProps): JSX.Element {
         }
     };
 
-    const updateVideoID = (e: JSX.TargetedEvent<HTMLInputElement, Event>): void => {
+    const updateVideoID = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const val = e.currentTarget.value;
         setNewVideoID(val);
     };
@@ -159,12 +159,10 @@ function Room({ roomID }: RoomProps): JSX.Element {
                     ))}
                     <br />
                     <h3>Set Video: (enter youtube ID)</h3>
-                    <Input label="Video ID" value={newVideoID} onChange={updateVideoID} />
+                    <Input floatingLabel label="Video ID" value={newVideoID} onChange={updateVideoID} />
                     <Button onClick={submitNewVideo}>Submit</Button>
                 </div>
             </div>
         </div>
     );
 }
-
-export default Room;

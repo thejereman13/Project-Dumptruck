@@ -1,13 +1,9 @@
-import { FunctionalComponent, h } from "preact";
+import { h, JSX } from "preact";
 import { route } from "preact-router";
 import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
 import * as style from "./style.css";
 
-interface Props {
-    user: string;
-}
-
-const Profile: FunctionalComponent<Props> = () => {
+export function Login(): JSX.Element {
     function onSignIn(resp: GoogleLoginResponse | GoogleLoginResponseOffline): void {
         route("/");
     }
@@ -31,6 +27,4 @@ const Profile: FunctionalComponent<Props> = () => {
             />
         </div>
     );
-};
-
-export default Profile;
+}

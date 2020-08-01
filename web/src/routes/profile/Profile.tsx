@@ -7,7 +7,7 @@ import { route } from "preact-router";
 import { parsePlaylistJSON, PlaylistInfo } from "../../utils/YoutubeTypes";
 import * as style from "./style.css";
 
-function Profile(): JSX.Element {
+export function Profile(): JSX.Element {
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
     const [user, setUser] = useState<SiteUser | null>(null);
 
@@ -57,7 +57,5 @@ function Profile(): JSX.Element {
                 </div>
             )}
         </div>
-    )
+    );
 }
-
-export default Profile;
