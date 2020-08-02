@@ -1,11 +1,12 @@
 import { h, JSX } from "preact";
-import { useGoogleClientAPI, useGAPIContext } from "../../utils/GAPI";
+import { useGAPIContext, RequestAllPlaylists } from "../../utils/GAPI";
 import { useCallback, useState, useEffect } from "preact/hooks";
 import { SiteUser } from "../../utils/BackendTypes";
 import { GetCurrentUser } from "../../utils/RestCalls";
 import { route } from "preact-router";
-import { parsePlaylistJSON, PlaylistInfo } from "../../utils/YoutubeTypes";
+import { PlaylistInfo } from "../../utils/YoutubeTypes";
 import * as style from "./style.css";
+import { VideoDisplayCard } from "../../components/VideoCard";
 
 export function Profile(): JSX.Element {
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
@@ -14,20 +15,7 @@ export function Profile(): JSX.Element {
     const currentAPI = useGAPIContext();
 
     const requestPlaylists = useCallback(() => {
-        gapi.client
-            .request({
-                path: "https://www.googleapis.com/youtube/v3/playlists",
-                params: {
-                    part: "snippet",
-                    mine: true,
-                    maxResults: 50
-                }
-            })
-            .then(resp => {
-                //  TODO: handle more than one page
-                console.log(resp.result.pageInfo);
-                setUserPlaylists(resp.result.items.map(parsePlaylistJSON));
-            });
+        RequestAllPlaylists(setUserPlaylists);
     }, []);
 
     useEffect(() => {
@@ -41,6 +29,10 @@ export function Profile(): JSX.Element {
         });
     }, []);
 
+    const expandPlaylist = (pID: string): void => {
+        console.log(pID);
+    };
+
     return (
         <div class={style.root}>
             {user === null ? (
@@ -53,9 +45,17 @@ export function Profile(): JSX.Element {
                     <h2>{`Signed in as ${user.name}`}</h2>
                     <br />
                     <h3>User Playlists:</h3>
-                    {userPlaylists.map(list => {
-                        return <div key={list.id}>{list.title}</div>;
-                    })}
+                    <div class={style.PlaylistDiv}>
+                        {userPlaylists.map(list => {
+                            return (
+                                <VideoDisplayCard
+                                    key={list.id}
+                                    info={{ ...list, thumbnailURL: list.thumbnailMaxRes.url }}
+                                    onClick={expandPlaylist}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             )}
         </div>

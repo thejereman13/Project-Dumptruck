@@ -2,6 +2,9 @@ import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from 
 import { SiteUser } from "./BackendTypes";
 import { useRef, useContext, useState } from "preact/hooks";
 import { createContext } from "preact";
+import { PlaylistInfo, parsePlaylistJSON, VideoInfo, parsePlaylistItemJSON, parseVideoJSON } from "./YoutubeTypes";
+
+/* Util hook and context for logging in with GAPI user and retrieving user info */
 
 export interface LoggedInUser extends SiteUser {
     profileURL: string;
@@ -61,3 +64,68 @@ export function useGoogleLoginAPI(): GAPIInfo {
 
 export const GAPIContext = createContext<GAPIInfo | null>(null);
 export const useGAPIContext = (): GAPIInfo | null => useContext(GAPIContext);
+
+/* Util functions for fetching information from the GAPI */
+
+export function RequestAllPlaylists(responseCallback: (playlists: PlaylistInfo[]) => void): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/playlists",
+            params: {
+                part: "snippet,contentDetails",
+                mine: true,
+                maxResults: 50
+            }
+        })
+        .then(resp => {
+            //  TODO: handle more than one page
+            // console.log(resp.result.pageInfo);
+            responseCallback(resp.result.items.map(parsePlaylistJSON));
+        });
+}
+
+export function RequestPlaylist(playlistID: string, responseCallback: (playlist: PlaylistInfo) => void): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/playlists",
+            params: {
+                part: "snippet,contentDetails",
+                id: playlistID,
+                maxResults: 1
+            }
+        })
+        .then(resp => {
+            //  TODO: handle more than one page
+            // console.log(resp.result.pageInfo);
+            if (resp.result.items.length === 1) responseCallback(parsePlaylistJSON(resp.result.items[0]));
+        });
+}
+
+export function RequestVideosFromPlaylist(playlistID: string, responseCallback: (item: VideoInfo[]) => void): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/playlistItems",
+            params: {
+                part: "snippet",
+                playlistId: playlistID,
+                maxResults: 50
+            }
+        })
+        .then(resp => {
+            responseCallback(resp.result.items.map(parsePlaylistItemJSON));
+        });
+}
+
+export function RequestVideo(videoID: string, responseCallback: (video: VideoInfo) => void): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/videos",
+            params: {
+                part: "snippet",
+                id: videoID
+            }
+        })
+        .then(resp => {
+            if (resp.result.items.length === 1) responseCallback(parseVideoJSON(resp.result.items[0]));
+        });
+}

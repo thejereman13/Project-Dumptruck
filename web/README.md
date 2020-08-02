@@ -17,3 +17,5 @@
 
 
 For detailed explanation on how things work, checkout the [CLI Readme](https://github.com/developit/preact-cli/blob/master/README.md).
+
+To fix websocket issues in chrome due to self-signed SSL certificates, enable chrome://flags/#allow-insecure-localhost

@@ -142,7 +142,7 @@ final class Room {
 
     @safe
     private nothrow void videoSyncLoop() {
-        if (roomUsers.userCount <= 0)  {
+        if (roomUsers.userCount <= 0 && currentVideo.playing == false)  {
             videoLoop.stop();
             currentVideo = Video.init;
             return;

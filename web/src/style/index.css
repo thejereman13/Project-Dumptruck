@@ -29,6 +29,11 @@ html, body {
 .mui-btn {
 	margin: 1rem;
 }
+.mui-btn.mui-btn--flat:focus:not(:hover) {
+	outline: none;
+	box-shadow: none;
+	background-color: transparent;
+}
 
 .mui-btn--fab {
 	display: inline-flex;

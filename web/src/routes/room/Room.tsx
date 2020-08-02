@@ -7,6 +7,7 @@ import YouTubeVideo from "../../components/YTPlayer";
 import { useWebsockets } from "../../utils/Websockets";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomUser } from "../../utils/BackendTypes";
+import { VideoCard } from "../../components/VideoCard";
 
 export interface RoomProps {
     roomID: string;
@@ -169,7 +170,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         return (
                             <div key={clientID}>
                                 <Button variant="flat">{playlistUser?.name ?? "Unknown User"}</Button>
-                                {playlist && playlist.map(v => <div key={v.youtubeID}>{v.title}</div>)}
+                                {playlist && playlist.map(v => <VideoCard key={v.youtubeID} videoID={v.youtubeID} />)}
                             </div>
                         );
                     })}

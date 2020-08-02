@@ -24,6 +24,7 @@ module.exports = {
     rules: {
         "react/no-unknown-property": ["error", { ignore: ["class"] }],
         "@typescript-eslint/no-explicit-any": 0,
+        "react/prop-types": 0,
     },
     settings: {
         react: {
