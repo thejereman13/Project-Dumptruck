@@ -100,3 +100,13 @@
 .scrollBox {
 	overflow-y: auto;
 }
+
+.videoInfo {
+	display: flex;
+	flex-direction: row;
+}
+
+.videoIcon {
+	max-height: 6rem;
+	padding-right: 2rem;
+}

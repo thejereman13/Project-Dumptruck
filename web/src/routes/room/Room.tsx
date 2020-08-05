@@ -6,7 +6,7 @@ import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import YouTubeVideo from "../../components/YTPlayer";
 import { useWebsockets } from "../../utils/Websockets";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
-import { RoomUser } from "../../utils/BackendTypes";
+import { RoomUser, YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { UserList } from "./UserList";
 import { VideoQueue } from "./VideoQueue";
 import { Tabs, Tab } from "../../components/Tabs";
@@ -124,9 +124,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             );
     };
 
-    const submitNewVideo = (newVideoID: string): void => {
+    const submitNewVideo = (newVideo: YoutubeVideoInformation): void => {
         if (ws) {
-            ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideoID }));
+            ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
         }
     };
 

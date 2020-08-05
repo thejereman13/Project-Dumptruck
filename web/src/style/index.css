@@ -49,9 +49,11 @@ html, body {
 
 .mui--text-body1 {
 	color: var(--text-secondary-medium);
+	text-transform: none;
 }
 .mui--text-subhead {
 	color: var(--text-secondary-medium);
+	text-transform: none;
 }
 
 #app {

@@ -1,4 +1,5 @@
 import he from "he";
+import { YoutubeVideoInformation } from "./BackendTypes";
 
 export interface Thumbnail {
     url: string;
@@ -67,5 +68,14 @@ export function parseSearchVideoJSON(videoObject: any): VideoInfo {
         channel: he.decode(videoObject.snippet.channelTitle),
         description: he.decode(videoObject.snippet.description),
         thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
+    };
+}
+
+export function parseVideoForBackend(videoObject: any): YoutubeVideoInformation {
+    return {
+        videoID: videoObject.id,
+        title: videoObject.snippet.localized.title,
+        channel: videoObject.snippet.channelTitle,
+        duration: videoObject.contentDetails.duration
     };
 }

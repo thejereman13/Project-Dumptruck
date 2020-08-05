@@ -131,8 +131,6 @@ void getVideoInformation(string videoID, void delegate(YoutubeVideoInformation) 
         ~ server_configuration["youtube_api_key"].get!string ~ "&id=" ~ videoID;
     runTask({
         try {
-            //  TODO: investigate failed HTTP attempts
-            //  Likely due to incorrect video IDs
             requestHTTP(url,
                 (scope req) {
                     req.method = HTTPMethod.GET;
@@ -168,6 +166,20 @@ void videoInfoRequest(HTTPServerRequest req, HTTPServerResponse res) {
         writeln(error);
     });
 }
+
+YoutubeVideoInformation validateVideoInfo(Json info) {
+    auto ret = YoutubeVideoInformation.init;
+    try {
+        ret.videoID = info["videoID"].get!string;
+        ret.title = info["title"].get!string;
+        ret.channel = info["channel"].get!string;
+        ret.duration = secondsFromDuration(info["duration"].get!string);
+        return ret;
+    } catch (Exception e) {
+        logException(e, "Failed to Parse Video Info");
+        return YoutubeVideoInformation.init;
+    }
+} 
 
 
 

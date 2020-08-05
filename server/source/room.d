@@ -158,22 +158,19 @@ final class Room {
             currentVideo.timeStamp++;
         }
     }
-
-    // TODO: check stability behind REST endpoint instead of websocket
-    //  Otherwise move to client-side and send all the video information to queue
-    //  Client side may work better in the future for YT playlists anyway
-    private void queueVideo(string videoID, UUID userID) {
-        getVideoInformation(videoID, (info) {
-            if (playlist.addVideoToQueue(userID, info)) {
+    private void queueVideo(Json videoInfo, UUID userID) {
+        auto newVideo = validateVideoInfo(videoInfo);
+        if (newVideo.videoID.length > 0) {
+            if (playlist.addVideoToQueue(userID, newVideo)) {
                 postPlaylist();
-                if (!currentVideo.playing) queueNextVideo();
+                if (currentVideo.youtubeID.length == 0) queueNextVideo();
             } else {
-                writeln("Skipping duplicate queue of ", info.title);
+                writeln("Skipping duplicate queue of ", newVideo.title);
                 postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
             }
-        }, (error) {
-            postMessage(MessageType.Error, "Failed to Queue Video: Network Error", [userID], "error");
-        });
+        } else {
+            writeln("Failed to validate Video");
+        }
     }
 
     public Json addUser(UUID clientID) {
@@ -182,8 +179,6 @@ final class Room {
                 roomLoopOperation();
             });
         }
-        if (!currentVideo.playing)
-            queueVideo("C0DPdy98e4c", randomUUID());
         UUID id = roomUsers.addUser(clientID);
         Json j = Json.emptyObject;
         j["type"] = MessageType.Init;
@@ -242,8 +237,7 @@ final class Room {
                 postMessage(MessageType.Pause);
                 break;
             case MessageType.QueueAdd:
-                const vid = j["data"].get!string;
-                queueVideo(vid, id);
+                queueVideo(j["data"], id);
                 break;
             default:
                 writeln("Invalid Message Type", message);

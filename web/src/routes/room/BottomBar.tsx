@@ -2,17 +2,18 @@ import { h, JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { useDebouncedCallback } from "use-debounce-preact";
 import { VideoInfo, PlaylistInfo } from "../../utils/YoutubeTypes";
-import { RequestVideo, useGAPIContext, SearchVideo, RequestAllPlaylists, GAPIInfo } from "../../utils/GAPI";
+import { RequestVideo, useGAPIContext, SearchVideo, RequestAllPlaylists, GAPIInfo, RequestVideoForBackend } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
 import Modal from "preact-mui/lib/modal";
 import * as style from "./style.css";
 import { Tabs, Tab } from "../../components/Tabs";
 import { VideoDisplayCard } from "../../components/VideoCard";
+import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 
 interface QueueModalProps {
     currentAPI: GAPIInfo | null;
-    submitNewVideo: (videoID: string) => void;
+    submitNewVideo: (newVideo: YoutubeVideoInformation) => void;
 }
 
 function QueueModal(props: QueueModalProps): JSX.Element {
@@ -46,6 +47,10 @@ function QueueModal(props: QueueModalProps): JSX.Element {
         debouncedSearch(val);
     };
 
+    const submitVideoFromList = (videoID: string): void => {
+        RequestVideoForBackend(videoID, submitNewVideo);
+    };
+
     return (
         <div class={style.QueueModal} onClick={(e): void => e.stopPropagation()}>
             <div>
@@ -69,7 +74,7 @@ function QueueModal(props: QueueModalProps): JSX.Element {
                                     <VideoDisplayCard
                                         key={list.id}
                                         info={{ ...list, thumbnailURL: list.thumbnailMaxRes.url }}
-                                        onClick={(): void => submitNewVideo(list.id)}
+                                        onClick={(): void => submitVideoFromList(list.id)}
                                     />
                                 );
                             })}
@@ -117,8 +122,8 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
         <div>
             <div class={style.BottomBar}>
                 {videoInfo ? (
-                    <div>
-                        <img src={videoInfo.thumbnailMaxRes.url} />
+                    <div class={style.videoInfo}>
+                        <img class={style.videoIcon} src={videoInfo.thumbnailMaxRes.url} />
                         <div class="mui--text-subhead">{videoInfo.title}</div>
                     </div>
                 ) : (

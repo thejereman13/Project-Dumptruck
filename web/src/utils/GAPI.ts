@@ -1,5 +1,5 @@
 import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
-import { SiteUser } from "./BackendTypes";
+import { SiteUser, YoutubeVideoInformation } from "./BackendTypes";
 import { useContext, useState } from "preact/hooks";
 import { createContext } from "preact";
 import {
@@ -8,7 +8,8 @@ import {
     VideoInfo,
     parsePlaylistItemJSON,
     parseVideoJSON,
-    parseSearchVideoJSON
+    parseSearchVideoJSON,
+    parseVideoForBackend
 } from "./YoutubeTypes";
 
 /* Util hook and context for logging in with GAPI user and retrieving user info */
@@ -134,6 +135,23 @@ export function RequestVideo(videoID: string, responseCallback: (video: VideoInf
         })
         .then(resp => {
             if (resp.result.items.length === 1) responseCallback(parseVideoJSON(resp.result.items[0]));
+        });
+}
+
+export function RequestVideoForBackend(
+    videoID: string,
+    responseCallback: (video: YoutubeVideoInformation) => void
+): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/videos",
+            params: {
+                part: "snippet,contentDetails",
+                id: videoID
+            }
+        })
+        .then(resp => {
+            if (resp.result.items.length === 1) responseCallback(parseVideoForBackend(resp.result.items[0]));
         });
 }
 

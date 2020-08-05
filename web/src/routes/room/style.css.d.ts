@@ -14,6 +14,8 @@ declare namespace StyleCssNamespace {
         sidePanelTabBody: string;
         splitPane: string;
         videoDiv: string;
+        videoIcon: string;
+        videoInfo: string;
         videoPanel: string;
     }
 }
