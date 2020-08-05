@@ -18,7 +18,7 @@ export function Home(): JSX.Element {
     return (
         <div class={style.home}>
             <h1>Home</h1>
-            {currentUser !== null && (
+{currentUser !== null && (
                 <div>
                     <h3>Recent Rooms</h3>
                     {currentUser.recentRooms.map(room => (

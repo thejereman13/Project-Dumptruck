@@ -7,7 +7,7 @@ export function Header(): JSX.Element {
     const currentAPI = useGAPIContext();
 
     return (
-        <header class={style.header}>
+        <header class={["mui--appbar-height", "mui--appbar-line-height", style.header].join(" ")}>
             <h1>Dumptruck FM</h1>
             <nav>
                 <Link class={style.headerNav} activeClassName={style.active} href="/">

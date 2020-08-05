@@ -1,8 +1,15 @@
 import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
 import { SiteUser } from "./BackendTypes";
-import { useRef, useContext, useState } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import { createContext } from "preact";
-import { PlaylistInfo, parsePlaylistJSON, VideoInfo, parsePlaylistItemJSON, parseVideoJSON } from "./YoutubeTypes";
+import {
+    PlaylistInfo,
+    parsePlaylistJSON,
+    VideoInfo,
+    parsePlaylistItemJSON,
+    parseVideoJSON,
+    parseSearchVideoJSON
+} from "./YoutubeTypes";
 
 /* Util hook and context for logging in with GAPI user and retrieving user info */
 
@@ -127,5 +134,23 @@ export function RequestVideo(videoID: string, responseCallback: (video: VideoInf
         })
         .then(resp => {
             if (resp.result.items.length === 1) responseCallback(parseVideoJSON(resp.result.items[0]));
+        });
+}
+
+export function SearchVideo(query: string, responseCallback: (items: VideoInfo[]) => void): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/search",
+            params: {
+                part: "snippet",
+                maxResults: 50,
+                q: query,
+                type: "video",
+                safeSearch: "none",
+                videoEmbeddable: true
+            }
+        })
+        .then(resp => {
+            responseCallback(resp.result.items.map(parseSearchVideoJSON));
         });
 }

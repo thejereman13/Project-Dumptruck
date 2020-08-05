@@ -12,4 +12,4 @@ export const NotFound: FunctionalComponent = (): JSX.Element => {
             </Link>
         </div>
     );
-}
+};

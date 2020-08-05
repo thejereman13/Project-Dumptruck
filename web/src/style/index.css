@@ -1,21 +1,57 @@
+* {
+	box-sizing: border-box;
+	--theme-background: #121212;
+	--theme-primary: #0188d1;
+	--theme-primary-light: #5eb8ff;
+	--theme-primary-dark: #005b9f;
+	--theme-secondary: #bc2727;
+	--theme-secondary-light: #f55d50;
+	--theme-secondary-dark: #840000;
+	--text-primary: #000000dd;
+	--text-secondary: #ffffffdd;
+	--text-secondary-medium: #ffffff99;
+	--text-secondary-disabled: #ffffff60;
+
+	--dp2-surface: #222222;
+	--dp4-surface: #272727;
+	--dp8-surface: #2e2e2e;
+	--dp16-surface: #353535;
+	--dp24-surface: #373737;
+
+	color: var(--text-secondary);
+}
+
 html, body {
 	height: 100%;
 	width: 100%;
 	padding: 0;
 	margin: 0;
-	background: #e1e1e1;
+	background: var(--theme-background);
 	font-family: 'Helvetica Neue', arial, sans-serif;
 	font-weight: 400;
-	color: #444;
+	color: var(--text-secondary);
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
 
-* {
-	box-sizing: border-box;
-	--mdc-theme-primary: #37474f;
-	--mdc-theme-primary-dark: #102027;
-	--mdc-theme-primary-light: #62727b;
+::-webkit-scrollbar {
+	width: 0.5rem;
+}
+::-webkit-scrollbar-track {
+	box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
+	border-radius: 1rem;
+}
+::-webkit-scrollbar-thumb {
+	background-color: rgba(0,0,0,.4);
+	border-radius: 1rem;
+	outline: 1px solid slategrey;
+}
+
+.mui--text-body1 {
+	color: var(--text-secondary-medium);
+}
+.mui--text-subhead {
+	color: var(--text-secondary-medium);
 }
 
 #app {
@@ -28,15 +64,59 @@ html, body {
 
 .mui-btn {
 	margin: 1rem;
+	background-color: var(--theme-primary);
+	color: var(--text-primary);
 }
 .mui-btn.mui-btn--flat:focus:not(:hover) {
 	outline: none;
 	box-shadow: none;
 	background-color: transparent;
 }
+.mui-btn:focus:not(:hover) {
+	outline: none;
+	box-shadow: none;
+	background-color: var(--theme-primary-light);
+}
+
+.mui-btn.mui-btn--flat:hover {
+	background-color: var(--dp24-surface);
+}
 
 .mui-btn--fab {
 	display: inline-flex;
 	justify-content: center;
 	align-items: center;
+	background-color: var(--theme-primary-light);
+}
+
+.mui-tabs__bar > li > a {
+	cursor: pointer;
+}
+
+a {
+	color: var(--theme-secondary) !important;
+}
+
+.mui-tabs__bar>li.mui--is-active {
+	border-color: var(--theme-secondary);
+}
+
+.mui-textfield--float-label>label {
+	color: var(--text-secondary-medium);
+}
+
+.mui-textfield--float-label>input:not(:focus).mui--is-not-empty~label, .mui-textfield--float-label>input:not(:focus):not(:empty):not(.mui--is-empty):not(.mui--is-not-empty)~label, .mui-textfield--float-label>input:not(:focus)[value]:not([value=""]):not(.mui--is-empty):not(.mui--is-not-empty)~label, .mui-textfield--float-label>textarea:not(:focus).mui--is-not-empty~label, .mui-textfield--float-label>textarea:not(:focus):not(:empty):not(.mui--is-empty):not(.mui--is-not-empty)~label, .mui-textfield--float-label>textarea:not(:focus)[value]:not([value=""]):not(.mui--is-empty):not(.mui--is-not-empty)~label {
+	color: var(--theme-primary-light);
+}
+
+.mui-textfield>input:focus~label, .mui-textfield>textarea:focus~label {
+	color: var(--theme-primary-light);
+}
+
+.mui-textfield>input, .mui-textfield>textarea {
+	color: var(--text-secondary);
+}
+
+.mui-textfield>input:focus, .mui-textfield>textarea:focus {
+	border-color: var(--theme-primary);
 }

@@ -1,9 +1,15 @@
-.room {
-	padding: 56px 20px;
+.PageRoot {
+	padding-top: 56px;
 	min-height: 100%;
 	width: 100%;
 	display: flex;
 	flex-flow: column;
+}
+
+@media (min-width: 480px){
+	.PageRoot {
+	   padding-top: 64px;
+   }
 }
 
 .progress {
@@ -30,6 +36,15 @@
 .sidePanel {
 	width: 50%;
 	padding: 1rem;
+	margin: 3rem 1rem;
+	background-color: var(--dp2-surface);
+	border-radius: 1rem;
+}
+
+.sidePanelTabBody {
+	padding: 1rem 1rem 0 1rem;
+	display: flex;
+	overflow-y: hidden;
 }
 
 .videoDiv {
@@ -39,4 +54,49 @@
 .videoDiv iframe {
 	width: 100%;
 	height: 100%;
+}
+
+.BottomBar {
+	display: flex;
+	justify-content: space-between;
+	flex-direction: row;
+	background-color: var(--dp2-surface);
+}
+
+.ModalContainer {
+	max-height: 100%;
+	max-width: 100%;
+	padding: 8rem;
+	display: flex;
+	overflow: hidden;
+}
+
+.QueueModal {
+	background-color: var(--dp4-surface);
+	border-radius: 1rem;
+	padding: 2rem;
+	flex: auto;
+	display: flex;
+	flex-direction: column;
+}
+
+.searchDiv {
+	width: 100%;
+	min-width: 480px;
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+}
+.searchDiv>div {
+	flex: auto;
+}
+
+.searchPanel {
+	display: flex;
+	flex-direction: column;
+	overflow-y: hidden;
+}
+
+.scrollBox {
+	overflow-y: auto;
 }

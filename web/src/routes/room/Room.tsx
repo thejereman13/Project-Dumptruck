@@ -7,7 +7,10 @@ import YouTubeVideo from "../../components/YTPlayer";
 import { useWebsockets } from "../../utils/Websockets";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomUser } from "../../utils/BackendTypes";
-import { VideoCard } from "../../components/VideoCard";
+import { UserList } from "./UserList";
+import { VideoQueue } from "./VideoQueue";
+import { Tabs, Tab } from "../../components/Tabs";
+import { BottomBar } from "./BottomBar";
 
 export interface RoomProps {
     roomID: string;
@@ -34,15 +37,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
     const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
     const [userQueue, setUserQueue] = useState<string[]>([]);
-
+    const [sidebarTab, setSidebarTab] = useState(0);
     const [videoTitle, setVideoTitle] = useState("");
     const [videoID, setVideoID] = useState("");
     const [videoDuration, setVideoDuration] = useState(0);
     const [videoTime, setVideoTime] = useState(0);
     const [playing, setPlaying] = useState(false);
     const [playerState, setPlayerState] = useState(-1);
-
-    const [newVideoID, setNewVideoID] = useState("");
 
     const youtubePlayer = useRef<YT.Player>();
 
@@ -123,30 +124,18 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             );
     };
 
-    const submitNewVideo = (): void => {
+    const submitNewVideo = (newVideoID: string): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideoID }));
-            setNewVideoID("");
         }
     };
 
-    const updateVideoID = (e: React.ChangeEvent<HTMLInputElement>): void => {
-        const val = e.currentTarget.value;
-        setNewVideoID(val);
-    };
-
     return (
-        <div class={style.room}>
-            <h1>{roomTitle}</h1>
+        <div class={style.PageRoot}>
             <div class={style.splitPane}>
                 <div class={style.videoPanel}>
                     <h2>
-                        {videoTitle ? `Now Playing ${videoTitle}` : `Nothing Currently Playing`}
-                        <Button size="small" variant="fab" onClick={togglePlay}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">
-                                {playing ? "pause" : "play_arrow"}
-                            </i>
-                        </Button>
+                        {roomTitle} {videoTitle ? `Now Playing ${videoTitle}` : `Nothing Currently Playing`}
                     </h2>
                     {/* <LinearProgress
                         className={style.progress}
@@ -156,30 +145,32 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     <YouTubeVideo className={style.videoDiv} id={videoID} getPlayer={getPlayer} />
                 </div>
                 <div class={style.sidePanel}>
-                    <h2>Current Users:</h2>
-                    {currentUsers.map(usr => (
-                        <div class="mui--text-title" key={usr.clientID}>
-                            {usr.name}
-                        </div>
-                    ))}
-                    <h2>Upcoming Videos:</h2>
-                    {userQueue.map(clientID => {
-                        // <div class="mui--text-title" key={v.youtubeID}>{v.title}</div>
-                        const playlist = videoPlaylist[clientID];
-                        const playlistUser = currentUsers.find(u => u.clientID == clientID);
-                        return (
-                            <div key={clientID}>
-                                <Button variant="flat">{playlistUser?.name ?? "Unknown User"}</Button>
-                                {playlist && playlist.map(v => <VideoCard key={v.youtubeID} videoID={v.youtubeID} />)}
-                            </div>
-                        );
-                    })}
-                    <br />
-                    <h3>Queue Video: (enter youtube ID)</h3>
-                    <Input floatingLabel label="Video ID" value={newVideoID} onChange={updateVideoID} />
-                    <Button onClick={submitNewVideo}>Submit</Button>
+                    <Tabs
+                        tabNames={["Video Queue", "Room Users"]}
+                        onIndex={setSidebarTab}
+                        index={sidebarTab}
+                        justified
+                    />
+                    <div class={style.sidePanelTabBody}>
+                        <Tab index={0} tabIndex={sidebarTab}>
+                            <VideoQueue
+                                videoPlaylist={videoPlaylist}
+                                userQueue={userQueue}
+                                currentUsers={currentUsers}
+                            />
+                        </Tab>
+                        <Tab index={1} tabIndex={sidebarTab}>
+                            <UserList currentUsers={currentUsers} />
+                        </Tab>
+                    </div>
                 </div>
             </div>
+            <BottomBar
+                playing={playing}
+                currentVideo={videoID}
+                togglePlay={togglePlay}
+                submitNewVideo={submitNewVideo}
+            />
         </div>
     );
 }

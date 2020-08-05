@@ -1,3 +1,5 @@
+import he from "he";
+
 export interface Thumbnail {
     url: string;
     width: number;
@@ -30,9 +32,9 @@ function getCorrectThumbnail(thumbnailList: any): Thumbnail {
 export function parsePlaylistJSON(playlistObject: any): PlaylistInfo {
     return {
         id: playlistObject.id,
-        title: playlistObject.snippet.localized.title,
-        description: playlistObject.snippet.localized.description,
-        channel: playlistObject.snippet.channelTitle,
+        title: he.decode(playlistObject.snippet.localized.title),
+        description: he.decode(playlistObject.snippet.localized.description),
+        channel: he.decode(playlistObject.snippet.channelTitle),
         thumbnailMaxRes: getCorrectThumbnail(playlistObject.snippet.thumbnails),
         videoCount: playlistObject.contentDetails.itemCount
     };
@@ -41,9 +43,9 @@ export function parsePlaylistJSON(playlistObject: any): PlaylistInfo {
 export function parsePlaylistItemJSON(itemObject: any): VideoInfo {
     return {
         id: itemObject.id,
-        title: itemObject.snippet.title,
-        channel: itemObject.snippet.channelTitle,
-        description: itemObject.snippet.description,
+        title: he.decode(itemObject.snippet.title),
+        channel: he.decode(itemObject.snippet.channelTitle),
+        description: he.decode(itemObject.snippet.description),
         thumbnailMaxRes: getCorrectThumbnail(itemObject.snippet.thumbnails)
     };
 }
@@ -51,9 +53,19 @@ export function parsePlaylistItemJSON(itemObject: any): VideoInfo {
 export function parseVideoJSON(videoObject: any): VideoInfo {
     return {
         id: videoObject.id,
-        title: videoObject.snippet.localized.title,
-        channel: videoObject.snippet.channelTitle,
-        description: videoObject.snippet.localized.description,
+        title: he.decode(videoObject.snippet.localized.title),
+        channel: he.decode(videoObject.snippet.channelTitle),
+        description: he.decode(videoObject.snippet.localized.description),
+        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
+    };
+}
+
+export function parseSearchVideoJSON(videoObject: any): VideoInfo {
+    return {
+        id: videoObject.id.videoId,
+        title: he.decode(videoObject.snippet.title),
+        channel: he.decode(videoObject.snippet.channelTitle),
+        description: he.decode(videoObject.snippet.description),
         thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
     };
 }

@@ -25,17 +25,20 @@
   ],
   "dependencies": {
     "@types/gapi": "0.0.39",
+    "@types/he": "^1.1.1",
     "@types/material__base": "^0.35.2",
     "@types/material__ripple": "^0.35.2",
     "@types/muicss": "^0.9.2",
     "@types/youtube": "0.0.39",
+    "he": "^1.2.0",
     "preact": "^10.3.1",
     "preact-jsx-chai": "^3.0.0",
     "preact-markup": "^2.0.0",
     "preact-mui": "^0.1.1",
     "preact-render-to-string": "^5.1.4",
     "preact-router": "^3.2.1",
-    "react-google-login": "^5.1.21"
+    "react-google-login": "^5.1.21",
+    "use-debounce-preact": "^1.0.2"
   },
   "devDependencies": {
     "@teamsupercell/typings-for-css-modules-loader": "^2.2.0",
