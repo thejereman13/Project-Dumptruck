@@ -55,6 +55,10 @@ html, body {
 	color: var(--text-secondary-medium);
 	text-transform: none;
 }
+.mui--text-title {
+	color: var(--text-secondary-medium);
+	text-transform: none;
+}
 
 #app {
 	height: 100%;

@@ -2,6 +2,7 @@ import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from 
 import { SiteUser, YoutubeVideoInformation } from "./BackendTypes";
 import { useContext, useState } from "preact/hooks";
 import { createContext } from "preact";
+import { CLIENTID } from "../constants";
 import {
     PlaylistInfo,
     parsePlaylistJSON,
@@ -29,7 +30,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
     const [isGAPILoaded, setAPILoaded] = useState<boolean>(false);
 
     useGoogleLogin({
-        clientId: "841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com",
+        clientId: CLIENTID,
         scope: "https://www.googleapis.com/auth/youtube.readonly",
         onSuccess: (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => {
             if (resp.code !== undefined) return;

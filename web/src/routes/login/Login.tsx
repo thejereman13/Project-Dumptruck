@@ -1,6 +1,7 @@
 import { h, JSX } from "preact";
 import { route } from "preact-router";
 import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
+import { CLIENTID } from "../../constants";
 import * as style from "./style.css";
 
 export function Login(): JSX.Element {
