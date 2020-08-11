@@ -27,8 +27,6 @@ final class UserList {
         return roomUsers.values;
     }
 
-    // TODO: support updating a user with a SiteUser after they log in
-
     public UUID addUser(UUID clientID) {
         const id = clientID.empty ? randomUUID() : clientID;
         const name = clientID.empty ? "Guest-" ~ id.toString() : getSiteUser(clientID).name;

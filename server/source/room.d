@@ -128,6 +128,8 @@ final class Room {
                 videoLoop.stop();
             }
             videoLoop.rearm(1.seconds, true);
+        } else {
+            currentVideo = Video.init;
         }
         postPlaylist();
     }
@@ -143,6 +145,7 @@ final class Room {
     @safe
     private nothrow void videoSyncLoop() {
         if (roomUsers.userCount <= 0 && currentVideo.playing == false)  {
+            // TODO: check up on userCount (getting a lot of failed to remove user)
             videoLoop.stop();
             currentVideo = Video.init;
             return;
@@ -165,7 +168,6 @@ final class Room {
                 postPlaylist();
                 if (currentVideo.youtubeID.length == 0) queueNextVideo();
             } else {
-                writeln("Skipping duplicate queue of ", newVideo.title);
                 postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
             }
         } else {
@@ -197,6 +199,7 @@ final class Room {
         }
         if (roomUsers.userCount == 0) {
             roomLoop.join();
+            currentVideo = Video.init;
         }
     }
 

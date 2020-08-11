@@ -7,7 +7,7 @@ import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
 import * as style from "./style.css";
 import { Tabs, Tab } from "../../components/Tabs";
-import { VideoDisplayCard } from "../../components/VideoCard";
+import { VideoDisplayCard, PlaylistCard } from "../../components/VideoCard";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 
 export interface QueueModalProps {
@@ -49,6 +49,7 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     };
 
     const submitVideoFromList = (videoID: string): void => {
+        console.log("submitting ", videoID);
         RequestVideoForBackend(videoID, submitNewVideo);
     };
 
@@ -74,7 +75,7 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                                 return (
                                     <VideoDisplayCard
                                         key={list.id}
-                                        info={{ ...list, thumbnailURL: list.thumbnailMaxRes.url }}
+                                        info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
                                         onClick={(): void => submitVideoFromList(list.id)}
                                     />
                                 );
@@ -86,10 +87,10 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                     <div class={style.scrollBox}>
                         {userPlaylists.map(list => {
                             return (
-                                <VideoDisplayCard
+                                <PlaylistCard
                                     key={list.id}
-                                    info={{ ...list, thumbnailURL: list.thumbnailMaxRes.url }}
-                                    onClick={(id: string): void => console.log(id)}
+                                    info={list}
+                                    onVideoClick={(id: string): void => submitVideoFromList(id)}
                                 />
                             );
                         })}

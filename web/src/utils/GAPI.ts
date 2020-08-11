@@ -24,7 +24,6 @@ export interface GAPIInfo {
     isAPILoaded: () => boolean;
 }
 
-// TODO: move to app-wide context that stores the necessary account info
 export function useGoogleLoginAPI(): GAPIInfo {
     const [siteUser, setSiteUser] = useState<LoggedInUser | null>(null);
     const [isGAPILoaded, setAPILoaded] = useState<boolean>(false);
@@ -111,18 +110,25 @@ export function RequestPlaylist(playlistID: string, responseCallback: (playlist:
 }
 
 export function RequestVideosFromPlaylist(playlistID: string, responseCallback: (item: VideoInfo[]) => void): void {
-    gapi.client
-        .request({
-            path: "https://www.googleapis.com/youtube/v3/playlistItems",
-            params: {
-                part: "snippet",
-                playlistId: playlistID,
-                maxResults: 50
-            }
-        })
-        .then(resp => {
-            responseCallback(resp.result.items.map(parsePlaylistItemJSON));
-        });
+    let returnArr: VideoInfo[] = [];
+    const addPage = (pageToken?: string): void => {
+        gapi.client
+            .request({
+                path: "https://www.googleapis.com/youtube/v3/playlistItems",
+                params: {
+                    part: "snippet",
+                    playlistId: playlistID,
+                    maxResults: 50,
+                    pageToken
+                }
+            })
+            .then(resp => {
+                returnArr = [...returnArr, ...resp.result.items.map(parsePlaylistItemJSON)];
+                if (resp.result.nextPageToken) addPage(resp.result.nextPageToken);
+                else responseCallback(returnArr);
+            });
+    };
+    addPage();
 }
 
 export function RequestVideo(videoID: string, responseCallback: (video: VideoInfo) => void): void {

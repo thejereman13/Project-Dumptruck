@@ -2,6 +2,12 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         ModalBackground: string;
+        PlaylistCard: string;
+        PlaylistCardInfo: string;
+        PlaylistIcon: string;
+        PlaylistInfo: string;
+        PlaylistVideos: string;
+        PlaylistVideosExpanded: string;
         VideoCard: string;
         VideoCardButton: string;
         VideoIcon: string;

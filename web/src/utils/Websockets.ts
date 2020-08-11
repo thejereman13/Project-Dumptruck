@@ -9,11 +9,11 @@ function getBaseURL(): string {
     }
 }
 
-export function useWebsockets(
-    roomID: string,
-    messageCallback: (data: WSMessage) => void
-): WebSocket | undefined {
+const WS_MAX_TRIES = 5;
+
+export function useWebsockets(roomID: string, messageCallback: (data: WSMessage) => void): WebSocket | undefined {
     const ws = useRef<WebSocket>();
+    const wsAttemptCounter = useRef<number>(0);
 
     const onMessage = useCallback((ev: MessageEvent) => {
         const message = JSON.parse(ev.data) as WSMessage;
@@ -22,9 +22,9 @@ export function useWebsockets(
     }, []);
 
     useEffect(() => {
-        console.log("start");
+        let websocketMounted = true;
         let ping: NodeJS.Timeout;
-        const continuousPing = () => {
+        const continuousPing = (): void => {
             if (ws.current?.readyState === ws.current?.OPEN)
                 ws.current?.send(
                     JSON.stringify({
@@ -33,26 +33,35 @@ export function useWebsockets(
                 );
             ping = setTimeout(() => continuousPing(), 4000);
         };
-        if (ws.current === undefined) {
+        const createWebSocket = (): void => {
+            wsAttemptCounter.current += 1;
+            if (wsAttemptCounter.current > WS_MAX_TRIES) {
+                console.error("Failed to Open Websocket for Room ", roomID);
+                return;
+            }
+            if (!websocketMounted) return;
+
             ws.current = new WebSocket(`${getBaseURL()}/api/ws?${roomID}`);
             ws.current.addEventListener("message", onMessage);
             ws.current.addEventListener("open", () => {
-                console.log("WS Opened");
+                wsAttemptCounter.current = 0;
                 continuousPing();
             });
-            ws.current.addEventListener("error", e =>
-                console.log("WS Error: ", e)
-            );
-            ws.current.addEventListener("close", e => {
-                console.log("WS Closed", e);
+            ws.current.addEventListener("error", e => console.warn("WS Error: ", e));
+            ws.current.addEventListener("close", () => {
                 clearTimeout(ping);
+                createWebSocket();
             });
+        };
+        if (ws.current === undefined) {
+            createWebSocket();
         }
         return (): void => {
             console.log("c");
             ws.current?.close();
             ws.current = undefined;
             clearTimeout(ping);
+            websocketMounted = false;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

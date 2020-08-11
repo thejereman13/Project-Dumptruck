@@ -14,7 +14,6 @@ export function VideoQueue(props: VideoQueueProps): JSX.Element {
     const { userQueue, videoPlaylist, currentUsers } = props;
     return (
         <div>
-            <h2>Upcoming Videos:</h2>
             {userQueue.map(clientID => {
                 // <div class="mui--text-title" key={v.youtubeID}>{v.title}</div>
                 const playlist = videoPlaylist[clientID];

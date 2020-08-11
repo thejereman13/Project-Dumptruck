@@ -77,7 +77,6 @@ final class VideoPlaylist {
         const size_t nextIndex = peekNextVideo();
         if (nextIndex != size_t.max) {
             Video next = playlist[userQueue[nextIndex]][0];
-            assumeWontThrow(writeln("New Video: ", next));
             if (playlist[userQueue[nextIndex]].length > 1) {
                 // slice off the top of the user's playlist
                 playlist[userQueue[nextIndex]] = playlist[userQueue[nextIndex]][1..$];

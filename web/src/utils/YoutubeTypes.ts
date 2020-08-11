@@ -11,7 +11,7 @@ export interface PlaylistInfo {
     title: string;
     channel: string;
     description: string;
-    thumbnailMaxRes: Thumbnail;
+    thumbnailMaxRes?: Thumbnail;
     videoCount: number;
 }
 
@@ -20,7 +20,7 @@ export interface VideoInfo {
     title: string;
     channel: string;
     description: string;
-    thumbnailMaxRes: Thumbnail;
+    thumbnailMaxRes?: Thumbnail;
 }
 
 function decodeHtml(html: string): string {
@@ -56,7 +56,7 @@ export function parsePlaylistJSON(playlistObject: any): PlaylistInfo {
 
 export function parsePlaylistItemJSON(itemObject: any): VideoInfo {
     return {
-        id: itemObject.id,
+        id: itemObject.snippet.resourceId.videoId,
         title: decodeHtml(itemObject.snippet.title),
         channel: decodeHtml(itemObject.snippet.channelTitle),
         description: decodeHtml(itemObject.snippet.description),

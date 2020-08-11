@@ -74,6 +74,36 @@
 	width: 100%;
 	margin: 0 !important;
 }
+.PlaylistCard {
+	display: flex;
+	flex-flow: column;
+	padding: 1rem;
+}
+.PlaylistCard .PlaylistIcon {
+	height: 8rem;
+}
+.PlaylistCard .PlaylistInfo {
+	height: 8rem;
+	flex-direction: column;
+	padding-left: 1rem;
+	text-align: start;
+
+}
+.PlaylistCardInfo {
+	display: flex;
+	flex-flow: row;
+}
+.PlaylistVideos {
+	margin-left: 4rem;
+	margin-right: 2rem;
+	height: 0;
+	overflow-y: auto;
+	transition: height 0.25s ease;
+	background-color: var(--dp8-surface);
+}
+.PlaylistVideosExpanded {
+	height: 36rem;
+}
 
 .ModalBackground {
 	position: absolute;

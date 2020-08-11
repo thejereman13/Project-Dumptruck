@@ -31,14 +31,10 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
     return (
         <div>
             <div class={style.BottomBar}>
-                {videoInfo ? (
-                    <div class={style.videoInfo}>
-                        <img class={style.videoIcon} src={videoInfo.thumbnailMaxRes.url} />
-                        <div class="mui--text-title">{videoInfo.title}</div>
-                    </div>
-                ) : (
-                    <div />
-                )}
+                <div class={style.videoInfo}>
+                    {videoInfo ? <img class={style.videoIcon} src={videoInfo.thumbnailMaxRes.url} /> : <div />}
+                    <div class="mui--text-title">{videoInfo?.title ?? "Nothing Currently Playing"}</div>
+                </div>
                 <div>
                     <Button size="small" variant="fab" onClick={togglePlay}>
                         <i style={{ fontSize: "32px" }} class="material-icons">

@@ -9,6 +9,7 @@ import { UserList } from "./UserList";
 import { VideoQueue } from "./VideoQueue";
 import { Tabs, Tab } from "../../components/Tabs";
 import { BottomBar } from "./BottomBar";
+import { useGAPIContext } from "../../utils/GAPI";
 
 export interface RoomProps {
     roomID: string;
@@ -110,8 +111,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         },
         [setVideoInformation]
     );
-
+    const currentAPI = useGAPIContext();
+    const isAPILoaded = currentAPI?.isAPILoaded() ?? false;
     const ws = useWebsockets(roomID, newMessage);
+    useEffect(() => {
+        if (isAPILoaded) ws?.close();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAPILoaded]);
 
     const togglePlay = (): void => {
         if (ws)
@@ -132,9 +138,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         <div class={style.PageRoot}>
             <div class={style.splitPane}>
                 <div class={style.videoPanel}>
-                    <h2>
-                        {roomTitle} {videoTitle ? `Now Playing ${videoTitle}` : `Nothing Currently Playing`}
-                    </h2>
+                    <h2>{roomTitle}</h2>
                     {/* <LinearProgress
                         className={style.progress}
                         progress={videoDuration && videoTime ? videoTime / videoDuration : 0}
