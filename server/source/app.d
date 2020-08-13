@@ -51,10 +51,12 @@ void main()
 	// router.put("/user", &updateUser);
 	// router.delete_("/user", &removeUser);
 	auto l = listenHTTP(settings, router);
-	scope(exit) l.stopListening();
+	scope(exit) {
+		l.stopListening();
+		writeln("Server Closing\n");
+	}
 
-	runEventLoop();
-	writeln("Server Closing\n");
+	runApplication();
 }
 
 void setup() {

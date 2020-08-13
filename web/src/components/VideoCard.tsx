@@ -2,9 +2,10 @@ import { h, JSX } from "preact";
 
 import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
-import { useGAPIContext, RequestVideo, RequestPlaylist, RequestVideosFromPlaylist } from "../utils/GAPI";
+import { useGAPIContext, RequestVideosFromPlaylist } from "../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
+import { RequestVideoPreview } from "../utils/RestCalls";
 
 interface VideoCardInfo {
     id: string;
@@ -57,22 +58,19 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
     const { videoID, onClick } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
 
-    const GAPIContext = useGAPIContext();
-
     useEffect(() => {
-        if (GAPIContext?.isAPILoaded) {
-            if (videoID) {
-                RequestVideo(videoID, (info: VideoInfo) => {
+        if (videoID) {
+            RequestVideoPreview(videoID).then((info: VideoInfo | null) => {
+                if (info)
                     setVideoInfo({
                         id: info.id,
                         title: info.title,
                         channel: info.channel,
-                        thumbnailURL: info.thumbnailMaxRes?.url ?? ""
+                        thumbnailURL: info.thumbnailMaxRes.url
                     });
-                });
-            }
+            });
         }
-    }, [GAPIContext, videoID]);
+    }, [videoID]);
 
     return videoInfo ? <VideoDisplayCard info={videoInfo} onClick={onClick} /> : <div />;
 }
@@ -94,9 +92,9 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
 
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {
-            RequestVideosFromPlaylist(info.id, (info: VideoInfo[]) => {
+            RequestVideosFromPlaylist(info.id, (infos: VideoInfo[]) => {
                 setVideoInfo(
-                    info.map(v => ({
+                    infos.map(v => ({
                         id: v.id,
                         title: v.title,
                         channel: v.channel,
@@ -107,6 +105,18 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
         }
     }, [GAPIContext, info.id, videoExpanded, videoInfo]);
 
+    const queueAll = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+        if (!info.id) return;
+        if (!videoExpanded && videoInfo.length === 0 && GAPIContext?.isAPILoaded()) {
+            RequestVideosFromPlaylist(info.id, (infos: VideoInfo[]) => {
+                infos.forEach(v => onVideoClick?.(v.id));
+            });
+        } else {
+            videoInfo.forEach(v => onVideoClick?.(v.id));
+        }
+        event.stopPropagation();
+    };
+
     const cardContent = info && (
         <div class={style.PlaylistCard}>
             <div class={style.PlaylistCardInfo}>
@@ -116,6 +126,13 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                 <div class={style.PlaylistInfo}>
                     <div class="mui--text-subhead">{info.title}</div>
                     <div class="mui--text-body1">{info.channel}</div>
+                </div>
+                <div>
+                    <Button size="small" variant="fab" onClick={queueAll}>
+                        <i style={{ fontSize: "32px" }} class="material-icons">
+                            play_arrow
+                        </i>
+                    </Button>
                 </div>
             </div>
         </div>

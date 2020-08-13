@@ -20,8 +20,6 @@ export enum MessageType {
 
 export interface Video {
     youtubeID: string;
-    title: string;
-    channelName: string;
     playing: boolean;
     timeStamp: number;
     duration: number;
@@ -36,6 +34,7 @@ export interface RoomInfo {
     userList: RoomUser[];
     video: Video;
     playlist: PlaylistByUser;
+    userQueue: string[];
 }
 
 export interface WSMessage {

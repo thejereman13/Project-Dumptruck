@@ -18,8 +18,6 @@ Youtube Video Information
 */
 struct Video {
     string youtubeID;
-    string title;
-    string channelName;
     bool playing;
     int timeStamp;
     int duration;
@@ -29,8 +27,6 @@ struct Video {
 
 struct YoutubeVideoInformation {
     string videoID;
-    string title;
-    string channel;
     int duration;
 }
 
@@ -93,12 +89,10 @@ final class VideoPlaylist {
 
     public @trusted nothrow bool addVideoToQueue(UUID userID, YoutubeVideoInformation videoInfo) {
         if (!playlist.keys.any!((u) => playlist[u].any!((a) => a.youtubeID == videoInfo.videoID))) {
-            assumeWontThrow(writeln("Queuing up Video: ", videoInfo.title));
+            assumeWontThrow(writeln("Queuing up Video: ", videoInfo.videoID));
             if (!(userID in playlist)) playlist[userID] = [];
             playlist[userID] ~= Video(
                 videoInfo.videoID,
-                videoInfo.title,
-                videoInfo.channel,
                 false, 0,
                 videoInfo.duration,
                 0, userID);
@@ -141,8 +135,6 @@ void getVideoInformation(string videoID, void delegate(YoutubeVideoInformation) 
                         const snip = js["items"][0]["snippet"];
                         const cont = js["items"][0]["contentDetails"];
                         ret.videoID = videoID;
-                        ret.title = snip["localized"]["title"].get!string;
-                        ret.channel = snip["channelTitle"].get!string;
                         ret.duration = secondsFromDuration(cont["duration"].get!string);
                         callback(ret);
                     }
@@ -170,8 +162,6 @@ YoutubeVideoInformation validateVideoInfo(Json info) {
     auto ret = YoutubeVideoInformation.init;
     try {
         ret.videoID = info["videoID"].get!string;
-        ret.title = info["title"].get!string;
-        ret.channel = info["channel"].get!string;
         ret.duration = secondsFromDuration(info["duration"].get!string);
         return ret;
     } catch (Exception e) {

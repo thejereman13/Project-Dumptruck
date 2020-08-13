@@ -19,8 +19,7 @@ export interface VideoInfo {
     id: string;
     title: string;
     channel: string;
-    description: string;
-    thumbnailMaxRes?: Thumbnail;
+    thumbnailMaxRes: Thumbnail;
 }
 
 function decodeHtml(html: string): string {
@@ -59,7 +58,6 @@ export function parsePlaylistItemJSON(itemObject: any): VideoInfo {
         id: itemObject.snippet.resourceId.videoId,
         title: decodeHtml(itemObject.snippet.title),
         channel: decodeHtml(itemObject.snippet.channelTitle),
-        description: decodeHtml(itemObject.snippet.description),
         thumbnailMaxRes: getCorrectThumbnail(itemObject.snippet.thumbnails)
     };
 }
@@ -69,7 +67,6 @@ export function parseVideoJSON(videoObject: any): VideoInfo {
         id: videoObject.id,
         title: decodeHtml(videoObject.snippet.localized.title),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        description: decodeHtml(videoObject.snippet.localized.description),
         thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
     };
 }
@@ -79,7 +76,6 @@ export function parseSearchVideoJSON(videoObject: any): VideoInfo {
         id: videoObject.id.videoId,
         title: decodeHtml(videoObject.snippet.title),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        description: decodeHtml(videoObject.snippet.description),
         thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
     };
 }
@@ -87,8 +83,19 @@ export function parseSearchVideoJSON(videoObject: any): VideoInfo {
 export function parseVideoForBackend(videoObject: any): YoutubeVideoInformation {
     return {
         videoID: videoObject.id,
-        title: videoObject.snippet.localized.title,
-        channel: videoObject.snippet.channelTitle,
         duration: videoObject.contentDetails.duration
+    };
+}
+
+export function parseEmbeddedVideoJSON(videoObject: any, id: string): VideoInfo {
+    return {
+        id,
+        title: decodeHtml(videoObject.title),
+        channel: decodeHtml(videoObject.author_name),
+        thumbnailMaxRes: {
+            height: videoObject.thumbnail_height,
+            width: videoObject.thumbnail_width,
+            url: videoObject.thumbnail_url
+        }
     };
 }

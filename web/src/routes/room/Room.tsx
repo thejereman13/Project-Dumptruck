@@ -37,9 +37,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
     const [userQueue, setUserQueue] = useState<string[]>([]);
     const [sidebarTab, setSidebarTab] = useState(0);
-    const [videoTitle, setVideoTitle] = useState("");
-    const [videoID, setVideoID] = useState("");
-    const [videoDuration, setVideoDuration] = useState(0);
+    const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
     const [videoTime, setVideoTime] = useState(0);
     const [playing, setPlaying] = useState(false);
     const [playerState, setPlayerState] = useState(-1);
@@ -48,10 +46,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const setVideoInformation = useCallback((video: Video) => {
         console.log("New Video", video);
-        setVideoTitle(video.title);
         setVideoTime(video.timeStamp);
-        setVideoDuration(video.duration);
-        setVideoID(video.youtubeID);
+        setCurrentVideo(video);
         setPlaying(true);
     }, []);
 
@@ -81,6 +77,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         setCurrentUsers(msg.Room.userList);
                         setVideoInformation(msg.Room.video);
                         setVideoPlaylist(msg.Room.playlist);
+                        setUserQueue(msg.Room.userQueue);
                     }
                     break;
                 case MessageType.Video:
@@ -139,12 +136,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             <div class={style.splitPane}>
                 <div class={style.videoPanel}>
                     <h2>{roomTitle}</h2>
-                    {/* <LinearProgress
-                        className={style.progress}
-                        progress={videoDuration && videoTime ? videoTime / videoDuration : 0}
-                        buffer={1}
-                    /> */}
-                    <YouTubeVideo className={style.videoDiv} id={videoID} getPlayer={getPlayer} />
+                    <YouTubeVideo className={style.videoDiv} id={currentVideo?.youtubeID ?? ""} getPlayer={getPlayer} />
                 </div>
                 <div class={style.sidePanel}>
                     <Tabs
@@ -169,7 +161,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             </div>
             <BottomBar
                 playing={playing}
-                currentVideo={videoID}
+                currentVideo={currentVideo}
                 togglePlay={togglePlay}
                 submitNewVideo={submitNewVideo}
             />

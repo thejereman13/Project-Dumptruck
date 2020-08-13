@@ -40,6 +40,7 @@ struct RoomInfo {
     User[] userList;
     Video video;
     Video[][string] playlist;
+    string[] userQueue;
 }
 
 final class Room {
@@ -102,7 +103,13 @@ final class Room {
     }
 
     private Json getRoomJson() {
-        return serializeToJson(RoomInfo("Room " ~ roomID.to!string, roomUsers.getUserList(), currentVideo, playlist.getPlaylist()));
+        return serializeToJson(RoomInfo(
+            "Room " ~ roomID.to!string,
+            roomUsers.getUserList(),
+            currentVideo,
+            playlist.getPlaylist(),
+            playlist.getUserQueue()
+        ));
     }
 
     private @trusted void postUserList() {
@@ -119,7 +126,7 @@ final class Room {
             currentVideo.playing = true;
             // TODO: move to async method to wait for clients to declare ready
             try {
-                writeln("Room ", roomID, " Now Playing ", currentVideo.title);
+                writeln("Room ", roomID, " Now Playing ", currentVideo.youtubeID);
                 postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
             } catch (Exception e) {
                 logException(e, "Failed to Serialize Websocket Json");
@@ -171,7 +178,7 @@ final class Room {
                 postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
             }
         } else {
-            writeln("Failed to validate Video");
+            logWarn("Failed to validate Video");
         }
     }
 
@@ -195,7 +202,7 @@ final class Room {
             postUserList();
             writeln("User Left: ", id.toString());
         } else {
-            writeln("Failed to Remove User: ", id.toString());
+            logWarn("Failed to Remove User: %s", id.toString());
         }
         if (roomUsers.userCount == 0) {
             roomLoop.join();

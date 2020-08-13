@@ -12,12 +12,13 @@ export interface VideoQueueProps {
 
 export function VideoQueue(props: VideoQueueProps): JSX.Element {
     const { userQueue, videoPlaylist, currentUsers } = props;
+    console.log(props);
     return (
         <div>
             {userQueue.map(clientID => {
-                // <div class="mui--text-title" key={v.youtubeID}>{v.title}</div>
                 const playlist = videoPlaylist[clientID];
                 const playlistUser = currentUsers.find(u => u.clientID == clientID);
+                console.log(playlist);
                 return (
                     <div key={clientID}>
                         <Button variant="flat">{playlistUser?.name ?? "Unknown User"}</Button>

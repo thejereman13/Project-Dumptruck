@@ -1,15 +1,17 @@
 import { h, JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { VideoInfo } from "../../utils/YoutubeTypes";
-import { RequestVideo, useGAPIContext } from "../../utils/GAPI";
+import { useGAPIContext } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { Modal } from "../../components/Modal";
 import * as style from "./style.css";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { QueueModal } from "./QueueModal";
+import { Video } from "../../utils/WebsocketTypes";
+import { RequestVideoPreview } from "../../utils/RestCalls";
 
 export interface BottomBarProps {
-    currentVideo: string;
+    currentVideo: Video | null;
     togglePlay: () => void;
     playing: boolean;
     submitNewVideo: (videoID: YoutubeVideoInformation) => void;
@@ -23,16 +25,16 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
     const currentAPI = useGAPIContext();
 
     useEffect(() => {
-        if (currentAPI?.isAPILoaded()) {
-            RequestVideo(currentVideo, setVideoInfo);
+        if (currentVideo) {
+            RequestVideoPreview(currentVideo.youtubeID).then(setVideoInfo);
         }
-    }, [currentVideo, currentAPI]);
+    }, [currentVideo]);
 
     return (
         <div>
             <div class={style.BottomBar}>
                 <div class={style.videoInfo}>
-                    {videoInfo ? <img class={style.videoIcon} src={videoInfo.thumbnailMaxRes.url} /> : <div />}
+                    {videoInfo ? <img class={style.videoIcon} src={videoInfo?.thumbnailMaxRes?.url ?? ""} /> : <div />}
                     <div class="mui--text-title">{videoInfo?.title ?? "Nothing Currently Playing"}</div>
                 </div>
                 <div>

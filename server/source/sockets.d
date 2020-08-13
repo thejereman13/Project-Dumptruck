@@ -45,6 +45,7 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	scope(exit) {
 		socket.close();
 		eventWait.joinUninterruptible();
+		writeln("Closing Socket");
 	}
 
 	while(socket.waitForData()) {

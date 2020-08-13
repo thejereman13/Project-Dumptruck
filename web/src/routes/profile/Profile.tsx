@@ -50,7 +50,7 @@ export function Profile(): JSX.Element {
                             return (
                                 <VideoDisplayCard
                                     key={list.id}
-                                    info={{ ...list, thumbnailURL: list.thumbnailMaxRes.url }}
+                                    info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
                                     onClick={expandPlaylist}
                                 />
                             );

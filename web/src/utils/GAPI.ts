@@ -103,8 +103,6 @@ export function RequestPlaylist(playlistID: string, responseCallback: (playlist:
             }
         })
         .then(resp => {
-            //  TODO: handle more than one page
-            // console.log(resp.result.pageInfo);
             if (resp.result.items.length === 1) responseCallback(parsePlaylistJSON(resp.result.items[0]));
         });
 }
