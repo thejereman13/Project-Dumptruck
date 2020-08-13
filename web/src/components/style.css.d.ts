@@ -8,6 +8,7 @@ declare namespace StyleCssNamespace {
         PlaylistInfo: string;
         PlaylistVideos: string;
         PlaylistVideosExpanded: string;
+        VideoActionDiv: string;
         VideoCard: string;
         VideoCardButton: string;
         VideoIcon: string;
@@ -17,6 +18,7 @@ declare namespace StyleCssNamespace {
         headerNav: string;
         headerRight: string;
         headerUserIcon: string;
+        textEllipsis: string;
     }
 }
 

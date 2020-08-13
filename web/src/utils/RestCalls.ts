@@ -15,9 +15,11 @@ export async function GetCurrentUser(): Promise<SiteUser | null> {
 }
 
 export async function RequestVideoPreview(videoID: string): Promise<VideoInfo | null> {
+    if (!videoID || videoID.length !== 11) return null;
     try {
         const resp = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoID}`);
         const json = await resp.json();
+        if (!resp.ok || json.error) return null;
         return parseEmbeddedVideoJSON(json, videoID);
     } catch (e) {
         console.warn(e);

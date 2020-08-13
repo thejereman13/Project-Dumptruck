@@ -4,7 +4,15 @@ declare namespace StyleCssNamespace {
         BottomBar: string;
         ModalContainer: string;
         PageRoot: string;
+        QueueActionDiv: string;
+        QueueCard: string;
+        QueueCardInfo: string;
+        QueueIcon: string;
+        QueueInfo: string;
         QueueModal: string;
+        QueueVideos: string;
+        QueueVideosExpanded: string;
+        VideoCardButton: string;
         playButton: string;
         progress: string;
         scrollBox: string;
@@ -13,6 +21,7 @@ declare namespace StyleCssNamespace {
         sidePanel: string;
         sidePanelTabBody: string;
         splitPane: string;
+        textEllipsis: string;
         videoDiv: string;
         videoIcon: string;
         videoInfo: string;

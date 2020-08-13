@@ -95,7 +95,7 @@ export function parseEmbeddedVideoJSON(videoObject: any, id: string): VideoInfo 
         thumbnailMaxRes: {
             height: videoObject.thumbnail_height,
             width: videoObject.thumbnail_width,
-            url: videoObject.thumbnail_url
+            url: videoObject.thumbnail_url.replace("hqdefault", "mqdefault")
         }
     };
 }

@@ -104,6 +104,17 @@ final class VideoPlaylist {
         return false;
     }
 
+    public @trusted nothrow bool removeVideoFromQueue(string videoID, UUID userID) {
+        if (userID in playlist) {
+            const index = playlist[userID].countUntil!((v) => v.youtubeID == videoID);
+            if (index >= 0) {
+                playlist[userID] = playlist[userID].remove(index);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public bool removeUser(UUID userID) {
         const index = userQueue.countUntil(userID);
         if (index >= 0) {

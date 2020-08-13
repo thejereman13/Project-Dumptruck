@@ -50,6 +50,12 @@
 	margin-left: 1rem;
 }
 
+.textEllipsis {
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
 .VideoCard {
 	display: flex;
 	padding: 1rem;
@@ -78,6 +84,7 @@
 	display: flex;
 	flex-flow: column;
 	padding: 1rem;
+	width: 100%;
 }
 .PlaylistCard .PlaylistIcon {
 	height: 8rem;
@@ -103,6 +110,9 @@
 }
 .PlaylistVideosExpanded {
 	height: 36rem;
+}
+.VideoActionDiv {
+	margin-left: auto;
 }
 
 .ModalBackground {

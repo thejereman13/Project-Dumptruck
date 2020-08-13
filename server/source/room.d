@@ -26,6 +26,7 @@ enum MessageType {
     UserList = "userList", // Server updating clients with the current list
     Play = "play", // Server starting playback, Client requesting playback
     Pause = "pause", // Server pausing playback, Client requesting pause
+    Skip = "skip", // Client requesting the next video
     Video = "video", // Server setting the active Client video
     Init = "init", // Server sending all initialization info
     Room = "room", // Server sending all room information
@@ -181,6 +182,13 @@ final class Room {
             logWarn("Failed to validate Video");
         }
     }
+    private void unqueueVideo(Json videoID, UUID userID) {
+        if (playlist.removeVideoFromQueue(videoID.get!string, userID)) {
+            postPlaylist();
+        } else {
+            postMessage(MessageType.Error, "Insufficient Permissions", [userID], "error");
+        }
+    }
 
     public Json addUser(UUID clientID) {
         if (!roomLoop.running) {
@@ -248,6 +256,12 @@ final class Room {
                 break;
             case MessageType.QueueAdd:
                 queueVideo(j["data"], id);
+                break;
+            case MessageType.QueueRemove:
+                unqueueVideo(j["data"], id);
+                break;
+            case MessageType.Skip:
+                queueNextVideo();
                 break;
             default:
                 writeln("Invalid Message Type", message);

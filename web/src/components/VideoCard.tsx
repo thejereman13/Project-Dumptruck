@@ -7,7 +7,7 @@ import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
 
-interface VideoCardInfo {
+export interface VideoCardInfo {
     id: string;
     title: string;
     channel: string;
@@ -18,21 +18,25 @@ interface VideoCardInfo {
 export interface VideoDisplayCardProps {
     info: VideoCardInfo;
     onClick?: (id: string) => void;
+    actionComponent?: JSX.Element;
 }
 
 export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
-    const { info, onClick } = props;
+    const { info, onClick, actionComponent } = props;
     const cardClick = (): void => {
         onClick?.(info.id);
     };
 
     const cardContent = (
         <div class={style.VideoCard}>
-            {info.thumbnailURL && <img class={style.VideoIcon} src={info.thumbnailURL} />}
+            {info.thumbnailURL && (
+                <img class={style.VideoIcon} src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
+            )}
             <div class={style.VideoInfo}>
-                <div class="mui--text-subhead">{info.title}</div>
-                <div class="mui--text-body1">{info.channel}</div>
+                <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
+                <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
             </div>
+            {actionComponent !== undefined && <div class={style.VideoActionDiv}>{actionComponent}</div>}
         </div>
     );
 
@@ -52,10 +56,11 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
 export interface VideoCardProps {
     videoID: string;
     onClick?: (id: string) => void;
+    actionComponent?: JSX.Element;
 }
 
 export function VideoCard(props: VideoCardProps): JSX.Element {
-    const { videoID, onClick } = props;
+    const { videoID, onClick, actionComponent } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
 
     useEffect(() => {
@@ -72,7 +77,11 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
         }
     }, [videoID]);
 
-    return videoInfo ? <VideoDisplayCard info={videoInfo} onClick={onClick} /> : <div />;
+    return videoInfo ? (
+        <VideoDisplayCard info={videoInfo} onClick={onClick} actionComponent={actionComponent} />
+    ) : (
+        <div />
+    );
 }
 
 export interface PlaylistCardProps {
@@ -127,7 +136,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                     <div class="mui--text-subhead">{info.title}</div>
                     <div class="mui--text-body1">{info.channel}</div>
                 </div>
-                <div>
+                <div class={style.VideoActionDiv}>
                     <Button size="small" variant="fab" onClick={queueAll}>
                         <i style={{ fontSize: "32px" }} class="material-icons">
                             play_arrow

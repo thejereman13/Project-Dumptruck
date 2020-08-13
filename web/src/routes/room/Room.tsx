@@ -124,10 +124,18 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 })
             );
     };
+    const skipVideo = (): void => {
+        if (ws) ws.send(JSON.stringify({ type: MessageType.Skip }));
+    };
 
     const submitNewVideo = (newVideo: YoutubeVideoInformation): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
+        }
+    };
+    const removeVideo = (id: string): void => {
+        if (ws) {
+            ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
         }
     };
 
@@ -151,6 +159,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                                 videoPlaylist={videoPlaylist}
                                 userQueue={userQueue}
                                 currentUsers={currentUsers}
+                                removeVideo={removeVideo}
                             />
                         </Tab>
                         <Tab index={1} tabIndex={sidebarTab}>
@@ -163,6 +172,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 playing={playing}
                 currentVideo={currentVideo}
                 togglePlay={togglePlay}
+                skipVideo={skipVideo}
                 submitNewVideo={submitNewVideo}
             />
         </div>
