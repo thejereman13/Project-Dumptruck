@@ -3,7 +3,7 @@
 		"web_dir": "../web/build",
 		"ssl_cert": "cert.pem",
 		"ssl_key": "key.pem",
-		"database_name": "hsmDB",
+		"database_name": "dumptruckDB",
 		"database_username": "root",
 		"database_password": "password",
 		"youtube_api_key": "AIzaSyDXi-XaQWWjDR2yH8MoM31IZ3inE4OvrpM",

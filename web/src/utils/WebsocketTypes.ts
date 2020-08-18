@@ -17,7 +17,8 @@ export enum MessageType {
     QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
-    UserOrder = "userQueue" // Server updating the room user queue order
+    UserOrder = "userQueue", // Server updating the room user queue order
+    RoomRename = "rename" // Admin updating the room name
 }
 
 export interface Video {
@@ -34,6 +35,7 @@ export interface PlaylistByUser {
 export interface RoomInfo {
     roomName: string;
     userList: RoomUser[];
+    adminList: string[]; // list of UUIDs matching userList members
     video: Video;
     playlist: PlaylistByUser;
     userQueue: string[];

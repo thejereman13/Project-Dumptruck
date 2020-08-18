@@ -10,6 +10,7 @@ import core.sync.mutex;
 
 import sockets;
 import configuration;
+import database;
 import authentication;
 import video;
 import user;
@@ -60,5 +61,5 @@ void main()
 }
 
 void setup() {
-	// initializeDBConnection();
+	initializeDBConnection();
 }

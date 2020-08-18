@@ -7,38 +7,6 @@ import std.uuid;
 import database;
 import user;
 
-
-void createUser(HTTPServerRequest req, HTTPServerResponse res) {
-    string userName = req.json["User"].to!string;
-    string pass = req.json["Pass"].to!string;
-    int role = req.json["Role"].to!int;
-    if (req.session && req.session.get!int("role") > 1) {
-        if (database.addUser(userName, pass, role)) {
-            res.writeJsonBody("{}", 201, false);
-            return;
-        }
-    }
-    res.writeJsonBody("{}", 401, false);
-}
-
-void updateUser(HTTPServerRequest req, HTTPServerResponse res) {
-    string userName = req.json["User"].to!string;
-    if ("Pass" in req.json && "NewPass" in req.json) {  //Updating user's own password
-        string oldpass = req.json["Pass"].to!string;
-        string newpass = req.json["NewPass"].to!string;
-        if (database.authenticateUser(userName, oldpass)) {
-            updateUserPassword(userName, newpass);
-            res.writeJsonBody("{}", 201, false);
-            return;
-        }
-    } else if ("Role" in req.json) {                    //Updating a user's role
-        const int newRole = req.json["Role"].to!int;
-        updateUserRole(userName, newRole);
-        res.writeJsonBody("{}", 201, false);
-    }
-    res.writeJsonBody("{}", 401, false);
-}
-
 void removeUser(HTTPServerRequest req, HTTPServerResponse res) {
     string userName = req.json["User"].to!string;
     database.deleteUser(userName);
@@ -116,11 +84,11 @@ void userLogout(HTTPServerRequest req, HTTPServerResponse res) {
 void getUserJSON(HTTPServerRequest req, HTTPServerResponse res) {
     Json userData = Json.emptyObject;
     if (req.session) {
-        string user = req.session.get!string("username");
+        UUID user = req.session.get!UUID("clientID");
         const string dat = database.getUserData(user);
         if (dat.length > 0) {
             userData["Data"] = dat;
-            userData["User"] = user;
+            userData["User"] = user.toString();
             res.writeJsonBody(userData, 200, false);
             return;
         }
@@ -131,8 +99,8 @@ void getUserJSON(HTTPServerRequest req, HTTPServerResponse res) {
 void setUserJSON(HTTPServerRequest req, HTTPServerResponse res) {
     Json userData = req.json["Data"];
     if (req.session) {
-        string user = req.session.get!string("username");
-        database.setUserData(userData.toString(), user);
+        UUID user = req.session.get!UUID("clientID");
+        database.setUserData(user, userData.toString());
         res.writeJsonBody("{}", 201, false);
         return;
     }

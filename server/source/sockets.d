@@ -19,10 +19,9 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	UUID userID = UUID.init;
 	auto session = (cast(HTTPServerRequest)(socket.request)).session;
 	if (session) {
-		writeln(session.get!UUID("clientID"));
 		userID = session.get!UUID("clientID");
 	}
-	Room r = getOrCreateRoom(roomID);
+	Room r = getOrCreateRoom(roomID, userID);
 	const Json userInfo = r.addUser(userID);
 	const UUID id = userInfo["ID"].get!UUID;
 	socket.send(userInfo.toString());

@@ -4,6 +4,9 @@ import vibe.vibe;
 import std.uuid;
 import std.stdio;
 import std.algorithm;
+import std.array;
+
+import DB = database;
 
 
 struct User {
@@ -17,6 +20,8 @@ final class UserList {
     private shared bool[UUID] roomUserStatus;
     private long roomID;
     
+    public UUID[] adminUsers;
+
     public int userCount = 0;
 
     public this(long roomID) {
@@ -29,7 +34,8 @@ final class UserList {
 
     public UUID addUser(UUID clientID) {
         const id = clientID.empty ? randomUUID() : clientID;
-        const name = clientID.empty ? "Guest-" ~ id.toString() : getSiteUser(clientID).name;
+        const user = getSiteUser(clientID);
+        const name = clientID.empty || user.id.empty ? "Guest-" ~ id.toString() : user.name;
         roomUsers[id] = User(id, name, 1);
         roomUserStatus[id] = true;
         if (!clientID.empty) {
@@ -78,41 +84,56 @@ struct SiteUser {
     long[] recentRooms;
 }
 
-//Not yet a database
-private SiteUser[UUID] siteUserList;
+private SiteUser constructSiteUser(Json data) {
+    if (data["googleID"].type() != Json.Type.undefined) {
+        return SiteUser(
+            UUID(data["id"].get!string),
+            data["googleID"].get!string,
+            data["name"].get!string,
+            data["email"].get!string,
+            data["recentRooms"].get!(Json[]).map!(j => j.get!long).array
+        );
+    }
+    return SiteUser.init;
+}
 
 SiteUser makeSiteUser(string googleID, string name, string email) {
-    foreach(u; siteUserList) {
-        if (u.googleID == googleID) {
-            return u;
-        }
+    const UUID foundID = DB.findGIDUser(googleID);
+    if (!foundID.empty) {
+        Json data = parseJsonString(DB.getUserData(foundID));
+        auto su = constructSiteUser(data);
+        if (!su.id.empty) return su;
     }
     SiteUser newUser = SiteUser(randomUUID(), googleID, name, email, []);
-    siteUserList[newUser.id] = newUser;
+    DB.setUserData(newUser.id, serializeToJsonString(newUser));
+    DB.setUserGID(newUser.id, googleID);
     return newUser;
 }
 
 void addRecentRoomToUser(UUID clientID, long roomID) {
-    if (clientID in siteUserList) {
-        auto u = &siteUserList[clientID];
-        if (!u.recentRooms.any!(r => r == roomID)) {
-            u.recentRooms ~= roomID;
+    Json data = parseJsonString(DB.getUserData(clientID));
+    if (data["googleID"].type() != Json.Type.undefined) {
+        long[] recentRooms = data["recentRooms"].get!(Json[]).map!(j => j.get!long).array;
+        if (!recentRooms.any!(r => r == roomID)) {
+            recentRooms ~= roomID;
+            data["recentRooms"] = serializeToJson(recentRooms);
+            DB.setUserData(clientID, data.toString());
         }
-        return;
     }
 }
 
 SiteUser getSiteUser(UUID clientID) {
-    return siteUserList[clientID];
+    if (clientID.empty) return SiteUser.init;
+    Json data = parseJsonString(DB.getUserData(clientID));
+    return constructSiteUser(data);
 }
 
 void getUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
     if (req.session && req.session.isKeySet("clientID")) {
         auto id = req.session.get!UUID("clientID");
-        if (id in siteUserList) {
-            res.writeJsonBody(serializeToJson(siteUserList[id]), 201, false);
-            return;
-        }
+        Json data = parseJsonString(DB.getUserData(id));
+        res.writeJsonBody(data, 201, false);
+        return;
     }
     res.writeJsonBody("{}", 400, false);
 }

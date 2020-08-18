@@ -14,6 +14,7 @@ import std.exception;
 import video;
 import user;
 import sockets;
+import DB = database;
 
 import std.stdio;
 
@@ -34,12 +35,14 @@ enum MessageType {
     QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
-    UserOrder = "userQueue" // Server updating the room user queue order
+    UserOrder = "userQueue", // Server updating the room user queue order
+    RoomRename = "rename" // Admin updating the room name
 }
 
 struct RoomInfo {
     string roomName;
     User[] userList;
+    UUID[] adminList;
     Video video;
     Video[][string] playlist;
     string[] userQueue;
@@ -47,6 +50,7 @@ struct RoomInfo {
 
 final class Room {
     private long roomID;
+    private string roomName;
     private Task roomLoop;
     private Timer videoLoop;
 
@@ -59,12 +63,17 @@ final class Room {
     private Video currentVideo;
     private VideoPlaylist playlist = new VideoPlaylist();
 
-    this(long ID) {
+    this(long ID, UUID creatingUser) {
         this.roomID = ID;
         this.roomUsers = new UserList(ID);
         pingEvent = createManualEvent();
         roomLoop = runTask({
-            writeln("Creating New Room: ", ID);
+            writeln("Spooling Up Room: ", ID);
+            auto dbInfo = DB.getRoomInformation(ID, creatingUser);
+            if (dbInfo.roomID > 0) {
+                this.roomName = dbInfo.roomName;
+                this.roomUsers.adminUsers = dbInfo.admins;
+            }
         });
         videoLoop = createTimer({
             videoSyncLoop();
@@ -108,8 +117,9 @@ final class Room {
 
     private Json getRoomJson() {
         return serializeToJson(RoomInfo(
-            "Room " ~ roomID.to!string,
+            roomName,
             roomUsers.getUserList(),
+            roomUsers.adminUsers,
             currentVideo,
             playlist.getPlaylist(),
             playlist.getUserQueue()
@@ -130,7 +140,7 @@ final class Room {
             currentVideo.playing = true;
             // TODO: move to async method to wait for clients to declare ready
             try {
-                writeln("Room ", roomID, " Now Playing ", currentVideo.youtubeID);
+                writeln("Room ", roomName, " Now Playing ", currentVideo.youtubeID);
                 postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
             } catch (Exception e) {
                 logException(e, "Failed to Serialize Websocket Json");
@@ -143,6 +153,24 @@ final class Room {
             currentVideo = Video.init;
         }
         postPlaylist();
+    }
+
+    public size_t waitForMessage(size_t lastMessage) {
+        while (lastMessage == latestMessage)
+            pingEvent.wait();
+        return latestMessage;
+    }
+    public Message[] retrieveLatestMessages(size_t last, size_t latest) {
+        const wrappedLast = (last + 1) % messageQueue.length;
+        const wrappedLatest = (latest + 1);
+        Message[] arr;
+        if (wrappedLast <= wrappedLatest) {
+            arr ~= messageQueue[wrappedLast .. wrappedLatest];
+        } else if (wrappedLast > wrappedLatest) {
+            arr ~= messageQueue[wrappedLast .. $];
+            arr ~= messageQueue[0 .. wrappedLatest];
+        }
+        return arr;
     }
 
     /* Room Loops */
@@ -224,6 +252,13 @@ final class Room {
             });
         }
         UUID id = roomUsers.addUser(clientID);
+
+        // If the room was created by a guest user (before they finished logging in)
+        // assign admin access to the first person to join the room (probably the person still logging in)
+        if (roomUsers.adminUsers.length == 0) {
+            DB.setRoomAdmins(roomID, [clientID]);
+        }
+
         Json j = Json.emptyObject;
         j["type"] = MessageType.Init;
         j["ID"] = id.toString();
@@ -236,35 +271,20 @@ final class Room {
             playlist.removeUser(id);
             postUserList();
             writeln("User Left: ", id.toString());
-        } else {
-            logWarn("Failed to Remove User: %s", id.toString());
         }
         if (roomUsers.userCount == 0) {
             roomLoop.join();
             currentVideo = Video.init;
         }
     }
-
     public bool activeUser(UUID id) {
         return roomUsers.activeUser(id);
     }
 
-    public size_t waitForMessage(size_t lastMessage) {
-        while (lastMessage == latestMessage)
-            pingEvent.wait();
-        return latestMessage;
-    }
-    public Message[] retrieveLatestMessages(size_t last, size_t latest) {
-        const wrappedLast = (last + 1) % messageQueue.length;
-        const wrappedLatest = (latest + 1);
-        Message[] arr;
-        if (wrappedLast <= wrappedLatest) {
-            arr ~= messageQueue[wrappedLast .. wrappedLatest];
-        } else if (wrappedLast > wrappedLatest) {
-            arr ~= messageQueue[wrappedLast .. $];
-            arr ~= messageQueue[0 .. wrappedLatest];
-        }
-        return arr;
+    private void setRoomName(Json name) {
+        string newName = name.get!string;
+        DB.setRoomName(roomID, newName);
+        postJson(MessageType.Room, getRoomJson(), [], "Room");
     }
 
     public void receivedMessage(UUID id, string message) {
@@ -293,6 +313,9 @@ final class Room {
             case MessageType.Skip:
                 queueNextVideo();
                 break;
+            case MessageType.RoomRename:
+                setRoomName(j["data"]);
+                break;
             default:
                 writeln("Invalid Message Type", message);
         }
@@ -301,7 +324,7 @@ final class Room {
 
 private Room[long] roomList;
 
-Room getOrCreateRoom(long roomID) {
+Room getOrCreateRoom(long roomID, UUID user) {
     if (roomID in roomList) return roomList[roomID];
-    return roomList[roomID] = new Room(roomID);
+    return roomList[roomID] = new Room(roomID, user);
 }

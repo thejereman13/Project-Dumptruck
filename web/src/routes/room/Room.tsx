@@ -80,6 +80,11 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         setUserQueue(msg.Room.userQueue);
                     }
                     break;
+                case MessageType.Room:
+                    if (msg.Room) {
+                        setRoomTitle(msg.Room.roomName);
+                    }
+                    break;
                 case MessageType.Video:
                     if (msg.Video) setVideoInformation(msg.Video);
                     break;
