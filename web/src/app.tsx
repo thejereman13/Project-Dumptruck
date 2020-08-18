@@ -5,7 +5,7 @@ import Home from "./routes/home";
 import Login from "./routes/login";
 import Profile from "./routes/profile";
 import NotFoundPage from "./routes/notfound";
-import { Header } from "./components/header";
+import { Header } from "./components/Header";
 import Room from "./routes/room";
 import { useGoogleLoginAPI, GAPIContext } from "./utils/GAPI";
 

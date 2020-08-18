@@ -14,6 +14,7 @@ export enum MessageType {
     Init = "init", // Server sending all initialization info
     Room = "room", // Server sending all room information
     QueueAdd = "addQueue", // Client adding a video id to queue
+    QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue" // Server updating the room user queue order

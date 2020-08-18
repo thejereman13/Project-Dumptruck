@@ -20,6 +20,7 @@ export interface VideoInfo {
     title: string;
     channel: string;
     thumbnailMaxRes: Thumbnail;
+    duration?: number;
 }
 
 function decodeHtml(html: string): string {
@@ -28,6 +29,19 @@ function decodeHtml(html: string): string {
     const result = txt.value;
     txt.parentElement?.removeChild(txt);
     return result;
+}
+
+function parseDurationString(time: string): number {
+    const reg = RegExp(
+        /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/gm
+    );
+    const matches = reg.exec(time);
+    if (matches === null || matches.length < 9) return 0;
+    const hours: number = matches[6] && matches[6].length > 0 ? Number(matches[6]) : 0;
+    const minutes: number = matches[7] && matches[7].length > 0 ? Number(matches[7]) : 0;
+    const seconds: number = matches[8] && matches[8].length > 0 ? Number(matches[8]) : 0;
+    if (Number.isNaN(hours) || Number.isNaN(minutes) || Number.isNaN(seconds)) return 0;
+    return hours * 3600 + minutes * 60 + seconds;
 }
 
 function getCorrectThumbnail(thumbnailList: any): Thumbnail {
@@ -67,7 +81,8 @@ export function parseVideoJSON(videoObject: any): VideoInfo {
         id: videoObject.id,
         title: decodeHtml(videoObject.snippet.localized.title),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
+        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails),
+        duration: parseDurationString(videoObject.contentDetails.duration)
     };
 }
 
@@ -76,7 +91,8 @@ export function parseSearchVideoJSON(videoObject: any): VideoInfo {
         id: videoObject.id.videoId,
         title: decodeHtml(videoObject.snippet.title),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
+        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails),
+        duration: parseDurationString(videoObject.contentDetails.duration)
     };
 }
 
@@ -84,6 +100,13 @@ export function parseVideoForBackend(videoObject: any): YoutubeVideoInformation 
     return {
         videoID: videoObject.id,
         duration: videoObject.contentDetails.duration
+    };
+}
+
+export function convertInfoForBackend(videoObject: VideoInfo): YoutubeVideoInformation {
+    return {
+        videoID: videoObject.id,
+        duration: videoObject.duration ?? 0
     };
 }
 

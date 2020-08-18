@@ -12,7 +12,7 @@ export interface VideoCardInfo {
     title: string;
     channel: string;
     thumbnailURL: string;
-    items?: number;
+    duration?: number;
 }
 
 export interface VideoDisplayCardProps {
@@ -86,11 +86,12 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
 
 export interface PlaylistCardProps {
     info: PlaylistInfo;
-    onVideoClick?: (id: string) => void;
+    onVideoClick?: (id: VideoCardInfo) => void;
+    onPlaylistClick?: (vids: VideoCardInfo[]) => void;
 }
 
 export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick } = props;
+    const { info, onVideoClick, onPlaylistClick } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
 
@@ -107,22 +108,49 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                         id: v.id,
                         title: v.title,
                         channel: v.channel,
-                        thumbnailURL: v.thumbnailMaxRes?.url ?? ""
+                        thumbnailURL: v.thumbnailMaxRes?.url ?? "",
+                        duration: v.duration
                     }))
                 );
             });
         }
     }, [GAPIContext, info.id, videoExpanded, videoInfo]);
 
-    const queueAll = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+    const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[]) => void): void => {
         if (!info.id) return;
         if (!videoExpanded && videoInfo.length === 0 && GAPIContext?.isAPILoaded()) {
-            RequestVideosFromPlaylist(info.id, (infos: VideoInfo[]) => {
-                infos.forEach(v => onVideoClick?.(v.id));
+            RequestVideosFromPlaylist(info.id, (infos: VideoInfo[], final: boolean) => {
+                if (final)
+                    callback?.(
+                        infos.map(v => ({
+                            id: v.id,
+                            title: v.title,
+                            channel: v.channel,
+                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
+                            duration: v.duration
+                        }))
+                    );
             });
         } else {
-            videoInfo.forEach(v => onVideoClick?.(v.id));
+            callback?.(videoInfo);
         }
+    };
+
+    const queueAll = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+        retrieveVideoInfo(onPlaylistClick);
+        event.stopPropagation();
+    };
+
+    const shuffleQueue = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+        retrieveVideoInfo((array: VideoCardInfo[]) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * i);
+                const temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+            onPlaylistClick?.(array);
+        });
         event.stopPropagation();
     };
 
@@ -142,6 +170,11 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                             play_arrow
                         </i>
                     </Button>
+                    <Button size="small" variant="fab" onClick={shuffleQueue}>
+                        <i style={{ fontSize: "32px" }} class="material-icons">
+                            shuffle
+                        </i>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -159,7 +192,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                     <VideoDisplayCard
                         key={vid.id}
                         info={vid}
-                        onClick={onVideoClick ? (): void => onVideoClick(vid.id) : undefined}
+                        onClick={onVideoClick ? (): void => onVideoClick(vid) : undefined}
                     />
                 ))}
         </div>

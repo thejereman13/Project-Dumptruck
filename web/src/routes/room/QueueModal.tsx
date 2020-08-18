@@ -2,21 +2,22 @@ import { h, JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { useDebouncedCallback } from "use-debounce-preact";
 import { VideoInfo, PlaylistInfo, videoIDFromURL } from "../../utils/YoutubeTypes";
-import { SearchVideo, RequestAllPlaylists, GAPIInfo, RequestVideoForBackend, RequestVideo } from "../../utils/GAPI";
+import { SearchVideo, RequestAllPlaylists, GAPIInfo, RequestVideo } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
 import * as style from "./style.css";
 import { Tabs, Tab } from "../../components/Tabs";
-import { VideoDisplayCard, PlaylistCard } from "../../components/VideoCard";
+import { VideoDisplayCard, PlaylistCard, VideoCardInfo } from "../../components/VideoCard";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 
 export interface QueueModalProps {
     currentAPI: GAPIInfo | null;
     submitNewVideo: (newVideo: YoutubeVideoInformation) => void;
+    submitAllVideos: (newVideos: YoutubeVideoInformation[]) => void;
 }
 
 export function QueueModal(props: QueueModalProps): JSX.Element {
-    const { currentAPI, submitNewVideo } = props;
+    const { currentAPI, submitNewVideo, submitAllVideos } = props;
     const [searchField, setSearchField] = useState("");
     const [queueTab, setQueueTab] = useState(0);
     const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
@@ -48,9 +49,21 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
         debouncedSearch(val);
     };
 
-    const submitVideoFromList = (videoID: string): void => {
+    const submitVideoFromList = (videoID: VideoCardInfo | VideoInfo): void => {
         console.log("submitting ", videoID);
-        RequestVideoForBackend(videoID, submitNewVideo);
+        submitNewVideo({
+            videoID: videoID.id,
+            duration: videoID.duration ?? 0
+        });
+    };
+    const submitPlaylist = (vids: VideoCardInfo[]): void => {
+        console.log("submitting Playlist", vids);
+        submitAllVideos(
+            vids.map(v => ({
+                videoID: v.id,
+                duration: v.duration ?? 0
+            }))
+        );
     };
 
     return (
@@ -76,7 +89,7 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                                     <VideoDisplayCard
                                         key={list.id}
                                         info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
-                                        onClick={(): void => submitVideoFromList(list.id)}
+                                        onClick={(): void => submitVideoFromList(list)}
                                     />
                                 );
                             })}
@@ -90,7 +103,8 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                                 <PlaylistCard
                                     key={list.id}
                                     info={list}
-                                    onVideoClick={(id: string): void => submitVideoFromList(id)}
+                                    onVideoClick={submitVideoFromList}
+                                    onPlaylistClick={submitPlaylist}
                                 />
                             );
                         })}

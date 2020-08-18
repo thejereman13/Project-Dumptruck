@@ -173,12 +173,14 @@ YoutubeVideoInformation validateVideoInfo(Json info) {
     auto ret = YoutubeVideoInformation.init;
     try {
         ret.videoID = info["videoID"].get!string;
-        ret.duration = secondsFromDuration(info["duration"].get!string);
-        return ret;
+        // ret.duration = secondsFromDuration(info["duration"].get!string);
+        ret.duration = info["duration"].get!int;
+        if (ret.duration > 0 && ret.videoID.length > 0)
+            return ret;
     } catch (Exception e) {
         logException(e, "Failed to Parse Video Info");
-        return YoutubeVideoInformation.init;
     }
+    return YoutubeVideoInformation.init;
 } 
 
 

@@ -16,10 +16,11 @@ export interface BottomBarProps {
     skipVideo: () => void;
     playing: boolean;
     submitNewVideo: (videoID: YoutubeVideoInformation) => void;
+    submitAllVideos: (newVideos: YoutubeVideoInformation[]) => void;
 }
 
 export function BottomBar(props: BottomBarProps): JSX.Element {
-    const { currentVideo, togglePlay, skipVideo, playing, submitNewVideo } = props;
+    const { currentVideo, togglePlay, skipVideo, playing, submitNewVideo, submitAllVideos } = props;
     const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
     const [queueOpen, setQueueOpen] = useState<boolean>(false);
 
@@ -58,7 +59,7 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                 </Button>
             </div>
             <Modal className={style.ModalContainer} open={queueOpen} onClose={(): void => setQueueOpen(false)}>
-                <QueueModal currentAPI={currentAPI} submitNewVideo={submitNewVideo} />
+                <QueueModal currentAPI={currentAPI} submitNewVideo={submitNewVideo} submitAllVideos={submitAllVideos} />
             </Modal>
         </div>
     );

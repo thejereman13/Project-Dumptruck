@@ -133,6 +133,11 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
         }
     };
+    const submitAllVideos = (newVideos: YoutubeVideoInformation[]): void => {
+        if (ws) {
+            ws.send(JSON.stringify({ type: MessageType.QueueMultiple, data: newVideos }));
+        }
+    };
     const removeVideo = (id: string): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
@@ -174,6 +179,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 togglePlay={togglePlay}
                 skipVideo={skipVideo}
                 submitNewVideo={submitNewVideo}
+                submitAllVideos={submitAllVideos}
             />
         </div>
     );

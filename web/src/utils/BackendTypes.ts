@@ -14,5 +14,5 @@ export interface RoomUser {
 
 export interface YoutubeVideoInformation {
     videoID: string;
-    duration: string; // parsed from string on the server into seconds
+    duration: number;
 }

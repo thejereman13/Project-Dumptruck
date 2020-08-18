@@ -1,3 +1,8 @@
 {
-		"eslint.workingDirectories": ["./web"]
+		"eslint.workingDirectories": [
+			"./web"
+		],
+		"dscanner.ignoredKeys": [
+			"dscanner.style.undocumented_declaration"
+		]
 }

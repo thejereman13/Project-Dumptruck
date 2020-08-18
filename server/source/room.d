@@ -31,6 +31,7 @@ enum MessageType {
     Init = "init", // Server sending all initialization info
     Room = "room", // Server sending all room information
     QueueAdd = "addQueue", // Client adding a video id to queue
+    QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue" // Server updating the room user queue order
@@ -69,6 +70,8 @@ final class Room {
             videoSyncLoop();
         });
     }
+
+    /* Posting Messages to clients */
 
     private @trusted nothrow void postMessage(MessageType type, string msg = "", UUID[] targetUsers = [], string key = "data") {
         try {
@@ -142,6 +145,8 @@ final class Room {
         postPlaylist();
     }
 
+    /* Room Loops */
+
     private void roomLoopOperation() {
         while(roomUsers.userCount > 0) {
             if (roomUsers.updateUserStatus())
@@ -169,6 +174,9 @@ final class Room {
             currentVideo.timeStamp++;
         }
     }
+
+    /* Video Queue */
+
     private void queueVideo(Json videoInfo, UUID userID) {
         auto newVideo = validateVideoInfo(videoInfo);
         if (newVideo.videoID.length > 0) {
@@ -189,6 +197,25 @@ final class Room {
             postMessage(MessageType.Error, "Insufficient Permissions", [userID], "error");
         }
     }
+    private void queueAllVideo(Json videosInfo, UUID userID) {
+        YoutubeVideoInformation[] arr = videosInfo.get!(Json[]).map!validateVideoInfo.array;
+        auto successCounter = 0;
+        foreach (YoutubeVideoInformation newVid; arr) {
+            if (newVid.videoID.length > 0) {
+                if (playlist.addVideoToQueue(userID, newVid)) {
+                    successCounter++;
+                    if (currentVideo.youtubeID.length == 0) queueNextVideo();
+                } else {
+                    postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
+                }
+            } else {
+                logWarn("Failed to validate Video");
+            }
+        }
+        if (successCounter) postPlaylist();
+    }
+
+    /* Room Users */
 
     public Json addUser(UUID clientID) {
         if (!roomLoop.running) {
@@ -259,6 +286,9 @@ final class Room {
                 break;
             case MessageType.QueueRemove:
                 unqueueVideo(j["data"], id);
+                break;
+            case MessageType.QueueMultiple:
+                queueAllVideo(j["data"], id);
                 break;
             case MessageType.Skip:
                 queueNextVideo();
