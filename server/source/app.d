@@ -37,13 +37,14 @@ void main()
 	setup();
 
 	auto router = new URLRouter;
-	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string));
 	router.get("/api/ws", handleWebSockets(&handleWebsocketConnection));
 	router.post("/api/login", &userLogin);
 	router.get("/api/login", &getUserLogin);
 	router.post("/api/logout", &userLogout);
 	router.get("/api/video/:id", &videoInfoRequest);
 	router.get("/api/user", &getUserInfo);
+	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string));
+	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html"));
 
 	// router.any("*", &checkUserLogin);
 	// router.get("/userData", &getUserJSON);
