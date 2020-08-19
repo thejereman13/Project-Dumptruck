@@ -1,0 +1,18 @@
+# Use with NPM Artillery to stress test up to 750 concurrent websocket clients on a single room
+config:
+  target: "wss://localhost:8000/api/ws?5"
+  phases:
+    - duration: 90
+      arrivalRate: 200
+      maxVusers: 10000
+      name: "Adding up to 10000 Users"
+  ws:
+    rejectUnauthorized: false
+scenarios:
+  - engine: "ws"
+    flow:
+      - loop:
+        - send: '{"type": "ping"}'
+        - think: 1
+        count: 40
+
