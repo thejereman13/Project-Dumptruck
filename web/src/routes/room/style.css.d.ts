@@ -13,6 +13,11 @@ declare namespace StyleCssNamespace {
         QueueVideos: string;
         QueueVideosExpanded: string;
         VideoCardButton: string;
+        bottomMiddleActions: string;
+        bottomRightActions: string;
+        bottomVideoIcon: string;
+        bottomVideoInfo: string;
+        centerTooltipChild: string;
         playButton: string;
         progress: string;
         scrollBox: string;
@@ -23,8 +28,6 @@ declare namespace StyleCssNamespace {
         splitPane: string;
         textEllipsis: string;
         videoDiv: string;
-        videoIcon: string;
-        videoInfo: string;
         videoPanel: string;
     }
 }

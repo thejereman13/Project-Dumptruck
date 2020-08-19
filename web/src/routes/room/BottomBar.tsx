@@ -34,23 +34,25 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
     }, [currentVideo]);
     return (
         <div class={style.BottomBar}>
-            <div class={style.videoInfo}>
+            <div class={style.bottomVideoInfo}>
                 {videoInfo ? (
-                    <img class={style.videoIcon} src={videoInfo?.thumbnailMaxRes?.url ?? ""} />
+                    <img class={style.bottomVideoIcon} src={videoInfo?.thumbnailMaxRes?.url ?? ""} />
                 ) : (
-                    <div class={style.videoIcon} />
+                    <div class={style.bottomVideoIcon} />
                 )}
-                <div class="mui--text-title">{videoInfo?.title ?? "Nothing Currently Playing"}</div>
+                <div class={["mui--text-title", style.textEllipsis].join(" ")}>
+                    {videoInfo?.title ?? "Nothing Currently Playing"}
+                </div>
             </div>
-            <div>
-                <Tooltip title="Pause Room Playback">
+            <div class={style.bottomMiddleActions}>
+                <Tooltip className={style.centerTooltipChild} title="Pause Room Playback">
                     <Button size="small" variant="fab" onClick={togglePlay}>
                         <i style={{ fontSize: "32px" }} class="material-icons">
                             {playing ? "pause" : "play_arrow"}
                         </i>
                     </Button>
                 </Tooltip>
-                <Tooltip title="Skip Current Video">
+                <Tooltip className={style.centerTooltipChild} title="Skip Current Video">
                     <Button size="small" variant="fab" onClick={skipVideo}>
                         <i style={{ fontSize: "32px" }} class="material-icons">
                             skip_next
@@ -58,12 +60,12 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                     </Button>
                 </Tooltip>
             </div>
-            <div>
-                <Tooltip title="Add a Video to Queue">
+            <div class={style.bottomRightActions}>
+                <div class={style.centerTooltipChild}>
                     <Button id="openQueue" onClick={(): void => setQueueOpen(true)}>
                         Queue Video
                     </Button>
-                </Tooltip>
+                </div>
             </div>
             <Modal className={style.ModalContainer} open={queueOpen} onClose={(): void => setQueueOpen(false)}>
                 <QueueModal currentAPI={currentAPI} submitNewVideo={submitNewVideo} submitAllVideos={submitAllVideos} />

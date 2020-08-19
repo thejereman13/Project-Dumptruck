@@ -71,6 +71,7 @@
 	flex-direction: column;
 	padding-left: 1rem;
 	text-align: start;
+	overflow: hidden;
 
 }
 .VideoCardButton {

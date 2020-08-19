@@ -33,7 +33,9 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                 <img class={style.VideoIcon} src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
             )}
             <div class={style.VideoInfo}>
-                <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
+                <Tooltip title={info.title} delay={800}>
+                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
+                </Tooltip>
                 <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
             </div>
             {actionComponent !== undefined && <div class={style.VideoActionDiv}>{actionComponent}</div>}

@@ -7,6 +7,7 @@ import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
+import { Tooltip } from "react-tippy";
 
 export interface UserQueueCardProps {
     user: RoomUser;
@@ -50,11 +51,13 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{`Queued By ${user.name}`}</div>
                 </div>
                 <div class={style.QueueActionDiv}>
-                    <Button size="small" variant="fab" onClick={openMenu}>
-                        <i style={{ fontSize: "32px" }} class="material-icons">
-                            more_vert
-                        </i>
-                    </Button>
+                    <Tooltip title="placeholder button">
+                        <Button size="small" variant="fab" onClick={openMenu}>
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                more_vert
+                            </i>
+                        </Button>
+                    </Tooltip>
                 </div>
             </div>
         </div>
@@ -73,11 +76,13 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                         key={vid.youtubeID}
                         videoID={vid.youtubeID}
                         actionComponent={
-                            <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
-                                <i style={{ fontSize: "24px" }} class="material-icons">
-                                    delete
-                                </i>
-                            </Button>
+                            <Tooltip title="Remove From Queue">
+                                <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
+                                    <i style={{ fontSize: "24px" }} class="material-icons">
+                                        delete
+                                    </i>
+                                </Button>
+                            </Tooltip>
                         }
                     />
                 ))}

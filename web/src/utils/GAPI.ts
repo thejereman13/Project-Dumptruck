@@ -209,7 +209,7 @@ export function SearchVideo(query: string, responseCallback: (items: VideoInfo[]
         .request({
             path: "https://www.googleapis.com/youtube/v3/search",
             params: {
-                part: "snippet,contentDetails",
+                part: "snippet",
                 maxResults: 50,
                 q: query,
                 type: "video",

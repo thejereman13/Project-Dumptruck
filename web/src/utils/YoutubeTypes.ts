@@ -91,8 +91,7 @@ export function parseSearchVideoJSON(videoObject: any): VideoInfo {
         id: videoObject.id.videoId,
         title: decodeHtml(videoObject.snippet.title),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails),
-        duration: parseDurationString(videoObject.contentDetails.duration)
+        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
     };
 }
 
