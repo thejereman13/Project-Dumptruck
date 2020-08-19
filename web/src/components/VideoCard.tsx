@@ -1,11 +1,11 @@
 import { h, JSX } from "preact";
-
 import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { useGAPIContext, RequestVideosFromPlaylist } from "../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
+import { Tooltip } from "react-tippy";
 
 export interface VideoCardInfo {
     id: string;
@@ -165,16 +165,20 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                     <div class="mui--text-body1">{info.channel}</div>
                 </div>
                 <div class={style.VideoActionDiv}>
-                    <Button size="small" variant="fab" onClick={queueAll}>
-                        <i style={{ fontSize: "32px" }} class="material-icons">
-                            play_arrow
-                        </i>
-                    </Button>
-                    <Button size="small" variant="fab" onClick={shuffleQueue}>
-                        <i style={{ fontSize: "32px" }} class="material-icons">
-                            shuffle
-                        </i>
-                    </Button>
+                    <Tooltip title="Queue All">
+                        <Button size="small" variant="fab" onClick={queueAll}>
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                play_arrow
+                            </i>
+                        </Button>
+                    </Tooltip>
+                    <Tooltip title="Shuffle and Queue All">
+                        <Button size="small" variant="fab" onClick={shuffleQueue}>
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                shuffle
+                            </i>
+                        </Button>
+                    </Tooltip>
                 </div>
             </div>
         </div>

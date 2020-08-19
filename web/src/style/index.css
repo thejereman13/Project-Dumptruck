@@ -47,6 +47,10 @@ html, body {
 	outline: 1px solid slategrey;
 }
 
+.tippy-tooltip {
+	font-size: 1.2rem;
+}
+
 .mui--text-body1 {
 	color: var(--text-secondary-medium);
 	text-transform: none;

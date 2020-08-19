@@ -1,5 +1,6 @@
 import { h, JSX } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import { Tooltip } from "react-tippy";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { useGAPIContext } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
@@ -42,21 +43,27 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                 <div class="mui--text-title">{videoInfo?.title ?? "Nothing Currently Playing"}</div>
             </div>
             <div>
-                <Button size="small" variant="fab" onClick={togglePlay}>
-                    <i style={{ fontSize: "32px" }} class="material-icons">
-                        {playing ? "pause" : "play_arrow"}
-                    </i>
-                </Button>
-                <Button size="small" variant="fab" onClick={skipVideo}>
-                    <i style={{ fontSize: "32px" }} class="material-icons">
-                        skip_next
-                    </i>
-                </Button>
+                <Tooltip title="Pause Room Playback">
+                    <Button size="small" variant="fab" onClick={togglePlay}>
+                        <i style={{ fontSize: "32px" }} class="material-icons">
+                            {playing ? "pause" : "play_arrow"}
+                        </i>
+                    </Button>
+                </Tooltip>
+                <Tooltip title="Skip Current Video">
+                    <Button size="small" variant="fab" onClick={skipVideo}>
+                        <i style={{ fontSize: "32px" }} class="material-icons">
+                            skip_next
+                        </i>
+                    </Button>
+                </Tooltip>
             </div>
             <div>
-                <Button id="openQueue" onClick={(): void => setQueueOpen(true)}>
-                    Queue Video
-                </Button>
+                <Tooltip title="Add a Video to Queue">
+                    <Button id="openQueue" onClick={(): void => setQueueOpen(true)}>
+                        Queue Video
+                    </Button>
+                </Tooltip>
             </div>
             <Modal className={style.ModalContainer} open={queueOpen} onClose={(): void => setQueueOpen(false)}>
                 <QueueModal currentAPI={currentAPI} submitNewVideo={submitNewVideo} submitAllVideos={submitAllVideos} />

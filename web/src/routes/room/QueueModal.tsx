@@ -51,10 +51,18 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
 
     const submitVideoFromList = (videoID: VideoCardInfo | VideoInfo): void => {
         console.log("submitting ", videoID);
-        submitNewVideo({
-            videoID: videoID.id,
-            duration: videoID.duration ?? 0
-        });
+        if (videoID.duration === undefined)
+            RequestVideo(videoID.id, info => {
+                submitNewVideo({
+                    videoID: info.id,
+                    duration: info.duration ?? 0
+                });
+            });
+        else
+            submitNewVideo({
+                videoID: videoID.id,
+                duration: videoID.duration ?? 0
+            });
     };
     const submitPlaylist = (vids: VideoCardInfo[]): void => {
         console.log("submitting Playlist", vids);
