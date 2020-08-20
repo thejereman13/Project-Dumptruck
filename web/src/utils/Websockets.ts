@@ -12,7 +12,7 @@ function getBaseURL(): string {
 const WS_MAX_TRIES = 5;
 
 export function useWebsockets(roomID: string, messageCallback: (data: WSMessage) => void): WebSocket | undefined {
-    const ws = useRef<WebSocket>();
+    const ws = useRef<WebSocket | undefined>();
     const wsAttemptCounter = useRef<number>(0);
 
     const onMessage = useCallback((ev: MessageEvent) => {

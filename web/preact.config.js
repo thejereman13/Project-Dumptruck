@@ -27,6 +27,17 @@ export default {
             enforce: "pre",
             use: [
                 {
+                    loader: require.resolve("ts-loader")
+                }
+            ],
+            exclude: /node_modules/
+        });
+
+        config.module.rules.push({
+            test: /\.(ts|tsx)$/,
+            enforce: "pre",
+            use: [
+                {
                     options: {
                         eslintPath: require.resolve("eslint"),
                         failOnError: true
