@@ -6,6 +6,7 @@ import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
 import { Tooltip } from "../components/Popup";
+import { useAbortController } from "./AbortController";
 
 export interface VideoCardInfo {
     id: string;
@@ -65,9 +66,11 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
     const { videoID, onClick, actionComponent } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
 
+    const controller = useAbortController();
+
     useEffect(() => {
         if (videoID) {
-            RequestVideoPreview(videoID).then((info: VideoInfo | null) => {
+            RequestVideoPreview(videoID, controller).then((info: VideoInfo | null) => {
                 if (info)
                     setVideoInfo({
                         id: info.id,
@@ -77,7 +80,7 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
                     });
             });
         }
-    }, [videoID]);
+    }, [videoID, controller]);
 
     return videoInfo ? (
         <VideoDisplayCard info={videoInfo} onClick={onClick} actionComponent={actionComponent} />
@@ -99,12 +102,14 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
 
     const GAPIContext = useGAPIContext();
 
+    const controller = useAbortController();
+
     const expandVideos = (): void => setVideoExpanded(true);
     const hideVideos = (): void => setVideoExpanded(false);
 
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {
-            RequestVideosFromPlaylist(info.id, (infos: VideoInfo[]) => {
+            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[]) => {
                 setVideoInfo(
                     infos.map(v => ({
                         id: v.id,
@@ -116,12 +121,12 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                 );
             });
         }
-    }, [GAPIContext, info.id, videoExpanded, videoInfo]);
+    }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
 
     const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[]) => void): void => {
         if (!info.id) return;
         if (!videoExpanded && videoInfo.length === 0 && GAPIContext?.isAPILoaded()) {
-            RequestVideosFromPlaylist(info.id, (infos: VideoInfo[], final: boolean) => {
+            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[], final: boolean) => {
                 if (final)
                     callback?.(
                         infos.map(v => ({

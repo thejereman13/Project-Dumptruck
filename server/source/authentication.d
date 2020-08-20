@@ -79,30 +79,3 @@ void userLogout(HTTPServerRequest req, HTTPServerResponse res) {
     }
     res.writeJsonBody("{}", 200, false);
 }
-
-//Returns the User data JSON
-void getUserJSON(HTTPServerRequest req, HTTPServerResponse res) {
-    Json userData = Json.emptyObject;
-    if (req.session) {
-        UUID user = req.session.get!UUID("clientID");
-        const string dat = database.getUserData(user);
-        if (dat.length > 0) {
-            userData["Data"] = dat;
-            userData["User"] = user.toString();
-            res.writeJsonBody(userData, 200, false);
-            return;
-        }
-    }
-    res.writeJsonBody(userData, 400, false);
-}
-
-void setUserJSON(HTTPServerRequest req, HTTPServerResponse res) {
-    Json userData = req.json["Data"];
-    if (req.session) {
-        UUID user = req.session.get!UUID("clientID");
-        database.setUserData(user, userData.toString());
-        res.writeJsonBody("{}", 201, false);
-        return;
-    }
-    res.writeJsonBody("{}", 401, false);
-}

@@ -9,6 +9,7 @@ import * as style from "./style.css";
 import { Tabs, Tab } from "../../components/Tabs";
 import { VideoDisplayCard, PlaylistCard, VideoCardInfo } from "../../components/VideoCard";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
+import { useAbortController } from "../../components/AbortController";
 
 export interface QueueModalProps {
     currentAPI: GAPIInfo | null;
@@ -23,12 +24,14 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
 
+    const controller = useAbortController();
+
     const [debouncedSearch] = useDebouncedCallback(
         (search: string) => {
             if (currentAPI?.isAPILoaded() && search.length > 0) {
                 const id = videoIDFromURL(search);
-                if (id) RequestVideo(id, vid => setSearchResults([vid]));
-                else SearchVideo(search, setSearchResults);
+                if (id) RequestVideo(id, controller, vid => setSearchResults([vid]));
+                else SearchVideo(search, controller, setSearchResults);
             } else {
                 setSearchResults([]);
             }
@@ -39,9 +42,9 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
 
     useEffect(() => {
         if (currentAPI?.isAPILoaded()) {
-            RequestAllPlaylists(setUserPlaylists);
+            RequestAllPlaylists(controller, setUserPlaylists);
         }
-    }, [currentAPI]);
+    }, [currentAPI, controller]);
 
     const updateVideoSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const val = e.currentTarget.value;
@@ -52,7 +55,7 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     const submitVideoFromList = (videoID: VideoCardInfo | VideoInfo): void => {
         console.log("submitting ", videoID);
         if (videoID.duration === undefined)
-            RequestVideo(videoID.id, info => {
+            RequestVideo(videoID.id, controller, info => {
                 submitNewVideo({
                     videoID: info.id,
                     duration: info.duration ?? 0

@@ -28,14 +28,14 @@ export function Tooltip(props: PopupProps): JSX.Element {
 
     const setPopperRef = useCallback(
         (r: HTMLDivElement | null): void => {
-            if (!controller.signal.aborted) setPopperElement(r);
+            if (!controller.current.signal.aborted) setPopperElement(r);
         },
         [controller]
     );
 
     const setReferenceRef = useCallback(
         (r: HTMLDivElement | null): void => {
-            if (!controller.signal.aborted) setReferenceElement(r);
+            if (!controller.current.signal.aborted) setReferenceElement(r);
         },
         [controller]
     );

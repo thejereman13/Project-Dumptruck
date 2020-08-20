@@ -1,6 +1,6 @@
 import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
 import { SiteUser } from "./BackendTypes";
-import { useContext, useState } from "preact/hooks";
+import { useContext, useState, Ref } from "preact/hooks";
 import { createContext } from "preact";
 import { CLIENTID } from "../constants";
 import {
@@ -74,7 +74,10 @@ export const useGAPIContext = (): GAPIInfo | null => useContext(GAPIContext);
 
 /* Util functions for fetching information from the GAPI */
 
-export function RequestAllPlaylists(responseCallback: (playlists: PlaylistInfo[]) => void): void {
+export function RequestAllPlaylists(
+    controller: Ref<AbortController>,
+    responseCallback: (playlists: PlaylistInfo[]) => void
+): void {
     gapi.client
         .request({
             path: "https://www.googleapis.com/youtube/v3/playlists",
@@ -87,22 +90,7 @@ export function RequestAllPlaylists(responseCallback: (playlists: PlaylistInfo[]
         .then(resp => {
             //  TODO: handle more than one page
             // console.log(resp.result.pageInfo);
-            responseCallback(resp.result.items.map(parsePlaylistJSON));
-        });
-}
-
-export function RequestPlaylist(playlistID: string, responseCallback: (playlist: PlaylistInfo) => void): void {
-    gapi.client
-        .request({
-            path: "https://www.googleapis.com/youtube/v3/playlists",
-            params: {
-                part: "snippet,contentDetails",
-                id: playlistID,
-                maxResults: 1
-            }
-        })
-        .then(resp => {
-            if (resp.result.items.length === 1) responseCallback(parsePlaylistJSON(resp.result.items[0]));
+            if (!controller.current.signal.aborted) responseCallback(resp.result.items.map(parsePlaylistJSON));
         });
 }
 
@@ -114,6 +102,7 @@ export function RequestPlaylist(playlistID: string, responseCallback: (playlist:
  */
 export function RequestVideosFromPlaylist(
     playlistID: string,
+    controller: Ref<AbortController>,
     responseCallback: (item: VideoInfo[], final: boolean) => void
 ): void {
     let returnArr: VideoInfo[] = [];
@@ -132,7 +121,7 @@ export function RequestVideosFromPlaylist(
                 }
             })
             .then(resp => {
-                if (resp.result.items.length === elementCount) {
+                if (resp.result.items.length === elementCount && !controller.current.signal.aborted) {
                     resp.result.items.forEach((result: any, index: number) => {
                         returnArr[startIndex + index] = parseVideoJSON(result);
                     });
@@ -159,6 +148,7 @@ export function RequestVideosFromPlaylist(
                 }
             })
             .then(resp => {
+                if (controller.current.signal.aborted) return;
                 returnArr = [...returnArr, ...resp.result.items.map(parsePlaylistItemJSON)];
                 if (resp.result.nextPageToken) {
                     responseCallback(returnArr, false);
@@ -172,7 +162,11 @@ export function RequestVideosFromPlaylist(
     addPage();
 }
 
-export function RequestVideo(videoID: string, responseCallback: (video: VideoInfo) => void): void {
+export function RequestVideo(
+    videoID: string,
+    controller: Ref<AbortController>,
+    responseCallback: (video: VideoInfo) => void
+): void {
     gapi.client
         .request({
             path: "https://www.googleapis.com/youtube/v3/videos",
@@ -182,29 +176,16 @@ export function RequestVideo(videoID: string, responseCallback: (video: VideoInf
             }
         })
         .then(resp => {
-            if (resp.result.items.length === 1) responseCallback(parseVideoJSON(resp.result.items[0]));
+            if (resp.result.items.length === 1 && !controller.current.signal.aborted)
+                responseCallback(parseVideoJSON(resp.result.items[0]));
         });
 }
 
-// Deprecated now that duration is always parsed into VideoInfo
-// export function RequestVideoForBackend(
-//     videoID: string,
-//     responseCallback: (video: YoutubeVideoInformation) => void
-// ): void {
-//     gapi.client
-//         .request({
-//             path: "https://www.googleapis.com/youtube/v3/videos",
-//             params: {
-//                 part: "snippet,contentDetails",
-//                 id: videoID
-//             }
-//         })
-//         .then(resp => {
-//             if (resp.result.items.length === 1) responseCallback(parseVideoForBackend(resp.result.items[0]));
-//         });
-// }
-
-export function SearchVideo(query: string, responseCallback: (items: VideoInfo[]) => void): void {
+export function SearchVideo(
+    query: string,
+    controller: Ref<AbortController>,
+    responseCallback: (items: VideoInfo[]) => void
+): void {
     gapi.client
         .request({
             path: "https://www.googleapis.com/youtube/v3/search",
@@ -218,6 +199,6 @@ export function SearchVideo(query: string, responseCallback: (items: VideoInfo[]
             }
         })
         .then(resp => {
-            responseCallback(resp.result.items.map(parseSearchVideoJSON));
+            if (!controller.current.signal.aborted) responseCallback(resp.result.items.map(parseSearchVideoJSON));
         });
 }

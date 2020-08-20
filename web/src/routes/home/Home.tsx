@@ -5,15 +5,18 @@ import { useState, useEffect } from "preact/hooks";
 import { route } from "preact-router";
 import { GetCurrentUser } from "../../utils/RestCalls";
 import { SiteUser } from "../../utils/BackendTypes";
+import { useAbortController } from "../../components/AbortController";
 
 export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);
 
+    const controller = useAbortController();
+
     useEffect(() => {
-        GetCurrentUser().then(usr => {
+        GetCurrentUser(controller).then(usr => {
             setCurrentUser(usr);
         });
-    }, []);
+    }, [controller]);
 
     return (
         <div class={style.home}>

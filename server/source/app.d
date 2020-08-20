@@ -50,9 +50,7 @@ void main()
 	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string, fileSettings));
 	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html", fileSettings));
 
-	router.any("*", &checkUserLogin);
-	router.get("/userData", &getUserJSON);
-	router.put("/userData", &setUserJSON);
+	// router.any("*", &checkUserLogin);
 	// router.post("/user", &createUser);
 	// router.put("/user", &updateUser);
 	// router.delete_("/user", &removeUser);

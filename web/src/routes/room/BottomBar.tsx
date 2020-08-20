@@ -10,6 +10,7 @@ import { QueueModal } from "./QueueModal";
 import { Video } from "../../utils/WebsocketTypes";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { Tooltip } from "../../components/Popup";
+import { useAbortController } from "../../components/AbortController";
 
 export interface BottomBarProps {
     currentVideo: Video | null;
@@ -27,11 +28,13 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
 
     const currentAPI = useGAPIContext();
 
+    const controller = useAbortController();
+
     useEffect(() => {
         if (currentVideo !== null) {
-            RequestVideoPreview(currentVideo.youtubeID).then(setVideoInfo);
+            RequestVideoPreview(currentVideo.youtubeID, controller).then(setVideoInfo);
         }
-    }, [currentVideo]);
+    }, [currentVideo, controller]);
     return (
         <div class={style.BottomBar}>
             <div class={style.bottomVideoInfo}>

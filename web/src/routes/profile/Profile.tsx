@@ -7,6 +7,7 @@ import { route } from "preact-router";
 import { PlaylistInfo } from "../../utils/YoutubeTypes";
 import * as style from "./style.css";
 import { VideoDisplayCard } from "../../components/VideoCard";
+import { useAbortController } from "../../components/AbortController";
 
 export function Profile(): JSX.Element {
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
@@ -14,20 +15,22 @@ export function Profile(): JSX.Element {
 
     const currentAPI = useGAPIContext();
 
+    const controller = useAbortController();
+
     const requestPlaylists = useCallback(() => {
-        RequestAllPlaylists(setUserPlaylists);
-    }, []);
+        RequestAllPlaylists(controller, setUserPlaylists);
+    }, [controller]);
 
     useEffect(() => {
         if (currentAPI?.getUser() && currentAPI.isAPILoaded()) requestPlaylists();
     }, [currentAPI, requestPlaylists]);
 
     useEffect(() => {
-        GetCurrentUser().then(usr => {
+        GetCurrentUser(controller).then(usr => {
             if (usr !== null) setUser(usr);
             else route("/login");
         });
-    }, []);
+    }, [controller]);
 
     const expandPlaylist = (pID: string): void => {
         console.log(pID);

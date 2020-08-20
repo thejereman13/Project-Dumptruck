@@ -8,6 +8,7 @@ import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { Tooltip } from "../../components/Popup";
+import { useAbortController } from "../../components/AbortController";
 
 export interface UserQueueCardProps {
     user: RoomUser;
@@ -23,9 +24,11 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     const expandVideos = (): void => setVideoExpanded(true);
     const hideVideos = (): void => setVideoExpanded(false);
 
+    const controller = useAbortController();
+
     useEffect(() => {
         if (playlist && playlist.length > 0) {
-            RequestVideoPreview(playlist[0].youtubeID).then((info: VideoInfo | null) => {
+            RequestVideoPreview(playlist[0].youtubeID, controller).then((info: VideoInfo | null) => {
                 if (info)
                     setVideoInfo({
                         id: info.id,
@@ -35,7 +38,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     });
             });
         }
-    }, [playlist]);
+    }, [playlist, controller]);
 
     const openMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
         console.log("Menu");
