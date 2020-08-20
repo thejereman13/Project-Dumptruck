@@ -5,7 +5,7 @@ import { useGAPIContext, RequestVideosFromPlaylist } from "../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
-import { Tooltip } from "react-tippy";
+import { Tooltip } from "../components/Popup";
 
 export interface VideoCardInfo {
     id: string;
@@ -33,7 +33,7 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                 <img class={style.VideoIcon} src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
             )}
             <div class={style.VideoInfo}>
-                <Tooltip title={info.title} delay={800}>
+                <Tooltip content={info.title} delay={800}>
                     <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
                 </Tooltip>
                 <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
@@ -167,14 +167,14 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                     <div class="mui--text-body1">{info.channel}</div>
                 </div>
                 <div class={style.VideoActionDiv}>
-                    <Tooltip title="Queue All">
+                    <Tooltip content="Queue All">
                         <Button size="small" variant="fab" onClick={queueAll}>
                             <i style={{ fontSize: "32px" }} class="material-icons">
                                 play_arrow
                             </i>
                         </Button>
                     </Tooltip>
-                    <Tooltip title="Shuffle and Queue All">
+                    <Tooltip content="Shuffle and Queue All">
                         <Button size="small" variant="fab" onClick={shuffleQueue}>
                             <i style={{ fontSize: "32px" }} class="material-icons">
                                 shuffle

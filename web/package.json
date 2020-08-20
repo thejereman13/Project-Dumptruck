@@ -25,6 +25,7 @@
     "build/*"
   ],
   "dependencies": {
+    "@popperjs/core": "^2.4.4",
     "@types/gapi": "0.0.39",
     "@types/material__base": "^0.35.2",
     "@types/material__ripple": "^0.35.2",
@@ -37,7 +38,7 @@
     "preact-render-to-string": "^5.1.4",
     "preact-router": "^3.2.1",
     "react-google-login": "^5.1.21",
-    "react-tippy": "^1.4.0",
+    "react-popper": "^2.2.3",
     "use-debounce-preact": "^1.0.2"
   },
   "devDependencies": {
@@ -48,6 +49,7 @@
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "artillery": "^1.6.1",
+    "compression-webpack-plugin": "^5.0.0",
     "css-loader": "^3.5.3",
     "enzyme": "^3.11.0",
     "enzyme-adapter-preact-pure": "^2.2.0",

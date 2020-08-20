@@ -1,6 +1,7 @@
 import { resolve } from "path";
 
 const TerserPlugin = require("terser-webpack-plugin");
+const CompressionPlugin = require("compression-webpack-plugin");
 const webpack = require("webpack");
 
 export default {
@@ -48,11 +49,14 @@ export default {
             exclude: /node_modules/
         });
 
-        config.optimization.minimizer = [
-            new TerserPlugin({
-                extractComments: false
-            })
-        ];
+        config.optimization = {
+            minimize: true,
+            minimizer: [
+                new TerserPlugin({
+                    extractComments: false
+                })
+            ]
+        };
 
         config.devServer = {
             https: true,
@@ -70,6 +74,7 @@ export default {
                 CLIENTID: JSON.stringify("841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com")
             })
         );
+        config.plugins.push(new CompressionPlugin());
 
         // Use any `index` file, not just index.js
         config.resolve.alias["preact-cli-entrypoint"] = resolve(process.cwd(), "src", "index");

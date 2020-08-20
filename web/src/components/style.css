@@ -1,129 +1,140 @@
 .header {
-	position: fixed;
-	left: 0;
-	top: 0;
-	width: 100%;
-	padding: 0;
-	background: var(--dp2-surface);
-	box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-	z-index: 50;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    background: var(--dp2-surface);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    z-index: 50;
 }
 .header h1 {
-	float: left;
-	margin: 0;
-	padding: 0 15px;
-	font-size: 24px;
-	font-weight: 400;
-	line-height: unset;
-	color: var(--text-secondary);
+    float: left;
+    margin: 0;
+    padding: 0 15px;
+    font-size: 24px;
+    font-weight: 400;
+    line-height: unset;
+    color: var(--text-secondary);
 }
 
 .headerNav {
-	display: inline-block;
-	padding: 0 15px;
-	min-width: 50px;
-	background: rgba(255,255,255,0);
-	text-decoration: none;
-	font-weight: 600;
-	color: var(--theme-primary-dark) !important;
-	will-change: background-color;
-	font-size: 2rem;
+    display: inline-block;
+    padding: 0 15px;
+    min-width: 50px;
+    background: rgba(255, 255, 255, 0);
+    text-decoration: none;
+    font-weight: 600;
+    color: var(--theme-primary-dark) !important;
+    will-change: background-color;
+    font-size: 2rem;
 }
 .headerNav:hover,
 .headerNav:active {
-	background: rgba(0,0,0,0.2);
-	text-decoration: none;
+    background: rgba(0, 0, 0, 0.2);
+    text-decoration: none;
 }
 .headerNav.active {
-	background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.4);
 }
 
 .headerRight {
-	float: right;
-	padding-right: 0.5rem;
+    float: right;
+    padding-right: 0.5rem;
 }
 
 .headerUserIcon {
-	width: 5rem;
-	height: 5rem;
-	border-radius: 2.5rem;
-	margin-left: 1rem;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 2.5rem;
+    margin-left: 1rem;
 }
 
 .textEllipsis {
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .VideoCard {
-	display: flex;
-	padding: 1rem;
-	height: 8rem;
+    display: flex;
+    padding: 1rem;
+    height: 8rem;
 }
 .VideoCard .VideoIcon {
-	height: 100%;
-	display: inline-flex;
+    height: 100%;
+    display: inline-flex;
 }
 .VideoCard .VideoInfo {
-	height: 100%;
-	display: inline-flex;
-	flex-direction: column;
-	padding-left: 1rem;
-	text-align: start;
-	overflow: hidden;
-
+    height: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    padding-left: 1rem;
+    text-align: start;
+    overflow: hidden;
 }
 .VideoCardButton {
-	display: flex;
-	height: unset;
-	padding: 0 1rem;
-	width: 100%;
-	margin: 0 !important;
+    display: flex;
+    height: unset;
+    padding: 0 1rem;
+    width: 100%;
+    margin: 0 !important;
 }
 .PlaylistCard {
-	display: flex;
-	flex-flow: column;
-	padding: 1rem;
-	width: 100%;
+    display: flex;
+    flex-flow: column;
+    padding: 1rem;
+    width: 100%;
 }
 .PlaylistCard .PlaylistIcon {
-	height: 8rem;
+    height: 8rem;
 }
 .PlaylistCard .PlaylistInfo {
-	height: 8rem;
-	flex-direction: column;
-	padding-left: 1rem;
-	text-align: start;
-
+    height: 8rem;
+    flex-direction: column;
+    padding-left: 1rem;
+    text-align: start;
 }
 .PlaylistCardInfo {
-	display: flex;
-	flex-flow: row;
+    display: flex;
+    flex-flow: row;
 }
 .PlaylistVideos {
-	margin-left: 4rem;
-	margin-right: 2rem;
-	height: 0;
-	overflow-y: auto;
-	transition: height 0.25s ease;
-	background-color: var(--dp8-surface);
+    margin-left: 4rem;
+    margin-right: 2rem;
+    height: 0;
+    overflow-y: auto;
+    transition: height 0.25s ease;
+    background-color: var(--dp8-surface);
 }
 .PlaylistVideosExpanded {
-	height: 36rem;
+    height: 36rem;
 }
 .VideoActionDiv {
-	margin-left: auto;
+    margin-left: auto;
+}
+.VideoActionDiv div {
+    display: inline-block;
 }
 
 .ModalBackground {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	background-color: rgba(0, 0, 0, 0.25);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.popupTooltip {
+    background-color: var(--dp16-surface);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1024;
 }

@@ -18,6 +18,7 @@ declare namespace StyleCssNamespace {
         headerNav: string;
         headerRight: string;
         headerUserIcon: string;
+        popupTooltip: string;
         textEllipsis: string;
     }
 }

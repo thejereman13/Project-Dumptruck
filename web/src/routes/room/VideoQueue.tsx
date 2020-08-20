@@ -7,7 +7,7 @@ import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
-import { Tooltip } from "react-tippy";
+import { Tooltip } from "../../components/Popup";
 
 export interface UserQueueCardProps {
     user: RoomUser;
@@ -51,7 +51,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{`Queued By ${user.name}`}</div>
                 </div>
                 <div class={style.QueueActionDiv}>
-                    <Tooltip title="placeholder button">
+                    <Tooltip content="placeholder button">
                         <Button size="small" variant="fab" onClick={openMenu}>
                             <i style={{ fontSize: "32px" }} class="material-icons">
                                 more_vert
@@ -76,7 +76,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                         key={vid.youtubeID}
                         videoID={vid.youtubeID}
                         actionComponent={
-                            <Tooltip title="Remove From Queue">
+                            <Tooltip content="Remove From Queue">
                                 <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
                                     <i style={{ fontSize: "24px" }} class="material-icons">
                                         delete

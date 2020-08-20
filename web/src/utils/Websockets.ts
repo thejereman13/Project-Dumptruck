@@ -11,8 +11,8 @@ function getBaseURL(): string {
 
 const WS_MAX_TRIES = 5;
 
-export function useWebsockets(roomID: string, messageCallback: (data: WSMessage) => void): WebSocket | undefined {
-    const ws = useRef<WebSocket | undefined>();
+export function useWebsockets(roomID: string, messageCallback: (data: WSMessage) => void): WebSocket | null {
+    const ws = useRef<WebSocket | null>(null);
     const wsAttemptCounter = useRef<number>(0);
 
     const onMessage = useCallback((ev: MessageEvent) => {
@@ -53,13 +53,13 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
                 createWebSocket();
             });
         };
-        if (ws.current === undefined) {
+        if (ws.current === null) {
             createWebSocket();
         }
         return (): void => {
             console.log("c");
             ws.current?.close();
-            ws.current = undefined;
+            ws.current = null;
             clearTimeout(ping);
             websocketMounted = false;
         };

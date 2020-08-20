@@ -31,10 +31,14 @@ void main()
 	settings.tlsContext.useCertificateChainFile(server_configuration["ssl_cert"].to!string);
 	settings.tlsContext.usePrivateKeyFile(server_configuration["ssl_key"].to!string);
 	settings.sessionStore = new MemorySessionStore;
+	settings.useCompressionIfPossible = true;
 
 	// setLogLevel(LogLevel.debugV);
 
 	setup();
+
+	auto fileSettings = new HTTPFileServerSettings;
+	fileSettings.encodingFileExtension["gzip"] = ".gz";
 
 	auto router = new URLRouter;
 	router.get("/api/ws", handleWebSockets(&handleWebsocketConnection));
@@ -43,12 +47,12 @@ void main()
 	router.post("/api/logout", &userLogout);
 	router.get("/api/video/:id", &videoInfoRequest);
 	router.get("/api/user", &getUserInfo);
-	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string));
-	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html"));
+	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string, fileSettings));
+	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html", fileSettings));
 
-	// router.any("*", &checkUserLogin);
-	// router.get("/userData", &getUserJSON);
-	// router.put("/userData", &setUserJSON);
+	router.any("*", &checkUserLogin);
+	router.get("/userData", &getUserJSON);
+	router.put("/userData", &setUserJSON);
 	// router.post("/user", &createUser);
 	// router.put("/user", &updateUser);
 	// router.delete_("/user", &removeUser);
