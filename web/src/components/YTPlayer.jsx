@@ -54,6 +54,10 @@ class YouTubeVideo extends Component {
                     console.warn("Youtube Error:", e);
                     this.loadVideo();
                 }
+            },
+            playerVars: {
+                fs: 0,
+                origin: "https://www.youtube.com"
             }
         });
     };

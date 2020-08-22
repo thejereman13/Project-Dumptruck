@@ -31,7 +31,7 @@ function decodeHtml(html: string): string {
     return result;
 }
 
-function parseDurationString(time: string): number {
+export function parseDurationString(time: string): number {
     const reg = RegExp(
         /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/gm
     );
@@ -51,7 +51,7 @@ function getCorrectThumbnail(thumbnailList: any): Thumbnail {
 }
 
 export function videoIDFromURL(url: string): string | undefined {
-    const matches = /(youtu\S*)(watch\?v=|\/)(\w*)/.exec(url);
+    const matches = /(youtu\S*)(watch\?.*v=|\/)([a-zA-Z0-9_-]*)/.exec(url);
     if (matches && matches.length >= 4 && matches[3].length === 11) return matches[3];
     return undefined;
 }
