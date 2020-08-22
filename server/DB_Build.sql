@@ -5,16 +5,15 @@ USE dumptruckDB;
 
 DROP TABLE IF EXISTS Rooms;
 CREATE TABLE Rooms (
-    RoomID BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    RoomName TEXT
+    RoomID BIGINT NOT NULL PRIMARY KEY,
+    RoomSettings TEXT
 );
 
 DROP TABLE IF EXISTS RoomAdmins;
 CREATE TABLE RoomAdmins (
     RoomID BIGINT NOT NULL,
     AdminUUID VARCHAR(36) NOT NULL,
-    Role INT NOT NULL,
-    FOREIGN KEY (RoomID) REFERENCES Rooms (RoomID) ON DELETE CASCADE
+    Role INT NOT NULL
 );
 
 DROP TABLE IF EXISTS Users;
@@ -31,13 +30,13 @@ DROP FUNCTION IF EXISTS GetRoom;
 DELIMITER $$
 CREATE FUNCTION GetRoom (id BIGINT) RETURNS TEXT
 BEGIN
-    DECLARE rName TEXT;
+    DECLARE rSettings TEXT;
     IF NOT EXISTS (SELECT 1 FROM Rooms WHERE RoomID = id) THEN
-        INSERT INTO Rooms (RoomID, RoomName) VALUES (id, "");
-        RETURN "";
+        INSERT INTO Rooms (RoomID, RoomSettings) VALUES (id, "{}");
+        RETURN "{}";
     ELSE
-        SELECT RoomName INTO rName FROM Rooms WHERE RoomID = id;
-        RETURN rName;
+        SELECT RoomSettings INTO rSettings FROM Rooms WHERE RoomID = id;
+        RETURN rSettings;
     END IF;
 END $$
 DELIMITER ;

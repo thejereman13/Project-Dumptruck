@@ -16,3 +16,10 @@ export interface YoutubeVideoInformation {
     videoID: string;
     duration: number;
 }
+
+export interface RoomSettings {
+    name: string;
+    trim: number;
+    guestControls: boolean;
+    publicVisibility: boolean;
+}

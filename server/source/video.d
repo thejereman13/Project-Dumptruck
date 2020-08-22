@@ -21,7 +21,6 @@ struct Video {
     bool playing;
     int timeStamp;
     int duration;
-    int trim; // trim the ending of the video in seconds (positive shortens, negative will add time)
     UUID queuedBy;
 }
 
@@ -95,7 +94,7 @@ final class VideoPlaylist {
                 videoInfo.videoID,
                 false, 0,
                 videoInfo.duration,
-                0, userID);
+                userID);
             if (!userQueue.any!((u) => u == userID)) {
                 userQueue ~= userID;
             }

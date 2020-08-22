@@ -87,13 +87,46 @@ void setUserGID(UUID user, string gid) {
     conn.exec("UPDATE Users SET GID = (?) WHERE UserID = (?)", gid, user.toString());
 }
 
+struct DBRoomSettings {
+    string name;
+    int trim; // trim the ending of the video in seconds (positive shortens, negative will add time)
+    bool guestControls; // default false
+    bool publicVisibility; // default true
+}
+
 struct DBRoomInfo {
     long roomID;
-    string roomName;
+    DBRoomSettings settings;
     UUID[] admins;
 }
 
-DBRoomInfo getRoomInformation(long roomID, UUID user) {
+DBRoomSettings parseRoomSettings(Json settings) {
+    if (settings.length != __traits(allMembers, DBRoomSettings).length) {
+        return DBRoomSettings.init;
+    } else {
+        DBRoomSettings room = DBRoomSettings.init;
+        foreach (string key, Json value; settings.byKeyValue) {
+            switch (key) {
+                case "name":
+                    room.name = value.get!string;
+                    break;
+                case "trim":
+                    room.trim = value.get!int;
+                    break;
+                case "guestControls":
+                    room.guestControls = value.get!bool;
+                    break;
+                case "publicVisibility":
+                    room.publicVisibility = value.get!bool;
+                    break;
+                default: break;
+            }
+        }
+        return room;
+    }
+}
+
+DBRoomInfo peekRoomInformation(long roomID) {
     LockedConnection!Connection conn;
     try {
         conn = dbPool.lockConnection();
@@ -102,23 +135,40 @@ DBRoomInfo getRoomInformation(long roomID, UUID user) {
         return DBRoomInfo.init;
     }
     Row res = conn.query("SELECT GetRoom (?)", roomID).front;
-    string roomName = res[0].get!string;
-    if (roomName.length > 0) {
+    DBRoomSettings roomSettings = parseRoomSettings(parseJsonString(res[0].get!string));
+    if (roomSettings.name.length > 0) {
         Row[] ads = conn.query("SELECT * FROM RoomAdmins WHERE RoomID = (?)", roomID).array;
-        return DBRoomInfo(roomID, roomName, ads.map!(ad => UUID(ad[1].get!string)).array);
+        return DBRoomInfo(roomID, roomSettings, ads.map!(ad => UUID(ad[1].get!string)).array);
     } else {
-        roomName = "Room " ~ roomID.to!string;
-        conn.exec("UPDATE Rooms SET RoomName = (?) WHERE RoomID = (?)", roomName, roomID);
+        return DBRoomInfo(roomID, roomSettings);
+    }
+}
+
+DBRoomInfo getRoomInformation(long roomID, UUID user) {
+    DBRoomInfo roomInfo = peekRoomInformation(roomID);
+    //  If the room has no admins, it's assumed to be a new one
+    if (roomInfo.admins.length == 0) {
+        LockedConnection!Connection conn;
+        try {
+            conn = dbPool.lockConnection();
+        } catch (Exception e) {
+            logError(e.message);
+            return DBRoomInfo.init;
+        }
+        DBRoomSettings roomSettings = DBRoomSettings("Room " ~ roomID.to!string, 0, false, true);
+        conn.exec("UPDATE Rooms SET RoomSettings = (?) WHERE RoomID = (?)", serializeToJsonString(roomSettings), roomID);
         UUID[] adminList = [];
         if (!user.empty) {
             conn.exec("INSERT INTO RoomAdmins (RoomID, AdminUUID, Role) VALUES (?, ?, ?)", roomID, user.toString(), 0);
             adminList ~= user;
         }
-        return DBRoomInfo(roomID, roomName);
+        return DBRoomInfo(roomID, roomSettings, adminList);
+    } else {
+        return roomInfo;
     }
 }
 
-void setRoomName(long roomID, string roomName) {
+void setRoomSettings(long roomID, Json settings) {
     LockedConnection!Connection conn;
     try {
         conn = dbPool.lockConnection();
@@ -126,7 +176,7 @@ void setRoomName(long roomID, string roomName) {
         logError(e.message);
         return;
     }
-    conn.exec("UPDATE Rooms SET RoomName = (?) WHERE RoomID = (?)", roomName, roomID);
+    conn.exec("UPDATE Rooms SET RoomSettings = (?) WHERE RoomID = (?)", serializeToJsonString(parseRoomSettings(settings)), roomID);
 }
 
 void setRoomAdmins(long roomID, UUID[] admins) {
@@ -139,7 +189,7 @@ void setRoomAdmins(long roomID, UUID[] admins) {
     }
     conn.exec("DELETE FROM RoomAdmins WHERE RoomID = (?)", roomID);
     foreach(UUID ad; admins) {
-        conn.exec("INSERT INTO RoomAdmins (RoomID, AdminUUID, Role) VALUES (?, ?, ?)", roomID, ad.toString(), 0);
+        if (!ad.empty)
+            conn.exec("INSERT INTO RoomAdmins (RoomID, AdminUUID, Role) VALUES (?, ?, ?)", roomID, ad.toString(), 0);
     }
 }
-

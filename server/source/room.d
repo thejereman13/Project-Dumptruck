@@ -36,7 +36,7 @@ enum MessageType {
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue", // Server updating the room user queue order
-    RoomRename = "rename" // Admin updating the room name
+    RoomSettings = "settings" // Admin updating the room settings
 }
 
 struct RoomInfo {
@@ -46,11 +46,15 @@ struct RoomInfo {
     Video video;
     Video[][string] playlist;
     string[] userQueue;
+    bool guestControls;
 }
 
 final class Room {
     private long roomID;
     private string roomName;
+    private int videoTrim;
+    private bool guestControls;
+
     private Task roomLoop;
     private Timer videoLoop;
 
@@ -71,7 +75,9 @@ final class Room {
             writeln("Spooling Up Room: ", ID);
             auto dbInfo = DB.getRoomInformation(ID, creatingUser);
             if (dbInfo.roomID > 0) {
-                this.roomName = dbInfo.roomName;
+                this.roomName = dbInfo.settings.name;
+                this.videoTrim = dbInfo.settings.trim;
+                this.guestControls = dbInfo.settings.guestControls;
                 this.roomUsers.adminUsers = dbInfo.admins;
             }
         });
@@ -122,7 +128,8 @@ final class Room {
             roomUsers.adminUsers,
             currentVideo,
             playlist.getPlaylist(),
-            playlist.getUserQueue()
+            playlist.getUserQueue(),
+            guestControls
         ));
     }
 
@@ -192,7 +199,7 @@ final class Room {
             return;
         }
         if (currentVideo.playing) {
-            if (currentVideo.timeStamp <= (currentVideo.duration + currentVideo.trim)) { 
+            if (currentVideo.timeStamp <= (currentVideo.duration + videoTrim)) { 
                 postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
             } else {
                 postMessage(MessageType.Pause);
@@ -281,9 +288,12 @@ final class Room {
         return roomUsers.activeUser(id);
     }
 
-    private void setRoomName(Json name) {
-        string newName = name.get!string;
-        DB.setRoomName(roomID, newName);
+    private bool authorizedUser(UUID id) {
+        return roomUsers.adminUsers.any!(u => u == id);
+    }
+
+    private void setRoomSettings(Json settings) {
+        DB.setRoomSettings(roomID, settings);
         postJson(MessageType.Room, getRoomJson(), [], "Room");
     }
 
@@ -294,12 +304,16 @@ final class Room {
                 roomUsers.setUserActive(id);
                 break;
             case MessageType.Play:
-                currentVideo.playing = true;
-                postMessage(MessageType.Play);
+                if (guestControls || authorizedUser(id)) {
+                    currentVideo.playing = true;
+                    postMessage(MessageType.Play);
+                }
                 break;
             case MessageType.Pause:
-                currentVideo.playing = false;
-                postMessage(MessageType.Pause);
+                if (guestControls || authorizedUser(id)) {
+                    currentVideo.playing = false;
+                    postMessage(MessageType.Pause);
+                }
                 break;
             case MessageType.QueueAdd:
                 queueVideo(j["data"], id);
@@ -311,13 +325,17 @@ final class Room {
                 queueAllVideo(j["data"], id);
                 break;
             case MessageType.Skip:
-                queueNextVideo();
+                if (guestControls || authorizedUser(id)) {
+                    queueNextVideo();
+                }
                 break;
-            case MessageType.RoomRename:
-                setRoomName(j["data"]);
+            case MessageType.RoomSettings:
+                if (authorizedUser(id))
+                    setRoomSettings(j["data"]);
                 break;
             default:
-                writeln("Invalid Message Type", message);
+                logWarn("Invalid Message Type %s", message);
+                break;
         }
     }
 }

@@ -18,7 +18,7 @@ export enum MessageType {
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue", // Server updating the room user queue order
-    RoomRename = "rename" // Admin updating the room name
+    RoomSettings = "settings" // Admin updating the room settings
 }
 
 export interface Video {
@@ -39,6 +39,7 @@ export interface RoomInfo {
     video: Video;
     playlist: PlaylistByUser;
     userQueue: string[];
+    guestControls: boolean;
 }
 
 export interface WSMessage {

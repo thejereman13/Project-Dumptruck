@@ -47,6 +47,7 @@ void main()
 	router.post("/api/logout", &userLogout);
 	router.get("/api/video/:id", &videoInfoRequest);
 	router.get("/api/user", &getUserInfo);
+	router.get("/api/room/:id", &getRoomSettings);
 	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string, fileSettings));
 	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html", fileSettings));
 

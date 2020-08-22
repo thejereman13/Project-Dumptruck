@@ -3,6 +3,8 @@ module configuration;
 import vibe.vibe;
 import std.stdio;
 
+import DB = database;
+
 //Constant data values
 
 //Server JSON configurations (constant per runtime)
@@ -32,4 +34,9 @@ void readConfigFile() {
         if (!(s in server_configuration))
             throw new Exception("Configuration Item \'" ~ s ~ "\' is missing from the server_configuration.json file");
     }
+}
+
+void getRoomSettings(HTTPServerRequest req, HTTPServerResponse res) {
+    long id = req.params["id"].to!long;
+    res.writeJsonBody(serializeToJson(DB.peekRoomInformation(id)), 201, false);
 }
