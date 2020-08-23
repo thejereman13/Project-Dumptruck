@@ -30,13 +30,19 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
         (search: string) => {
             if (currentAPI?.isAPILoaded() && search.length > 0) {
                 const id = videoIDFromURL(search);
-                if (id) RequestVideo(id, controller, vid => setSearchResults([vid]));
-                else SearchVideo(search, controller, setSearchResults);
+                if (id)
+                    RequestVideo(id, controller, vid => {
+                        if (!controller.current.signal.aborted) setSearchResults([vid]);
+                    });
+                else
+                    SearchVideo(search, controller, results => {
+                        if (!controller.current.signal.aborted) setSearchResults(results);
+                    });
             } else {
                 setSearchResults([]);
             }
         },
-        400,
+        200,
         [currentAPI]
     );
 
@@ -78,7 +84,7 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     };
 
     return (
-        <div class={style.QueueModal} onClick={(e): void => e.stopPropagation()}>
+        <div class={style.ModalBox} onClick={(e): void => e.stopPropagation()}>
             <div>
                 <Tabs tabNames={["Search", "Playlists"]} index={queueTab} onIndex={setQueueTab} />
             </div>

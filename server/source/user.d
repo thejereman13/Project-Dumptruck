@@ -138,3 +138,19 @@ void getUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
     res.writeJsonBody("{}", 400, false);
 }
 
+void getPublicUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
+    const UUID userID = UUID(req.params["id"].to!string);
+
+    if (!userID.empty) {
+        SiteUser u = constructSiteUser(parseJsonString(DB.getUserData(userID)));
+        if (!u.id.empty) {
+            // Remove sensitive Information
+            u.googleID = "";
+            u.email = "";
+            res.writeJsonBody(serializeToJson(u), 201, false);
+            return;
+        }
+    }
+    res.writeJsonBody("{}", 400, false);
+}
+

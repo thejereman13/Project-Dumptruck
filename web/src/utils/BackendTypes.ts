@@ -23,3 +23,9 @@ export interface RoomSettings {
     guestControls: boolean;
     publicVisibility: boolean;
 }
+
+export interface RoomInfo {
+    roomID: number;
+    settings: RoomSettings;
+    admins: string[];
+}

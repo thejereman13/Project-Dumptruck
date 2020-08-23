@@ -12,3 +12,8 @@ declare module "preact-mui/lib/container" {
     import { ContainerProps } from "@types/muicss/react";
     export default class Container extends React.Component<ContainerProps> {}
 }
+
+declare module "preact-mui/lib/checkbox" {
+    import { CheckboxProps } from "@types/muicss/react";
+    export default class Checkbox extends React.Component<CheckboxProps> {}
+}

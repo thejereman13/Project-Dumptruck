@@ -60,6 +60,7 @@
     display: flex;
     padding: 1rem;
     height: 8rem;
+    max-width: 100%;
 }
 .VideoCard .VideoIcon {
     height: 100%;

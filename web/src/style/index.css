@@ -1,132 +1,184 @@
 * {
-	box-sizing: border-box;
-	--theme-background: #121212;
-	--theme-primary: #0188d1;
-	--theme-primary-light: #5eb8ff;
-	--theme-primary-dark: #005b9f;
-	--theme-secondary: #bc2727;
-	--theme-secondary-light: #f55d50;
-	--theme-secondary-dark: #840000;
-	--text-primary: #000000dd;
-	--text-secondary: #ffffffdd;
-	--text-secondary-medium: #ffffff99;
-	--text-secondary-disabled: #ffffff60;
+    box-sizing: border-box;
+    --theme-background: #121212;
+    --theme-primary: #0188d1;
+    --theme-primary-light: #5eb8ff;
+    --theme-primary-dark: #005b9f;
+    --theme-secondary: #bc2727;
+    --theme-secondary-light: #f55d50;
+    --theme-secondary-dark: #840000;
+    --text-primary: #000000dd;
+    --text-secondary: #ffffffdd;
+    --text-secondary-medium: #ffffff99;
+    --text-secondary-disabled: #ffffff60;
 
-	--dp2-surface: #222222;
-	--dp4-surface: #272727;
-	--dp8-surface: #2e2e2e;
-	--dp16-surface: #353535;
-	--dp24-surface: #373737;
+    --dp2-surface: #222222;
+    --dp4-surface: #272727;
+    --dp8-surface: #2e2e2e;
+    --dp16-surface: #353535;
+    --dp24-surface: #373737;
 
-	color: var(--text-secondary);
+    color: var(--text-secondary);
 }
 
-html, body {
-	height: 100%;
-	width: 100%;
-	padding: 0;
-	margin: 0;
-	background: var(--theme-background);
-	font-family: 'Helvetica Neue', arial, sans-serif;
-	font-weight: 400;
-	color: var(--text-secondary);
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+html,
+body {
+    height: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    background: var(--theme-background);
+    font-family: "Helvetica Neue", arial, sans-serif;
+    font-weight: 400;
+    color: var(--text-secondary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 ::-webkit-scrollbar {
-	width: 0.5rem;
+    width: 0.5rem;
 }
 ::-webkit-scrollbar-track {
-	box-shadow: inset 0 0 6px rgba(0,0,0,0.2);
-	border-radius: 1rem;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+    border-radius: 1rem;
 }
 ::-webkit-scrollbar-thumb {
-	background-color: rgba(0,0,0,.4);
-	border-radius: 1rem;
-	outline: 1px solid slategrey;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 1rem;
+    outline: 1px solid slategrey;
 }
 
 .tippy-tooltip {
-	font-size: 1.2rem;
+    font-size: 1.2rem;
 }
 
 .mui--text-body1 {
-	color: var(--text-secondary-medium);
-	text-transform: none;
+    color: var(--text-secondary-medium);
+    text-transform: none;
 }
 .mui--text-subhead {
-	color: var(--text-secondary-medium);
-	text-transform: none;
+    color: var(--text-secondary-medium);
+    text-transform: none;
 }
 .mui--text-title {
-	color: var(--text-secondary-medium);
-	text-transform: none;
+    color: var(--text-secondary-medium);
+    text-transform: none;
 }
 
 #app {
-	height: 100%;
+    height: 100%;
 }
 
 .mui-textfield {
-	display: inline-block;
+    display: inline-block;
 }
 
 .mui-btn {
-	margin: 1rem;
-	background-color: var(--theme-primary);
-	color: var(--text-primary);
+    margin: 1rem;
+    background-color: var(--theme-primary);
+    color: var(--text-primary);
 }
 .mui-btn.mui-btn--flat:focus:not(:hover) {
-	outline: none;
-	box-shadow: none;
-	background-color: transparent;
+    outline: none;
+    box-shadow: none;
+    background-color: transparent;
 }
 .mui-btn:focus:not(:hover) {
-	outline: none;
-	box-shadow: none;
-	background-color: var(--theme-primary-light);
+    outline: none;
+    box-shadow: none;
+    background-color: var(--theme-primary-light);
 }
 
 .mui-btn.mui-btn--flat:hover {
-	background-color: var(--dp24-surface);
+    background-color: var(--dp24-surface);
 }
 
 .mui-btn--fab {
-	display: inline-flex;
-	justify-content: center;
-	align-items: center;
-	background-color: var(--theme-primary-light);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--theme-primary-light);
+}
+
+.mui-btn--accent {
+    background-color: transparent !important;
+}
+.mui-btn--accent:hover {
+    background-color: #fff4 !important;
 }
 
 .mui-tabs__bar > li > a {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 a {
-	color: var(--theme-secondary) !important;
+    color: var(--theme-secondary) !important;
 }
 
-.mui-tabs__bar>li.mui--is-active {
-	border-color: var(--theme-secondary);
+.mui-tabs__bar > li.mui--is-active {
+    border-color: var(--theme-secondary);
 }
 
-.mui-textfield--float-label>label {
-	color: var(--text-secondary-medium);
+.mui-textfield--float-label > label {
+    color: var(--text-secondary-medium);
 }
 
-.mui-textfield--float-label>input:not(:focus).mui--is-not-empty~label, .mui-textfield--float-label>input:not(:focus):not(:empty):not(.mui--is-empty):not(.mui--is-not-empty)~label, .mui-textfield--float-label>input:not(:focus)[value]:not([value=""]):not(.mui--is-empty):not(.mui--is-not-empty)~label, .mui-textfield--float-label>textarea:not(:focus).mui--is-not-empty~label, .mui-textfield--float-label>textarea:not(:focus):not(:empty):not(.mui--is-empty):not(.mui--is-not-empty)~label, .mui-textfield--float-label>textarea:not(:focus)[value]:not([value=""]):not(.mui--is-empty):not(.mui--is-not-empty)~label {
-	color: var(--theme-primary-light);
+.mui-textfield--float-label > input:not(:focus).mui--is-not-empty ~ label,
+.mui-textfield--float-label > input:not(:focus):not(:empty):not(.mui--is-empty):not(.mui--is-not-empty) ~ label,
+.mui-textfield--float-label
+    > input:not(:focus)[value]:not([value=""]):not(.mui--is-empty):not(.mui--is-not-empty)
+    ~ label,
+.mui-textfield--float-label > textarea:not(:focus).mui--is-not-empty ~ label,
+.mui-textfield--float-label > textarea:not(:focus):not(:empty):not(.mui--is-empty):not(.mui--is-not-empty) ~ label,
+.mui-textfield--float-label
+    > textarea:not(:focus)[value]:not([value=""]):not(.mui--is-empty):not(.mui--is-not-empty)
+    ~ label {
+    color: var(--theme-primary-light);
 }
 
-.mui-textfield>input:focus~label, .mui-textfield>textarea:focus~label {
-	color: var(--theme-primary-light);
+.mui-textfield > input:focus ~ label,
+.mui-textfield > textarea:focus ~ label {
+    color: var(--theme-primary-light);
 }
 
-.mui-textfield>input, .mui-textfield>textarea {
-	color: var(--text-secondary);
+.mui-textfield > input,
+.mui-textfield > textarea {
+    color: var(--text-secondary);
 }
 
-.mui-textfield>input:focus, .mui-textfield>textarea:focus {
-	border-color: var(--theme-primary);
+.mui-textfield > input:focus,
+.mui-textfield > textarea:focus {
+    border-color: var(--theme-primary);
+}
+
+.mui-checkbox > label {
+    color: var(--text-secondary-medium);
+    text-transform: none;
+    font-size: 16px;
+    line-height: 24px;
+    padding-left: 24px;
+}
+
+.mui-checkbox > label > input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    height: 16px;
+    width: 16px;
+    margin-left: -24px !important;
+    border-radius: 4px;
+    background-color: var(--text-secondary);
+    outline: none !important;
+}
+.mui-checkbox > label > input:checked {
+    color: var(--text-secondary);
+    background-color: var(--theme-primary);
+    content: "x";
+}
+
+.mui-checkbox > label > input:checked::after {
+    content: "\2713";
+    position: absolute;
+    line-height: 18px;
+    font-size: 80%;
+    margin-left: calc(25% - 1px);
 }

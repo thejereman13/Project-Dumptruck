@@ -70,7 +70,7 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                     </Button>
                 </div>
             </div>
-            <Modal className={style.ModalContainer} open={queueOpen} onClose={(): void => setQueueOpen(false)}>
+            <Modal className={style.QueueContainer} open={queueOpen} onClose={(): void => setQueueOpen(false)}>
                 <QueueModal currentAPI={currentAPI} submitNewVideo={submitNewVideo} submitAllVideos={submitAllVideos} />
             </Modal>
         </div>

@@ -74,16 +74,21 @@ final class Room {
         roomLoop = runTask({
             writeln("Spooling Up Room: ", ID);
             auto dbInfo = DB.getRoomInformation(ID, creatingUser);
+            writeln(dbInfo);
             if (dbInfo.roomID > 0) {
-                this.roomName = dbInfo.settings.name;
-                this.videoTrim = dbInfo.settings.trim;
-                this.guestControls = dbInfo.settings.guestControls;
+                readInRoomSettings(dbInfo.settings);
                 this.roomUsers.adminUsers = dbInfo.admins;
             }
         });
         videoLoop = createTimer({
             videoSyncLoop();
         });
+    }
+
+    private void readInRoomSettings(const DB.DBRoomSettings settings) {
+        this.roomName = settings.name;
+        this.videoTrim = settings.trim;
+        this.guestControls = settings.guestControls;
     }
 
     /* Posting Messages to clients */
@@ -262,8 +267,9 @@ final class Room {
 
         // If the room was created by a guest user (before they finished logging in)
         // assign admin access to the first person to join the room (probably the person still logging in)
-        if (roomUsers.adminUsers.length == 0) {
+        if (roomUsers.adminUsers.length == 0 && !clientID.empty) {
             DB.setRoomAdmins(roomID, [clientID]);
+            roomUsers.adminUsers = [clientID];
         }
 
         Json j = Json.emptyObject;
@@ -293,8 +299,11 @@ final class Room {
     }
 
     private void setRoomSettings(Json settings) {
-        DB.setRoomSettings(roomID, settings);
-        postJson(MessageType.Room, getRoomJson(), [], "Room");
+        const newSettings = DB.setRoomSettings(roomID, settings);
+        if (newSettings.name.length > 0) {
+            readInRoomSettings(newSettings);
+            postJson(MessageType.Room, getRoomJson(), [], "Room");
+        }
     }
 
     public void receivedMessage(UUID id, string message) {

@@ -1,15 +1,19 @@
 import { h, JSX } from "preact";
 import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
+import Button from "preact-mui/lib/button";
 import YouTubeVideo from "../../components/YTPlayer";
 import { useWebsockets } from "../../utils/Websockets";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
-import { RoomUser, YoutubeVideoInformation } from "../../utils/BackendTypes";
+import { RoomUser, YoutubeVideoInformation, RoomSettings } from "../../utils/BackendTypes";
 import { UserList } from "./UserList";
 import { VideoQueue } from "./VideoQueue";
 import { Tabs, Tab } from "../../components/Tabs";
 import { BottomBar } from "./BottomBar";
 import { useGAPIContext } from "../../utils/GAPI";
+import { Modal } from "../../components/Modal";
+import { SettingModal } from "./SettingModal";
+import { Tooltip } from "../../components/Popup";
 
 export interface RoomProps {
     roomID: string;
@@ -37,6 +41,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
     const [userQueue, setUserQueue] = useState<string[]>([]);
     const [sidebarTab, setSidebarTab] = useState(0);
+    const [settingsOpen, setSettingsOpen] = useState(false);
+
     const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
     const [videoTime, setVideoTime] = useState(0);
     const [playing, setPlaying] = useState(false);
@@ -148,12 +154,36 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
         }
     };
+    const updateSettings = (settings: RoomSettings): void => {
+        if (ws) {
+            ws.send(JSON.stringify({ type: MessageType.RoomSettings, data: settings }));
+        }
+    };
 
     return (
         <div class={style.PageRoot}>
             <div class={style.splitPane}>
                 <div class={style.videoPanel}>
-                    <h2>{roomTitle}</h2>
+                    <div>
+                        <div class={["mui--text-display1", style.centerTooltipChild].join(" ")}>
+                            {roomTitle}
+                            <Tooltip
+                                className={[style.centerTooltipChild, style.settingButton].join(" ")}
+                                content="Edit Room Settings"
+                            >
+                                <Button
+                                    size="small"
+                                    variant="fab"
+                                    color="accent"
+                                    onClick={(): void => setSettingsOpen(true)}
+                                >
+                                    <i style={{ fontSize: "28px" }} class="material-icons">
+                                        settings
+                                    </i>
+                                </Button>
+                            </Tooltip>
+                        </div>
+                    </div>
                     <YouTubeVideo className={style.videoDiv} id={currentVideo?.youtubeID ?? ""} getPlayer={getPlayer} />
                 </div>
                 <div class={style.sidePanel}>
@@ -178,6 +208,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     </div>
                 </div>
             </div>
+            <Modal className={style.SettingContainer} open={settingsOpen} onClose={(): void => setSettingsOpen(false)}>
+                <SettingModal
+                    roomID={roomID}
+                    updateSettings={updateSettings}
+                    onClose={(): void => setSettingsOpen(false)}
+                />
+            </Modal>
             <BottomBar
                 playing={playing}
                 currentVideo={currentVideo}

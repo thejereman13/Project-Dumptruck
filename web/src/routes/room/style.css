@@ -1,16 +1,16 @@
 .PageRoot {
-	padding-top: 56px;
-	min-height: 100%;
-	width: 100%;
-	max-height: 100%;
-	display: flex;
-	flex-flow: column;
+    padding-top: 56px;
+    min-height: 100%;
+    width: 100%;
+    max-height: 100%;
+    display: flex;
+    flex-flow: column;
 }
 
-@media (min-width: 480px){
-	.PageRoot {
-	   padding-top: 64px;
-   }
+@media (min-width: 480px) {
+    .PageRoot {
+        padding-top: 64px;
+    }
 }
 
 .progress {
@@ -18,189 +18,217 @@
 }
 
 .playButton {
-	vertical-align: middle;
+    vertical-align: middle;
 }
 
 .splitPane {
-	display: flex;
-	flex-direction: row;
-	flex: auto;
-	overflow-y: hidden;
+    display: flex;
+    flex-direction: row;
+    flex: auto;
+    overflow-y: hidden;
 }
 
 .videoPanel {
-	width: 100%;
-	display: flex;
-	flex-flow: column;
-	padding: 1rem;
-	margin-bottom: 3rem;
-	flex: auto;
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    padding: 1rem;
+    margin-bottom: 3rem;
+    flex: auto;
 }
 
 .sidePanel {
-	max-width: 33%;
-	display: flex;
-	flex-direction: column;
-	padding: 1rem;
-	margin: 3rem 1rem;
-	background-color: var(--dp2-surface);
-	border-radius: 1rem;
+    max-width: 33%;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    margin: 3rem 1rem;
+    background-color: var(--dp2-surface);
+    border-radius: 1rem;
 }
 
 .sidePanelTabBody {
-	padding: 1rem 1rem 0 1rem;
-	display: flex;
-	overflow-y: hidden;
+    padding: 1rem 1rem 0 1rem;
+    display: flex;
+    overflow-y: hidden;
 }
 
 .videoDiv {
-	height: 100%;
-	display: flex;
-	flex: auto;
+    height: 100%;
+    display: flex;
+    flex: auto;
 }
 .videoDiv iframe {
-	width: 100%;
-	height: auto;
+    width: 100%;
+    height: auto;
 }
 
-@media (max-width: 960px){
-	.splitPane {
-		flex-direction: column;
-	}
-	.sidePanel {
-		max-width: unset;
-	}
+@media (max-width: 960px) {
+    .splitPane {
+        flex-direction: column;
+    }
+    .sidePanel {
+        max-width: unset;
+    }
 }
 
 .textEllipsis {
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .BottomBar {
-	display: flex;
-	justify-content: space-between;
-	flex-direction: row;
-	width: 100%;
-	background-color: var(--dp2-surface);
-	height: 7rem;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    width: 100%;
+    background-color: var(--dp2-surface);
+    height: 7rem;
 }
 
 .bottomVideoInfo {
-	display: flex;
-	flex-direction: row;
-	padding: 0.5rem;
-	padding-right: 8rem;
-	width: 50%;
-	max-width: 50%;
+    display: flex;
+    flex-direction: row;
+    padding: 0.5rem;
+    padding-right: 8rem;
+    width: 50%;
+    max-width: 50%;
 }
 
 .bottomVideoIcon {
-	max-height: 6rem;
-	padding-right: 2rem;
+    max-height: 6rem;
+    padding-right: 2rem;
 }
 
 .bottomMiddleActions {
-	width: 16rem;
-	position: absolute;
-	left: 50%;
-	right: 50%;
-	height: 7rem;
-	transform: translate3d(-50%, 0, 0);
-	display: flex;
-	justify-content: space-evenly;
+    width: 16rem;
+    position: absolute;
+    left: 50%;
+    right: 50%;
+    height: 7rem;
+    transform: translate3d(-50%, 0, 0);
+    display: flex;
+    justify-content: space-evenly;
 }
 
 .bottomRightActions {
-	display: flex;
-	align-content: center;
-	justify-content: flex-end;
-	padding-left: 8rem;
-	width: 50%;
-	max-width: 50%;
+    display: flex;
+    align-content: center;
+    justify-content: flex-end;
+    padding-left: 8rem;
+    width: 50%;
+    max-width: 50%;
 }
 
 .centerTooltipChild {
-	display: inline-flex !important;
-	align-items: center;
+    display: inline-flex !important;
+    align-items: center;
 }
 
-.ModalContainer {
-	max-height: 100%;
-	width: 66%;
-	padding: 8rem;
-	display: flex;
-	overflow: hidden;
+.settingButton {
+    margin-left: 1rem;
 }
 
-.QueueModal {
-	background-color: var(--dp4-surface);
-	border-radius: 1rem;
-	padding: 2rem;
-	flex: auto;
-	display: flex;
-	flex-direction: column;
+.QueueContainer {
+    max-height: 100%;
+    width: 50%;
+    margin: 0 8rem;
+    padding: 8rem 0;
+    display: flex;
+    overflow: hidden;
+}
+
+.SettingContainer {
+    max-height: 100%;
+    width: 25%;
+    margin: 0 8rem;
+    padding: 8rem 0;
+    display: flex;
+    overflow: hidden;
+}
+
+.ModalBox {
+    background-color: var(--dp4-surface);
+    border-radius: 1rem;
+    padding: 2rem;
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
 }
 
 .searchDiv {
-	width: 100%;
-	display: flex;
-	align-items: center;
-	flex-direction: row;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
 }
-.searchDiv>div {
-	flex: auto;
+.searchDiv > div {
+    flex: auto;
 }
 .searchPanel {
-	display: flex;
-	width: 100%;
-	flex-direction: column;
-	overflow-y: hidden;
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    overflow-y: hidden;
 }
 .scrollBox {
-	overflow-y: auto;
-	width: 100%;
+    overflow-y: auto;
+    width: 100%;
 }
 
 .QueueCard {
-	display: flex;
-	flex-flow: column;
-	padding: 1rem;
-	width: 100%;
+    display: flex;
+    flex-flow: column;
+    padding: 1rem;
+    width: 100%;
 }
 .QueueCard .QueueIcon {
-	height: 8rem;
+    height: 8rem;
 }
 .QueueCard .QueueInfo {
-	height: 8rem;
-	flex-direction: column;
-	padding-left: 1rem;
-	text-align: start;
-	display: flex;
-	overflow: hidden;
+    height: 8rem;
+    flex-direction: column;
+    padding-left: 1rem;
+    text-align: start;
+    display: flex;
+    overflow: hidden;
 }
 .QueueCardInfo {
-	display: flex;
-	flex-flow: row;
+    display: flex;
+    flex-flow: row;
 }
 .QueueVideos {
-	margin-left: 4rem;
-	height: 0;
-	overflow-y: auto;
-	transition: height 0.25s ease;
-	background-color: var(--dp4-surface);
+    margin-left: 4rem;
+    height: 0;
+    overflow-y: auto;
+    transition: height 0.25s ease;
+    background-color: var(--dp4-surface);
 }
 .QueueVideosExpanded {
-	height: 36rem;
+    height: 36rem;
 }
 .QueueActionDiv {
-	margin-left: auto;
+    margin-left: auto;
 }
 .VideoCardButton {
-	display: flex;
-	height: unset;
-	padding: 0 1rem;
-	width: 100%;
-	margin: 0 !important;
+    display: flex;
+    height: unset;
+    padding: 0 1rem;
+    width: 100%;
+    margin: 0 !important;
+}
+
+.settingTrimField {
+    display: inline-flex;
+}
+.settingTrimField > div {
+    padding: 0;
+    margin-bottom: 0;
+    width: 8rem;
+}
+.settingTrimLabel {
+    display: inline-flex;
+    margin-right: 1rem;
 }

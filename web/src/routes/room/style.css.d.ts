@@ -2,16 +2,17 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         BottomBar: string;
-        ModalContainer: string;
+        ModalBox: string;
         PageRoot: string;
         QueueActionDiv: string;
         QueueCard: string;
         QueueCardInfo: string;
+        QueueContainer: string;
         QueueIcon: string;
         QueueInfo: string;
-        QueueModal: string;
         QueueVideos: string;
         QueueVideosExpanded: string;
+        SettingContainer: string;
         VideoCardButton: string;
         bottomMiddleActions: string;
         bottomRightActions: string;
@@ -23,6 +24,9 @@ declare namespace StyleCssNamespace {
         scrollBox: string;
         searchDiv: string;
         searchPanel: string;
+        settingButton: string;
+        settingTrimField: string;
+        settingTrimLabel: string;
         sidePanel: string;
         sidePanelTabBody: string;
         splitPane: string;
