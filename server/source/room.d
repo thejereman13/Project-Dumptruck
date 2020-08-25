@@ -57,6 +57,9 @@ final class Room {
 
     private Task roomLoop;
     private Timer videoLoop;
+    private Timer clearUser;
+
+    private UUID[] usersPendingRemoval;
 
     private LocalManualEvent pingEvent;
     public shared size_t latestMessage = 0;
@@ -82,6 +85,9 @@ final class Room {
         });
         videoLoop = createTimer({
             videoSyncLoop();
+        });
+        clearUser = createTimer({
+            removeUsersFromQueue();
         });
     }
 
@@ -151,7 +157,6 @@ final class Room {
         if (playlist.hasNextVideo()) {
             currentVideo = playlist.getNextVideo();
             currentVideo.playing = true;
-            // TODO: move to async method to wait for clients to declare ready
             try {
                 writeln("Room ", roomName, " Now Playing ", currentVideo.youtubeID);
                 postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
@@ -190,7 +195,11 @@ final class Room {
 
     private void roomLoopOperation() {
         while(roomUsers.userCount > 0) {
-            if (roomUsers.updateUserStatus())
+            auto removed = roomUsers.updateUserStatus();
+            foreach(id; removed) {
+                playlist.removeUser(id);
+            }
+            if (removed.length > 0)
                 postUserList();
             sleep(10.seconds);
         }
@@ -199,7 +208,6 @@ final class Room {
     @safe
     private nothrow void videoSyncLoop() {
         if (roomUsers.userCount <= 0 && currentVideo.playing == false)  {
-            // TODO: check up on userCount (getting a lot of failed to remove user)
             videoLoop.stop();
             currentVideo = Video.init;
             return;
@@ -214,6 +222,15 @@ final class Room {
             }
             currentVideo.timeStamp++;
         }
+    }
+    @safe
+    private nothrow void removeUsersFromQueue() {
+        foreach (id; usersPendingRemoval) {
+            if (!roomUsers.activeUser(id)) {
+                playlist.removeUser(id);
+            }
+        }
+        usersPendingRemoval = [];
     }
 
     /* Video Queue */
@@ -282,9 +299,17 @@ final class Room {
     }
     public void removeUser(UUID id) {
         if (roomUsers.removeUser(id)) {
-            playlist.removeUser(id);
             postUserList();
             writeln("User Left: ", id.toString());
+            // When a user leaves, wait at least 5 seconds before removing their videos from queue
+            // Multiple back-to-back leaves may continuously bump this callback further and further back,
+            // but that shouldn't be a huge issue. Doing independent timers would likely cause more problems
+            // than it's worth.
+            usersPendingRemoval ~= id;
+            if (clearUser.pending) {
+                clearUser.stop();
+            }
+            clearUser.rearm(5.seconds, false);
         }
         if (roomUsers.userCount == 0) {
             roomLoop.join();

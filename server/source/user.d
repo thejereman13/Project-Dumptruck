@@ -53,26 +53,26 @@ final class UserList {
         return false;
     }
 
-    public bool activeUser(UUID id) {
+    public @trusted nothrow bool activeUser(UUID id) {
         return id in roomUsers && id in roomUserStatus;
     }
     public void setUserActive(UUID id) {
         roomUserStatus[id] = true;
     }
 
-    public bool updateUserStatus() {
-        bool didRemove = false;
+    public UUID[] updateUserStatus() {
+        UUID[] removed;
         foreach (User u; roomUsers) {
             if (u.clientID in roomUserStatus) {
                 if (!roomUserStatus[u.clientID]) {
                     writeln("Lost User ", u.clientID);
                     removeUser(u.clientID);
-                    didRemove = true;
+                    removed ~= u.clientID;
                 }
                 roomUserStatus[u.clientID] = false;
             }
         }
-        return didRemove;
+        return removed;
     }
 }
 
