@@ -140,6 +140,7 @@ final class Room {
 
     private @trusted void postUserList() {
         postSerializedJson!(User[])(MessageType.UserList, roomUsers.getUserList());
+        logInfo("User Count: %d", roomUsers.getUserList().length);
     }
     private @trusted nothrow void postPlaylist() {
         postSerializedJson!(Video[][string])(MessageType.QueueOrder, playlist.getPlaylist());

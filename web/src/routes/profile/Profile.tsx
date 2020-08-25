@@ -1,40 +1,37 @@
 import { h, JSX } from "preact";
-import { useGAPIContext, RequestAllPlaylists } from "../../utils/GAPI";
-import { useCallback, useState, useEffect } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { SiteUser } from "../../utils/BackendTypes";
-import { GetCurrentUser } from "../../utils/RestCalls";
+import { GetCurrentUser, ClearUserInfo } from "../../utils/RestCalls";
 import { route } from "preact-router";
-import { PlaylistInfo } from "../../utils/YoutubeTypes";
 import * as style from "./style.css";
-import { VideoDisplayCard } from "../../components/VideoCard";
 import { useAbortController } from "../../components/AbortController";
+import { GoogleLogout } from "react-google-login";
+import { CLIENTID } from "../../constants";
+import { useGAPIContext } from "../../utils/GAPI";
 
 export function Profile(): JSX.Element {
-    const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
     const [user, setUser] = useState<SiteUser | null>(null);
-
-    const currentAPI = useGAPIContext();
 
     const controller = useAbortController();
 
-    const requestPlaylists = useCallback(() => {
-        RequestAllPlaylists(controller, setUserPlaylists);
-    }, [controller]);
-
-    useEffect(() => {
-        if (currentAPI?.getUser() && currentAPI.isAPILoaded()) requestPlaylists();
-    }, [currentAPI, requestPlaylists]);
+    const gapi = useGAPIContext();
 
     useEffect(() => {
         GetCurrentUser(controller).then(usr => {
-            if (usr !== null) setUser(usr);
+            if (usr !== null && usr.id !== undefined) setUser(usr);
             else route("/login");
         });
     }, [controller]);
 
-    const expandPlaylist = (pID: string): void => {
-        console.log(pID);
-    };
+    function onSignOut(): void {
+        gapi?.forceSignOut();
+        ClearUserInfo();
+        route("/");
+    }
+
+    function onSignOutFailure(): void {
+        console.warn("Sign In Failure");
+    }
 
     return (
         <div class={style.root}>
@@ -47,17 +44,20 @@ export function Profile(): JSX.Element {
                 <div>
                     <h2>{`Signed in as ${user.name}`}</h2>
                     <br />
-                    <h3>User Playlists:</h3>
-                    <div class={style.PlaylistDiv}>
-                        {userPlaylists.map(list => {
-                            return (
-                                <VideoDisplayCard
-                                    key={list.id}
-                                    info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
-                                    onClick={expandPlaylist}
-                                />
-                            );
-                        })}
+                    <div class="mui--text-title">Disconnect Account:</div>
+                    <br />
+                    <GoogleLogout
+                        clientId={CLIENTID}
+                        onFailure={onSignOutFailure}
+                        onLogoutSuccess={onSignOut}
+                        theme="dark"
+                        buttonText="Disconnect Account"
+                    />
+                    <div class="mui--text-body1">
+                        WARNING: All user preferences on this website will also be deleted!
+                    </div>
+                    <div class="mui--text-body1">
+                        Your existing Google/Youtube account and associated data will not be impacted.
                     </div>
                 </div>
             )}

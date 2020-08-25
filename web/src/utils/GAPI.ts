@@ -1,6 +1,6 @@
 import { useGoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
 import { SiteUser } from "./BackendTypes";
-import { useContext, useState, Ref } from "preact/hooks";
+import { useContext, useState, Ref, useCallback } from "preact/hooks";
 import { createContext } from "preact";
 import { CLIENTID } from "../constants";
 import {
@@ -21,43 +21,69 @@ export interface LoggedInUser extends SiteUser {
 export interface GAPIInfo {
     getUser: () => LoggedInUser | null;
     isAPILoaded: () => boolean;
+    forceSignIn: (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => void;
+    forceSignOut: () => void;
 }
 
 export function useGoogleLoginAPI(): GAPIInfo {
     const [siteUser, setSiteUser] = useState<LoggedInUser | null>(null);
     const [isGAPILoaded, setAPILoaded] = useState<boolean>(false);
 
-    useGoogleLogin({
-        clientId: CLIENTID,
-        scope: "https://www.googleapis.com/auth/youtube.readonly",
-        onSuccess: (resp: GoogleLoginResponse | GoogleLoginResponseOffline) => {
-            if (resp.code !== undefined) return;
-            const response = resp as GoogleLoginResponse;
-            fetch("/api/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    token: response.tokenId,
-                    clientId: response.googleId
-                })
-            }).then(async userResp => {
-                const j: SiteUser = await userResp.json();
+    const refreshTokenSetup = (res: GoogleLoginResponse): void => {
+        // Timing to renew access token
+        let refreshTiming = (res.tokenObj.expires_in || 3600 - 5 * 60) * 1000;
+        const refreshToken = async (): Promise<void> => {
+            const newAuthRes = await res.reloadAuthResponse();
+            refreshTiming = (newAuthRes.expires_in || 3600 - 5 * 60) * 1000;
+            // saveUserToken(newAuthRes.access_token);  <-- save new token
+            // Setup the other timer after the first one
+            setTimeout(() => {
+                refreshToken();
+            }, refreshTiming);
+        };
+        // Setup first refresh timer
+        setTimeout(() => {
+            refreshToken();
+        }, refreshTiming);
+    };
+
+    const onSuccess = useCallback((resp: GoogleLoginResponse | GoogleLoginResponseOffline): void => {
+        if (resp.code !== undefined) return;
+        const response = resp as GoogleLoginResponse;
+        fetch("/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                token: response.tokenId,
+                clientId: response.googleId
+            })
+        }).then(async userResp => {
+            const j: SiteUser = await userResp.json();
+            if (j !== undefined && j.id !== undefined && j.id.length > 0)
                 setSiteUser({
                     ...j,
                     profileURL: response.profileObj.imageUrl
                 });
-            });
-            window.gapi.load("client", () => {
-                setAPILoaded(true);
-            });
-        },
-        onFailure: () => {
-            console.warn("Failed to Load Login");
-            setAPILoaded(false);
-            setSiteUser(null);
-        },
+        });
+        refreshTokenSetup(response);
+        window.gapi.load("client", () => {
+            setAPILoaded(true);
+        });
+    }, []);
+
+    const onFailure = useCallback((): void => {
+        console.warn("Failed to Load Login");
+        setAPILoaded(false);
+        setSiteUser(null);
+    }, []);
+
+    useGoogleLogin({
+        clientId: CLIENTID,
+        scope: "https://www.googleapis.com/auth/youtube",
+        onSuccess: onSuccess,
+        onFailure: onFailure,
         isSignedIn: true,
         cookiePolicy: "single_host_origin",
         responseType: "id_token permission"
@@ -65,7 +91,9 @@ export function useGoogleLoginAPI(): GAPIInfo {
 
     return {
         getUser: (): LoggedInUser | null => siteUser,
-        isAPILoaded: (): boolean => isGAPILoaded
+        isAPILoaded: (): boolean => isGAPILoaded,
+        forceSignIn: onSuccess,
+        forceSignOut: onFailure
     };
 }
 

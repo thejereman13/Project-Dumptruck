@@ -37,6 +37,7 @@ function synchronizeYoutube(player: YT.Player, videoTime: number, playing: boole
 
 export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
+    const [userID, setUserID] = useState("");
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
     const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
     const [userQueue, setUserQueue] = useState<string[]>([]);
@@ -78,6 +79,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         (msg: WSMessage) => {
             switch (msg.type) {
                 case MessageType.Init:
+                    setUserID(msg.ID ?? "");
                     if (msg.Room) {
                         setRoomTitle(msg.Room.roomName);
                         setCurrentUsers(msg.Room.userList);
@@ -120,12 +122,15 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         [setVideoInformation]
     );
     const currentAPI = useGAPIContext();
-    const isAPILoaded = currentAPI?.isAPILoaded() ?? false;
+    const apiUser = currentAPI?.getUser() ?? null;
     const ws = useWebsockets(roomID, newMessage);
     useEffect(() => {
-        if (isAPILoaded) ws?.close();
+        if (apiUser && apiUser.id !== userID) {
+            ws?.close();
+            setUserID(apiUser.id);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAPILoaded]);
+    }, [apiUser]);
 
     const togglePlay = (): void => {
         if (ws)

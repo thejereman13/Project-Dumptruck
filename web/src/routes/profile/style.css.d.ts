@@ -2,6 +2,7 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         PlaylistDiv: string;
+        disconnectTooltip: string;
         root: string;
     }
 }

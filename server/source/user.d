@@ -138,6 +138,17 @@ void getUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
     res.writeJsonBody("{}", 400, false);
 }
 
+void clearUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
+    if (req.session && req.session.isKeySet("clientID")) {
+        auto id = req.session.get!UUID("clientID");
+        if (DB.clearUserData(id)) {
+            res.writeJsonBody("{}", 201, false);
+            return;
+        }
+    }
+    res.writeJsonBody("{}", 401, false);
+}
+
 void getPublicUserInfo(HTTPServerRequest req, HTTPServerResponse res) {
     const UUID userID = UUID(req.params["id"].to!string);
 

@@ -28,6 +28,18 @@ export async function GetAnyUser(userID: string, controller: Ref<AbortController
     return null;
 }
 
+export async function ClearUserInfo(): Promise<boolean> {
+    try {
+        const resp = await fetch("/api/user", {
+            method: "DELETE"
+        });
+        return resp.ok;
+    } catch (e) {
+        console.warn(e);
+    }
+    return false;
+}
+
 export async function GetRoomInfo(roomID: string, controller: Ref<AbortController>): Promise<RoomInfo | null> {
     try {
         const resp = await fetch(`/api/room/${roomID}`, { signal: controller.current.signal });

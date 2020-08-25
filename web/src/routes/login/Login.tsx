@@ -1,16 +1,21 @@
 import { h, JSX } from "preact";
 import { route } from "preact-router";
-import { GoogleLogin } from "react-google-login";
+import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
 import { CLIENTID } from "../../constants";
 import * as style from "./style.css";
+import { useGAPIContext } from "../../utils/GAPI";
 
 export function Login(): JSX.Element {
-    function onSignIn(): void {
+    const gapi = useGAPIContext();
+
+    function onSignIn(resp: GoogleLoginResponse | GoogleLoginResponseOffline): void {
+        gapi?.forceSignIn(resp);
         route("/");
     }
 
     function onSignInFailure(error: any): void {
         console.warn("Sign In Failure", error);
+        gapi?.forceSignOut();
     }
 
     return (
@@ -25,6 +30,7 @@ export function Login(): JSX.Element {
                 isSignedIn={true}
                 cookiePolicy="single_host_origin"
                 responseType="id_token permission"
+                theme="dark"
             />
         </div>
     );

@@ -63,6 +63,18 @@ void setUserData(UUID user, string data) {
     conn.query("SELECT SetUserData (?, ?)", user.toString(), data).front;
 }
 
+bool clearUserData(UUID user) {
+    LockedConnection!Connection conn;
+    try {
+        conn = dbPool.lockConnection();
+    } catch (Exception e) {
+        logError(e.message);
+        return false;
+    }
+    conn.exec("DELETE FROM Users WHERE UserID = (?)", user.toString());
+    return true;
+}
+
 UUID findGIDUser(string gid) {
     LockedConnection!Connection conn;
     try {
