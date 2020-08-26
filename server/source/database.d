@@ -72,6 +72,7 @@ bool clearUserData(UUID user) {
         return false;
     }
     conn.exec("DELETE FROM Users WHERE UserID = (?)", user.toString());
+    conn.exec("DELETE FROM RoomAdmins WHERE AdminUUID = (?)", user.toString());
     return true;
 }
 

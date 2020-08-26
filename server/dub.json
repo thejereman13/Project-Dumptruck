@@ -15,7 +15,14 @@
 			"versions": [
 				"integration"
 			]
-		}
+		},
+    {
+      "name": "deployment",
+      "targetName": "dumptruckFM",
+      "subConfigurations": {
+        "vibe-d:tls": "openssl-1.1"
+      },
+    }
 	],
 	"dependencies": {
 		"mysql-native": ">=2.3.0",

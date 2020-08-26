@@ -45,11 +45,20 @@ void validateToken(string clientId, string token, HTTPServerResponse response) {
     }
 }
 
+void validateExistingLogin(HTTPServerRequest req, HTTPServerResponse res) {
+    auto user = getSiteUser(req.session.get!UUID("clientID"));
+    if (!user.id.empty && user.googleID.length > 0 && req.json["clientId"] == user.googleID) {
+        res.writeJsonBody(serializeToJson(user), 201, false);
+    } else {
+        res.terminateSession();
+        res.writeJsonBody("{}", 401, false);
+    }
+}
+
 //Authenticates and logs in a user
 void userLogin(HTTPServerRequest req, HTTPServerResponse res) {
     if (req.session) {
-        writeln("Already Signed In: ", req.session.get!UUID("clientID"));
-        getUserInfo(req, res);
+        validateExistingLogin(req, res);
     } else {
         writeln("Logging in User");
         validateToken(req.json["clientId"].get!string, req.json["token"].get!string, res);
