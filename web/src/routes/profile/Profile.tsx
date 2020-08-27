@@ -43,6 +43,7 @@ export function Profile(): JSX.Element {
             ) : (
                 <div>
                     <h2>{`Signed in as ${user.name}`}</h2>
+                    <h4>{user.email}</h4>
                     <br />
                     <div class="mui--text-title">Disconnect Account:</div>
                     <br />

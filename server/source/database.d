@@ -85,6 +85,7 @@ UUID findGIDUser(string gid) {
         return UUID.init;
     }
     Row res = conn.query("SELECT FindGIDUser (?)", gid).front;
+    writeln(res);
     if (res.length > 0 && res[0].get!string.length > 0) return UUID(res[0].get!string);
     return UUID.init;
 }

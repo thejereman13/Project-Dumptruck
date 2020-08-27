@@ -19,6 +19,7 @@
     {
       "name": "deployment",
       "targetName": "dumptruckFM",
+      "targetType": "executable",
       "subConfigurations": {
         "vibe-d:tls": "openssl-1.1"
       },

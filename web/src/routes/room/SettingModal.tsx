@@ -31,12 +31,13 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
         //  Might need better checking if roomAdmins will be updated without the length changing
         if (roomSettings && roomSettings.admins.length !== roomAdmins.length) {
             Promise.all(roomSettings.admins.map(async a => await GetAnyUser(a, controller))).then(results => {
-                setRoomAdmins(
-                    results.reduce((arr: SiteUser[], current: SiteUser | null) => {
-                        if (current) arr.push(current);
-                        return arr;
-                    }, [])
-                );
+                if (!results.some(r => r === null))
+                    setRoomAdmins(
+                        results.reduce((arr: SiteUser[], current: SiteUser | null) => {
+                            if (current) arr.push(current);
+                            return arr;
+                        }, [])
+                    );
             });
         }
     }, [roomSettings, roomAdmins, controller]);

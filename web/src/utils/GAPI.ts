@@ -50,23 +50,27 @@ export function useGoogleLoginAPI(): GAPIInfo {
     const onSuccess = useCallback((resp: GoogleLoginResponse | GoogleLoginResponseOffline): void => {
         if (resp.code !== undefined) return;
         const response = resp as GoogleLoginResponse;
-        fetch("/api/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                token: response.tokenId,
-                clientId: response.googleId
-            })
-        }).then(async userResp => {
-            const j: SiteUser = await userResp.json();
-            if (j !== undefined && j.id !== undefined && j.id.length > 0)
-                setSiteUser({
-                    ...j,
-                    profileURL: response.profileObj.imageUrl
-                });
-        });
+        try {
+            fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    token: response.tokenId,
+                    clientId: response.googleId
+                })
+            }).then(async userResp => {
+                const j: SiteUser = await userResp.json();
+                if (j !== undefined && j.id !== undefined && j.id.length > 0)
+                    setSiteUser({
+                        ...j,
+                        profileURL: response.profileObj.imageUrl
+                    });
+            });
+        } catch (e) {
+            console.warn("Failed to Login on Server", e);
+        }
         refreshTokenSetup(response);
         window.gapi.load("client", () => {
             setAPILoaded(true);

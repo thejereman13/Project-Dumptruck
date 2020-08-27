@@ -4,6 +4,7 @@ import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "re
 import { CLIENTID } from "../../constants";
 import * as style from "./style.css";
 import { useGAPIContext } from "../../utils/GAPI";
+import { useEffect } from "preact/hooks";
 
 export function Login(): JSX.Element {
     const gapi = useGAPIContext();
@@ -12,6 +13,12 @@ export function Login(): JSX.Element {
         gapi?.forceSignIn(resp);
         route("/");
     }
+
+    useEffect(() => {
+        if (gapi?.getUser() != null) {
+            route("/");
+        }
+    }, [gapi]);
 
     function onSignInFailure(error: any): void {
         console.warn("Sign In Failure", error);
