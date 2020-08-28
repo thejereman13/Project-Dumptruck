@@ -54,6 +54,7 @@ final class Room {
     private string roomName;
     private int videoTrim;
     private bool guestControls;
+    private bool hifiTiming;
 
     private Task roomLoop;
     private Timer videoLoop;
@@ -77,7 +78,6 @@ final class Room {
         roomLoop = runTask({
             writeln("Spooling Up Room: ", ID);
             auto dbInfo = DB.getRoomInformation(ID, creatingUser);
-            writeln(dbInfo);
             if (dbInfo.roomID > 0) {
                 readInRoomSettings(dbInfo.settings);
                 this.roomUsers.adminUsers = dbInfo.admins;
@@ -95,6 +95,7 @@ final class Room {
         this.roomName = settings.name;
         this.videoTrim = settings.trim;
         this.guestControls = settings.guestControls;
+        this.hifiTiming = settings.hifiTiming;
     }
 
     /* Posting Messages to clients */
@@ -146,7 +147,6 @@ final class Room {
 
     private @trusted void postUserList() {
         postSerializedJson!(User[])(MessageType.UserList, roomUsers.getUserList());
-        logInfo("User Count: %d", roomUsers.getUserList().length);
     }
     private @trusted nothrow void postPlaylist() {
         postSerializedJson!(Video[][string])(MessageType.QueueOrder, playlist.getPlaylist());
@@ -161,7 +161,7 @@ final class Room {
                 writeln("Room ", roomName, " Now Playing ", currentVideo.youtubeID);
                 postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
             } catch (Exception e) {
-                logException(e, "Failed to Serialize Websocket Json");
+                logException(e, "Failed to Serialize CurrentVideo for Websocket");
             }
             if (videoLoop.pending) {
                 videoLoop.stop();
@@ -169,6 +169,11 @@ final class Room {
             videoLoop.rearm(1.seconds, true);
         } else {
             currentVideo = Video.init;
+            try {
+                postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
+            } catch (Exception e) {
+                logException(e, "Failed to Serialize CurrentVideo for Websocket");
+            }
         }
         postPlaylist();
     }
@@ -207,20 +212,27 @@ final class Room {
 
     @safe
     private nothrow void videoSyncLoop() {
+        static int counter = 0;
         if (roomUsers.userCount <= 0 && currentVideo.playing == false)  {
             videoLoop.stop();
             currentVideo = Video.init;
+            counter = 0;
             return;
         }
         if (currentVideo.playing) {
-            if (currentVideo.timeStamp <= (currentVideo.duration + videoTrim)) { 
-                postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
+            if (currentVideo.timeStamp < 4) // Ensure syncing at the beginning of the video
+                counter = 0;
+            if (currentVideo.timeStamp <= (currentVideo.duration + videoTrim)) {
+                // Post every 4 seconds unless in hifi mode and userCount is less than 50
+                if (counter == 0 || (hifiTiming && roomUsers.userCount < 50))
+                    postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
             } else {
                 postMessage(MessageType.Pause);
                 currentVideo.playing = false;
                 queueNextVideo();
             }
             currentVideo.timeStamp++;
+            counter = (counter + 1) & 0x3; // counter up to 3 (modulo 4)
         }
     }
     @safe
@@ -342,12 +354,16 @@ final class Room {
                 if (guestControls || authorizedUser(id)) {
                     currentVideo.playing = true;
                     postMessage(MessageType.Play);
+                    if (currentVideo.playing)
+                        postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
                 }
                 break;
             case MessageType.Pause:
                 if (guestControls || authorizedUser(id)) {
                     currentVideo.playing = false;
                     postMessage(MessageType.Pause);
+                    if (currentVideo.playing)
+                        postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
                 }
                 break;
             case MessageType.QueueAdd:

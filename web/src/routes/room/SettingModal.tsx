@@ -72,6 +72,12 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
         newSettings.settings.publicVisibility = !newSettings.settings.publicVisibility;
         setRoomSettings(newSettings);
     };
+    const updateHifi = (): void => {
+        if (roomSettings === null) return;
+        const newSettings = { ...roomSettings };
+        newSettings.settings.hifiTiming = !newSettings.settings.hifiTiming;
+        setRoomSettings(newSettings);
+    };
 
     const submitSettings = (): void => {
         if (roomSettings !== null) {
@@ -105,6 +111,11 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
                         label="Public Visibility"
                         defaultChecked={roomSettings.settings.publicVisibility}
                         onChange={updatePublic}
+                    />
+                    <Checkbox
+                        label="Higher Fidelity Timing"
+                        defaultChecked={roomSettings.settings.hifiTiming}
+                        onChange={updateHifi}
                     />
                     <br />
                     <div class="mui--text-title">Room Admins:</div>

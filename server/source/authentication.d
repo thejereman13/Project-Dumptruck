@@ -60,7 +60,6 @@ void userLogin(HTTPServerRequest req, HTTPServerResponse res) {
     if (req.session) {
         validateExistingLogin(req, res);
     } else {
-        writeln("Logging in User");
         validateToken(req.json["clientId"].get!string, req.json["token"].get!string, res);
     }
     // authenticate with google using token id, associate the api id with the session

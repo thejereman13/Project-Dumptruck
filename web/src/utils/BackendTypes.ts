@@ -22,6 +22,7 @@ export interface RoomSettings {
     trim: number;
     guestControls: boolean;
     publicVisibility: boolean;
+    hifiTiming: boolean;
 }
 
 export interface RoomInfo {

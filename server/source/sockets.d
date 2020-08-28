@@ -38,20 +38,17 @@ void handleWebsocketConnection(scope WebSocket socket) {
 			}
 			lastMessage = newLatest;
 		}
-		writeln("Socket Disconnected");
 	});
 
 	scope(exit) {
 		socket.close();
 		eventWait.joinUninterruptible();
-		writeln("Closing Socket");
 	}
 
 	while(socket.waitForData()) {
 		if (r.activeUser(id)) {
 			r.receivedMessage(id, socket.receiveText());
 		} else {
-			writeln("Inactive User: ", id);
 			socket.close(1000, "User Timed Out");
 		}
 	}

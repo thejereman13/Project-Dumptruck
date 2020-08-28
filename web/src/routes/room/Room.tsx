@@ -2,7 +2,7 @@ import { h, JSX } from "preact";
 import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import Button from "preact-mui/lib/button";
-import YouTubeVideo from "../../components/YTPlayer";
+import { YouTubeVideo } from "../../components/YTPlayer";
 import { useWebsockets } from "../../utils/Websockets";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomUser, YoutubeVideoInformation, RoomSettings } from "../../utils/BackendTypes";
@@ -19,22 +19,6 @@ export interface RoomProps {
     roomID: string;
 }
 
-function synchronizeYoutube(player: YT.Player, videoTime: number, playing: boolean): void {
-    if (Math.abs(player.getCurrentTime() - videoTime) > 1) {
-        player.seekTo(videoTime, true);
-    }
-    if (player.getPlayerState() === 0) {
-        console.log("Video Ended");
-        //  TODO: end playback if ws disconnects
-    } else if (player.getPlayerState() !== 2 && !playing) {
-        player.pauseVideo();
-        console.log("pause");
-    } else if (player.getPlayerState() !== 1 && playing) {
-        player.playVideo();
-        console.log("play");
-    }
-}
-
 export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
     const [userID, setUserID] = useState("");
@@ -45,35 +29,33 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [settingsOpen, setSettingsOpen] = useState(false);
 
     const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
-    const [videoTime, setVideoTime] = useState(0);
-    const [playing, setPlaying] = useState(false);
-    const [playerState, setPlayerState] = useState(-1);
+    const [, setStateIncrement] = useState(0);
+    const videoTime = useRef(0);
+    const playing = useRef(false);
 
-    const youtubePlayer = useRef<YT.Player>();
+    const youtubePlayer = useRef<YouTubeVideo>();
 
     const setVideoInformation = useCallback((video: Video) => {
         console.log("New Video", video);
-        setVideoTime(video.timeStamp);
+        videoTime.current = video.timeStamp;
         setCurrentVideo(video);
-        setPlaying(true);
+        playing.current = true;
+        setStateIncrement(val => val + 1);
     }, []);
 
-    const getPlayer = useCallback(
-        (player: YT.Player) => {
-            youtubePlayer.current = player;
-            player.addEventListener("onStateChange", e => {
-                setPlayerState(e.target.getPlayerState());
-            });
-            synchronizeYoutube(player, videoTime, playing);
-        },
-        [videoTime, playing]
-    );
+    const playerMount = useCallback((): void => {
+        if (youtubePlayer.current) {
+            youtubePlayer.current.synchronizeYoutube(videoTime.current, playing.current);
+        }
+    }, []);
 
+    const videoTimeStamp = videoTime.current;
+    const playbackState = playing.current;
     useEffect(() => {
         if (youtubePlayer.current) {
-            synchronizeYoutube(youtubePlayer.current, videoTime, playing);
+            youtubePlayer.current.synchronizeYoutube(videoTimeStamp, playbackState);
         }
-    }, [videoTime, playing, playerState]);
+    }, [videoTimeStamp, playbackState]);
 
     const newMessage = useCallback(
         (msg: WSMessage) => {
@@ -86,6 +68,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         setVideoInformation(msg.Room.video);
                         setVideoPlaylist(msg.Room.playlist);
                         setUserQueue(msg.Room.userQueue);
+                        playing.current = msg.Room.video.playing;
                     }
                     break;
                 case MessageType.Room:
@@ -97,13 +80,14 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     if (msg.Video) setVideoInformation(msg.Video);
                     break;
                 case MessageType.Play:
-                    setPlaying(true);
+                    playing.current = true;
                     break;
                 case MessageType.Pause:
-                    setPlaying(false);
+                    playing.current = false;
                     break;
                 case MessageType.Sync:
-                    setVideoTime(Number(msg.data));
+                    console.log("sync: ", msg.data);
+                    videoTime.current = Number(msg.data);
                     break;
                 case MessageType.UserList:
                     setCurrentUsers(msg.data);
@@ -116,8 +100,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     break;
                 default:
                     console.warn("Invalid Websocket Type Received");
-                    break;
+                    return;
             }
+            setStateIncrement(val => (val + 1) % 65536);
         },
         [setVideoInformation]
     );
@@ -136,7 +121,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         if (ws)
             ws.send(
                 JSON.stringify({
-                    type: playing ? MessageType.Pause : MessageType.Play
+                    type: playing.current ? MessageType.Pause : MessageType.Play
                 })
             );
     };
@@ -189,7 +174,12 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                             </Tooltip>
                         </div>
                     </div>
-                    <YouTubeVideo className={style.videoDiv} id={currentVideo?.youtubeID ?? ""} getPlayer={getPlayer} />
+                    <YouTubeVideo
+                        ref={youtubePlayer}
+                        className={style.videoDiv}
+                        id={currentVideo?.youtubeID ?? ""}
+                        playerMount={playerMount}
+                    />
                 </div>
                 <div class={style.sidePanel}>
                     <Tabs
@@ -221,7 +211,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 />
             </Modal>
             <BottomBar
-                playing={playing}
+                playing={playing.current}
                 currentVideo={currentVideo}
                 togglePlay={togglePlay}
                 skipVideo={skipVideo}

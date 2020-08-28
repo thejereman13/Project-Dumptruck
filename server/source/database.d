@@ -85,7 +85,6 @@ UUID findGIDUser(string gid) {
         return UUID.init;
     }
     Row res = conn.query("SELECT FindGIDUser (?)", gid).front;
-    writeln(res);
     if (res.length > 0 && res[0].get!string.length > 0) return UUID(res[0].get!string);
     return UUID.init;
 }
@@ -106,6 +105,11 @@ struct DBRoomSettings {
     int trim; // trim the ending of the video in seconds (positive shortens, negative will add time)
     bool guestControls; // default false
     bool publicVisibility; // default true
+    bool hifiTiming; // default false
+
+    static DBRoomSettings defaultSettings() {
+        return DBRoomSettings("", 0, false, true, false);
+    }
 }
 
 struct DBRoomInfo {
@@ -115,29 +119,28 @@ struct DBRoomInfo {
 }
 
 DBRoomSettings parseRoomSettings(Json settings) {
-    if (settings.length != __traits(allMembers, DBRoomSettings).length) {
-        return DBRoomSettings.init;
-    } else {
-        DBRoomSettings room = DBRoomSettings.init;
-        foreach (string key, Json value; settings.byKeyValue) {
-            switch (key) {
-                case "name":
-                    room.name = value.get!string;
-                    break;
-                case "trim":
-                    room.trim = value.get!int;
-                    break;
-                case "guestControls":
-                    room.guestControls = value.get!bool;
-                    break;
-                case "publicVisibility":
-                    room.publicVisibility = value.get!bool;
-                    break;
-                default: break;
-            }
+    DBRoomSettings room = DBRoomSettings.defaultSettings();
+    foreach (string key, Json value; settings.byKeyValue) {
+        switch (key) {
+            case "name":
+                room.name = value.get!string;
+                break;
+            case "trim":
+                room.trim = value.get!int;
+                break;
+            case "guestControls":
+                room.guestControls = value.get!bool;
+                break;
+            case "publicVisibility":
+                room.publicVisibility = value.get!bool;
+                break;
+            case "hifiTiming":
+                room.hifiTiming = value.get!bool;
+                break;
+            default: break;
         }
-        return room;
     }
+    return room;
 }
 
 DBRoomInfo peekRoomInformation(long roomID) {
@@ -207,7 +210,6 @@ void setRoomAdmins(long roomID, UUID[] admins) {
         return;
     }
     conn.exec("DELETE FROM RoomAdmins WHERE RoomID = (?)", roomID);
-    writeln("Setting Room Admins for ", roomID, ": ", admins);
     foreach(UUID ad; admins) {
         if (!ad.empty)
             conn.exec("INSERT INTO RoomAdmins (RoomID, AdminUUID, Role) VALUES (?, ?, ?)", roomID, ad.toString(), 0);

@@ -13,6 +13,7 @@ struct User {
     UUID clientID;
     string name;
     int role;
+    int userCount;
 }
 
 final class UserList {
@@ -36,7 +37,11 @@ final class UserList {
         const id = clientID.empty ? randomUUID() : clientID;
         const user = getSiteUser(clientID);
         const name = clientID.empty || user.id.empty ? "Guest-" ~ id.toString() : user.name;
-        roomUsers[id] = User(id, name, 1);
+        if (id in roomUsers)
+            roomUsers[id].userCount++;
+        else
+            roomUsers[id] = User(id, name, 1, 1);
+            //  Defaulting each user's role to 1
         roomUserStatus[id] = true;
         if (!clientID.empty) {
             addRecentRoomToUser(clientID, roomID);
@@ -46,6 +51,11 @@ final class UserList {
     }
 
     public bool removeUser(UUID id) {
+        if (id in roomUsers && roomUsers[id].userCount > 1) {
+            roomUsers[id].userCount--;
+            userCount--;
+            return false;
+        }
         if (roomUsers.remove(id) && roomUserStatus.remove(id)) {
             userCount--;
             return true;
