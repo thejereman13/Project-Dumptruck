@@ -5,6 +5,7 @@ import { CLIENTID } from "../../constants";
 import * as style from "./style.css";
 import { useGAPIContext } from "../../utils/GAPI";
 import { useEffect } from "preact/hooks";
+import { RegisterNotification } from "../../components/Notification";
 
 export function Login(): JSX.Element {
     const gapi = useGAPIContext();
@@ -22,6 +23,7 @@ export function Login(): JSX.Element {
 
     function onSignInFailure(error: any): void {
         console.warn("Sign In Failure", error);
+        RegisterNotification("Failed to Sign in with Google. \n Check Same-Site Cookies and Try Again.", "error");
         gapi?.forceSignOut();
     }
 

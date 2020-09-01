@@ -92,7 +92,7 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
 export interface PlaylistCardProps {
     info: PlaylistInfo;
     onVideoClick?: (id: VideoCardInfo) => void;
-    onPlaylistClick?: (vids: VideoCardInfo[]) => void;
+    onPlaylistClick?: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
 }
 
 export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
@@ -123,7 +123,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
         }
     }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
 
-    const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[]) => void): void => {
+    const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
         if (!info.id) return;
         if (!videoExpanded && videoInfo.length === 0 && GAPIContext?.isAPILoaded()) {
             RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[], final: boolean) => {
@@ -135,11 +135,12 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                             channel: v.channel,
                             thumbnailURL: v.thumbnailMaxRes?.url ?? "",
                             duration: v.duration
-                        }))
+                        })),
+                        info
                     );
             });
         } else {
-            callback?.(videoInfo);
+            callback?.(videoInfo, info);
         }
     };
 
@@ -156,7 +157,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                 array[i] = array[j];
                 array[j] = temp;
             }
-            onPlaylistClick?.(array);
+            onPlaylistClick?.(array, info);
         });
         event.stopPropagation();
     };

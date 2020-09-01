@@ -11,6 +11,7 @@ import {
     parseVideoJSON,
     parseSearchVideoJSON
 } from "./YoutubeTypes";
+import { RegisterNotification } from "../components/Notification";
 
 /* Util hook and context for logging in with GAPI user and retrieving user info */
 
@@ -70,6 +71,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
             });
         } catch (e) {
             console.warn("Failed to Login on Server", e);
+            RegisterNotification("Failed to Login", "error");
         }
         refreshTokenSetup(response);
         window.gapi.load("client", () => {
@@ -81,6 +83,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
         console.warn("Failed to Load Login");
         setAPILoaded(false);
         setSiteUser(null);
+        RegisterNotification("Failed to Login with Google", "error");
     }, []);
 
     useGoogleLogin({
@@ -123,6 +126,9 @@ export function RequestAllPlaylists(
             //  TODO: handle more than one page
             // console.log(resp.result.pageInfo);
             if (!controller.current.signal.aborted) responseCallback(resp.result.items.map(parsePlaylistJSON));
+        })
+        .catch(() => {
+            RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
         });
 }
 
@@ -165,6 +171,9 @@ export function RequestVideosFromPlaylist(
                         responseCallback(returnArr, true);
                     }
                 }
+            })
+            .catch(() => {
+                RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
             });
     };
 
@@ -189,6 +198,9 @@ export function RequestVideosFromPlaylist(
                     responseCallback(returnArr, false);
                     getAllDurations();
                 }
+            })
+            .catch(() => {
+                RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
             });
     };
     addPage();
@@ -210,6 +222,9 @@ export function RequestVideo(
         .then(resp => {
             if (resp.result.items.length === 1 && !controller.current.signal.aborted)
                 responseCallback(parseVideoJSON(resp.result.items[0]));
+        })
+        .catch(() => {
+            RegisterNotification("Network Error: Failed to Retrieve Video Information", "error");
         });
 }
 
@@ -232,5 +247,8 @@ export function SearchVideo(
         })
         .then(resp => {
             if (!controller.current.signal.aborted) responseCallback(resp.result.items.map(parseSearchVideoJSON));
+        })
+        .catch(() => {
+            RegisterNotification("Network Error: Failed to Retrieve Video Information", "error");
         });
 }

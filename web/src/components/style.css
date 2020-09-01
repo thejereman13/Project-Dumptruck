@@ -139,3 +139,22 @@
     transition: opacity 0.3s ease;
     z-index: 1024;
 }
+
+.NotificationBackground {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    max-width: 32rem;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 1024;
+}
+.notificationError {
+    background-color: var(--theme-error);
+}
+.notificationInfo {
+    background-color: var(--theme-primary);
+}

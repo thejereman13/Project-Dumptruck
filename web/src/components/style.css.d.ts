@@ -2,6 +2,7 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         ModalBackground: string;
+        NotificationBackground: string;
         PlaylistCard: string;
         PlaylistCardInfo: string;
         PlaylistIcon: string;
@@ -18,6 +19,8 @@ declare namespace StyleCssNamespace {
         headerNav: string;
         headerRight: string;
         headerUserIcon: string;
+        notificationError: string;
+        notificationInfo: string;
         popupTooltip: string;
         textEllipsis: string;
     }

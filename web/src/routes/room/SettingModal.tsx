@@ -7,6 +7,7 @@ import { RoomSettings, RoomInfo, SiteUser } from "../../utils/BackendTypes";
 import * as style from "./style.css";
 import { GetRoomInfo, GetAnyUser } from "../../utils/RestCalls";
 import { useAbortController } from "../../components/AbortController";
+import { RegisterNotification } from "../../components/Notification";
 
 export interface SettingModalProps {
     roomID: string;
@@ -24,6 +25,7 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
     useEffect(() => {
         GetRoomInfo(roomID, controller).then(settings => {
             if (!controller.current.signal.aborted) setRoomSettings(settings);
+            if (settings === null) RegisterNotification("Failed to Retrieve Room Settings", "error");
         });
     }, [roomID, controller]);
 

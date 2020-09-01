@@ -8,6 +8,7 @@ import NotFoundPage from "./routes/notfound";
 import { Header } from "./components/Header";
 import Room from "./routes/room";
 import { useGoogleLoginAPI, GAPIContext } from "./utils/GAPI";
+import { RenderAllNotifications } from "./components/Notification";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 if ((module as any).hot) {
@@ -28,6 +29,7 @@ const App: FunctionalComponent = () => {
         <GAPIContext.Provider value={GAPI}>
             <div id="app">
                 <Header />
+                <RenderAllNotifications />
                 <Router onChange={handleRoute}>
                     <Route path="/" component={Home} />
                     <Route path="/profile" component={Profile} />

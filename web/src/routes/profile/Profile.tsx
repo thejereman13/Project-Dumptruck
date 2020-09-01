@@ -8,6 +8,7 @@ import { useAbortController } from "../../components/AbortController";
 import { GoogleLogout } from "react-google-login";
 import { CLIENTID } from "../../constants";
 import { useGAPIContext } from "../../utils/GAPI";
+import { RegisterNotification } from "../../components/Notification";
 
 export function Profile(): JSX.Element {
     const [user, setUser] = useState<SiteUser | null>(null);
@@ -30,7 +31,8 @@ export function Profile(): JSX.Element {
     }
 
     function onSignOutFailure(): void {
-        console.warn("Sign In Failure");
+        console.warn("Sign Out Failure");
+        RegisterNotification("Failed to Sign Out", "error");
     }
 
     return (

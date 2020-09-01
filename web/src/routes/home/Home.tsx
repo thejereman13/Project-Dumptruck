@@ -6,17 +6,20 @@ import { route } from "preact-router";
 import { GetCurrentUser } from "../../utils/RestCalls";
 import { SiteUser } from "../../utils/BackendTypes";
 import { useAbortController } from "../../components/AbortController";
+import { useGAPIContext } from "../../utils/GAPI";
 
 export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);
 
     const controller = useAbortController();
+    const gapi = useGAPIContext();
 
     useEffect(() => {
-        GetCurrentUser(controller).then(usr => {
-            setCurrentUser(usr);
-        });
-    }, [controller]);
+        if (gapi?.getUser() !== null)
+            GetCurrentUser(controller).then(usr => {
+                setCurrentUser(usr);
+            });
+    }, [controller, gapi]);
 
     return (
         <div class={style.home}>
@@ -26,7 +29,11 @@ export function Home(): JSX.Element {
                     <h3>Recent Rooms</h3>
                     {currentUser.recentRooms.map(room => (
                         <div class={style.roomRow} key={room}>
-                            <Button onClick={(): boolean => route(`/room/${room}`)}>{`Room ${room}`}</Button>
+                            <Button
+                                onClick={(): void => {
+                                    route(`/room/${room}`);
+                                }}
+                            >{`Room ${room}`}</Button>
                         </div>
                     ))}
                 </div>

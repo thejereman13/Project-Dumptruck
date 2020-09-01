@@ -2,13 +2,17 @@ import { JSX, h } from "preact";
 import { Link } from "preact-router/match";
 import * as style from "./style.css";
 import { useGAPIContext } from "../utils/GAPI";
+import { Tooltip } from "./Popup";
+import { APPVERSION } from "../constants";
 
 export function Header(): JSX.Element {
     const currentAPI = useGAPIContext();
 
     return (
         <header class={["mui--appbar-height", "mui--appbar-line-height", style.header].join(" ")}>
-            <h1>Dumptruck FM</h1>
+            <Tooltip content={`Version: ${APPVERSION}`} delay={1000}>
+                <h1>Dumptruck FM</h1>
+            </Tooltip>
             <nav>
                 <Link class={style.headerNav} activeClassName={style.active} href="/">
                     Home

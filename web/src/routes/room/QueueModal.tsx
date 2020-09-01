@@ -13,8 +13,8 @@ import { useAbortController } from "../../components/AbortController";
 
 export interface QueueModalProps {
     currentAPI: GAPIInfo | null;
-    submitNewVideo: (newVideo: YoutubeVideoInformation) => void;
-    submitAllVideos: (newVideos: YoutubeVideoInformation[]) => void;
+    submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
+    submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
 }
 
 export function QueueModal(props: QueueModalProps): JSX.Element {
@@ -59,27 +59,32 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     };
 
     const submitVideoFromList = (videoID: VideoCardInfo | VideoInfo): void => {
-        console.log("submitting ", videoID);
         if (videoID.duration === undefined)
             RequestVideo(videoID.id, controller, info => {
-                submitNewVideo({
-                    videoID: info.id,
-                    duration: info.duration ?? 0
-                });
+                submitNewVideo(
+                    {
+                        videoID: info.id,
+                        duration: info.duration ?? 0
+                    },
+                    videoID.title
+                );
             });
         else
-            submitNewVideo({
-                videoID: videoID.id,
-                duration: videoID.duration ?? 0
-            });
+            submitNewVideo(
+                {
+                    videoID: videoID.id,
+                    duration: videoID.duration ?? 0
+                },
+                videoID.title
+            );
     };
-    const submitPlaylist = (vids: VideoCardInfo[]): void => {
-        console.log("submitting Playlist", vids);
+    const submitPlaylist = (vids: VideoCardInfo[], info: PlaylistInfo): void => {
         submitAllVideos(
             vids.map(v => ({
                 videoID: v.id,
                 duration: v.duration ?? 0
-            }))
+            })),
+            info.title
         );
     };
 

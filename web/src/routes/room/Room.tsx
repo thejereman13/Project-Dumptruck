@@ -14,10 +14,15 @@ import { useGAPIContext } from "../../utils/GAPI";
 import { Modal } from "../../components/Modal";
 import { SettingModal } from "./SettingModal";
 import { Tooltip } from "../../components/Popup";
+import { RegisterNotification } from "../../components/Notification";
 
 export interface RoomProps {
     roomID: string;
 }
+
+const WSErrorMessage = (): void => {
+    RegisterNotification("Failed to Connect to Server", "error");
+};
 
 export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
@@ -124,29 +129,45 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     type: playing.current ? MessageType.Pause : MessageType.Play
                 })
             );
+        else {
+            WSErrorMessage();
+        }
     };
     const skipVideo = (): void => {
         if (ws) ws.send(JSON.stringify({ type: MessageType.Skip }));
     };
 
-    const submitNewVideo = (newVideo: YoutubeVideoInformation): void => {
+    const submitNewVideo = (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
+            RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
+        } else {
+            WSErrorMessage();
         }
     };
-    const submitAllVideos = (newVideos: YoutubeVideoInformation[]): void => {
+    const submitAllVideos = (newVideos: YoutubeVideoInformation[], playlistTitle: string): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.QueueMultiple, data: newVideos }));
+            RegisterNotification(
+                `Queued All Videos from ${playlistTitle.length > 0 ? playlistTitle : "Playlist"}`,
+                "info"
+            );
+        } else {
+            WSErrorMessage();
         }
     };
     const removeVideo = (id: string): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
+        } else {
+            WSErrorMessage();
         }
     };
     const updateSettings = (settings: RoomSettings): void => {
         if (ws) {
             ws.send(JSON.stringify({ type: MessageType.RoomSettings, data: settings }));
+        } else {
+            WSErrorMessage();
         }
     };
 

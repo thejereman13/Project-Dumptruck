@@ -17,8 +17,8 @@ export interface BottomBarProps {
     togglePlay: () => void;
     skipVideo: () => void;
     playing: boolean;
-    submitNewVideo: (videoID: YoutubeVideoInformation) => void;
-    submitAllVideos: (newVideos: YoutubeVideoInformation[]) => void;
+    submitNewVideo: (videoID: YoutubeVideoInformation, videoTitle: string) => void;
+    submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
 }
 
 export function BottomBar(props: BottomBarProps): JSX.Element {
