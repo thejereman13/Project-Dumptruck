@@ -47,7 +47,7 @@ export function parseDurationString(time: string): number {
 function getCorrectThumbnail(thumbnailList: any): Thumbnail {
     // return the highest resolution available except maxRes
     // maybe add more complicated logic later to base size off of screen DPI/zoom/etc
-    return thumbnailList.high ?? thumbnailList.medium ?? thumbnailList.default;
+    return thumbnailList.medium ?? thumbnailList.default;
 }
 
 export function videoIDFromURL(url: string): string | undefined {

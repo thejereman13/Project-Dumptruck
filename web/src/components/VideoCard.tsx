@@ -213,7 +213,12 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
     return videoInfo ? (
         <div>
             <Button
-                className={["mui-btn", "mui-btn--flat", style.VideoCardButton].join(" ")}
+                className={[
+                    "mui-btn",
+                    "mui-btn--flat",
+                    style.VideoCardButton,
+                    videoExpanded ? style.PlaylistButtonActive : ""
+                ].join(" ")}
                 variant="flat"
                 onClick={videoExpanded ? hideVideos : expandVideos}
             >

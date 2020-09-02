@@ -81,6 +81,16 @@
     width: 100%;
     margin: 0 !important;
 }
+
+.PlaylistButtonActive {
+    position: sticky;
+    top: 0;
+    z-index: 128;
+    background-color: var(--dp2-surface) !important;
+}
+.PlaylistButtonActive:hover {
+    background-color: var(--dp24-surface) !important;
+}
 .PlaylistCard {
     display: flex;
     flex-flow: column;
@@ -88,10 +98,10 @@
     width: 100%;
 }
 .PlaylistCard .PlaylistIcon {
-    height: 8rem;
+    height: 100%;
 }
 .PlaylistCard .PlaylistInfo {
-    height: 8rem;
+    height: 100%;
     flex-direction: column;
     padding-left: 1rem;
     text-align: start;
@@ -99,6 +109,7 @@
 .PlaylistCardInfo {
     display: flex;
     flex-flow: row;
+    height: 7rem;
 }
 .PlaylistVideos {
     margin-left: 4rem;
@@ -109,7 +120,7 @@
     background-color: var(--dp8-surface);
 }
 .PlaylistVideosExpanded {
-    height: 36rem;
+    height: unset;
 }
 .VideoActionDiv {
     margin-left: auto;
@@ -128,6 +139,7 @@
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.25);
+    z-index: 1024;
 }
 
 .popupTooltip {
@@ -152,9 +164,34 @@
     bottom: 1rem;
     z-index: 1024;
 }
+.notificationHide {
+    opacity: 0;
+}
 .notificationError {
     background-color: var(--theme-error);
 }
 .notificationInfo {
     background-color: var(--theme-primary);
+}
+
+.DropdownContainer {
+    flex-flow: column;
+    display: flex;
+    z-index: 2048;
+    background-color: var(--dp8-surface);
+    padding: 0.5rem 0;
+    border-radius: 0.5rem;
+}
+.DropdownOption {
+    height: auto;
+    color: var(--text-secondary) !important;
+    margin: 0 !important;
+}
+.DropdownBackdrop {
+    z-index: 1024;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }

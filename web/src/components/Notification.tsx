@@ -9,7 +9,7 @@ interface NotificationObject {
     text: string;
     type: notificationType;
     timeout: number;
-    rendering: boolean;
+    renderState: number; // 0: not rendered yet, 1: rendering, 2: hiding
 }
 
 let notificationList: NotificationObject[] = [];
@@ -17,6 +17,11 @@ let updateRender: (() => void) | null;
 
 function popNotification(): void {
     notificationList = notificationList.slice(1);
+    updateRender?.();
+}
+function hideNotification(): void {
+    notificationList[0].renderState++;
+    setTimeout(popNotification, 800); // transition is 0.3s long
     updateRender?.();
 }
 
@@ -27,7 +32,7 @@ export function RegisterNotification(text: string, type: notificationType): void
         text,
         type,
         timeout: type === "info" ? 1500 : 3000,
-        rendering: false
+        renderState: 0
     });
     updateRender?.();
 }
@@ -53,10 +58,13 @@ export function RenderAllNotifications(): JSX.Element {
     }, []);
     if (notificationList.length === 0) return <div />;
     const newestNote = notificationList[0];
-    const color = getTypeClass(newestNote);
-    if (!newestNote.rendering) {
-        newestNote.rendering = true;
-        setTimeout(popNotification, newestNote.timeout);
+    let color = getTypeClass(newestNote);
+    if (newestNote.renderState === 0) {
+        newestNote.renderState++;
+        setTimeout(hideNotification, newestNote.timeout);
+    } else if (newestNote.renderState === 2) {
+        color += ` ${style.notificationHide}`;
     }
+    console.log(color);
     return <div class={[style.NotificationBackground, color].join(" ")}>{newestNote.text}</div>;
 }

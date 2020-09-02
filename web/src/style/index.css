@@ -93,6 +93,9 @@ body {
 .mui-btn.mui-btn--flat:hover {
     background-color: var(--dp24-surface);
 }
+.mui-btn:hover {
+    background-color: #ddd;
+}
 
 .mui-btn--fab {
     display: inline-flex;

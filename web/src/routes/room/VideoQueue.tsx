@@ -9,6 +9,7 @@ import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { Tooltip } from "../../components/Popup";
 import { useAbortController } from "../../components/AbortController";
+import { Dropdown, DropdownOption } from "../../components/Dropdown";
 
 export interface UserQueueCardProps {
     user: RoomUser;
@@ -20,8 +21,11 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     const { playlist, user, removeVideo } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
+    const [menuOpen, setMenuOpen] = useState(false);
 
-    const expandVideos = (): void => setVideoExpanded(true);
+    const expandVideos = (): void => {
+        if (playlist && playlist.length > 0) setVideoExpanded(true);
+    };
     const hideVideos = (): void => setVideoExpanded(false);
 
     const controller = useAbortController();
@@ -41,8 +45,13 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     }, [playlist, controller]);
 
     const openMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-        console.log("Menu");
+        setMenuOpen(true);
+        console.log("open Menu");
         event.stopPropagation();
+    };
+    const closeMenu = (): void => {
+        setMenuOpen(false);
+        console.log("close Menu");
     };
 
     const cardContent = videoInfo && (
@@ -54,13 +63,20 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{`Queued By ${user.name}`}</div>
                 </div>
                 <div class={style.QueueActionDiv}>
-                    <Tooltip content="placeholder button">
-                        <Button size="small" variant="fab" onClick={openMenu}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">
-                                more_vert
-                            </i>
-                        </Button>
-                    </Tooltip>
+                    <Dropdown
+                        base={
+                            <Button onClick={openMenu} size="small" variant="fab">
+                                <i style={{ fontSize: "32px" }} class="material-icons">
+                                    more_vert
+                                </i>
+                            </Button>
+                        }
+                        open={menuOpen}
+                        onClose={closeMenu}
+                    >
+                        <DropdownOption>Clear from Queue</DropdownOption>
+                        <DropdownOption>Reorder</DropdownOption>
+                    </Dropdown>
                 </div>
             </div>
         </div>
