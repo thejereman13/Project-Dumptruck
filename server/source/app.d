@@ -15,7 +15,7 @@ import authentication;
 import video;
 import user;
 
-const WebServerVersion = "1.0.5";
+const WebServerVersion = "0.0.7";
 
 version(release)
 void main()
@@ -57,6 +57,7 @@ void main()
 	// router.post("/user", &createUser);
 	// router.put("/user", &updateUser);
 	// router.delete_("/user", &removeUser);
+	logInfo("Starting Web Server: " ~ WebServerVersion);
 	auto l = listenHTTP(settings, router);
 	scope(exit) {
 		l.stopListening();

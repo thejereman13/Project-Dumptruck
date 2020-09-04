@@ -6,7 +6,8 @@
 			"targetType": "executable",
 			"versions": [
 				"release"
-			]
+			],
+      "buildOptions": ["debugInfo"],
 		},
 		{
 			"name": "testing",
@@ -20,6 +21,9 @@
       "name": "deployment",
       "targetName": "dumptruckFM",
       "targetType": "executable",
+      "versions": [
+				"release"
+			],
       "subConfigurations": {
         "vibe-d:tls": "openssl-1.1"
       },
@@ -31,5 +35,4 @@
 		"vibe-d:tls": ">=0.0.0"
 	},
 	"name": "dumptruckserver",
-	"buildOptions": ["debugInfo"],
 }
