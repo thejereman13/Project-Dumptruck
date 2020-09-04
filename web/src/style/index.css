@@ -46,7 +46,6 @@ body {
 ::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.4);
     border-radius: 1rem;
-    outline: 1px solid slategrey;
 }
 
 .tippy-tooltip {

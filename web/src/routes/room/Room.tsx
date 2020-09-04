@@ -91,7 +91,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     playing.current = false;
                     break;
                 case MessageType.Sync:
-                    console.log("sync: ", msg.data);
                     videoTime.current = Number(msg.data);
                     break;
                 case MessageType.UserList:

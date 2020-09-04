@@ -1,4 +1,5 @@
 import { h, Component } from "preact";
+import { RegisterNotification } from "./Notification";
 
 export interface YouTubeVideoProps {
     className: string;
@@ -76,7 +77,6 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
 
     componentDidMount = (): void => {
         // On mount, check to see if the API script is already loaded
-
         if (!window.YT) {
             // If not, load the script asynchronously TS-ignore
             const tag = document.createElement("script");
@@ -90,6 +90,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
             firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
         } else {
             // If script is already there, load the video directly
+            this.YTLoaded = true;
             this.loadVideo();
         }
     };
@@ -113,22 +114,27 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
         console.log("YT: ", id);
         if (!id || !this.YTLoaded) return;
 
-        // the Player object is created uniquely based on the id in props
-        this.player = new window.YT.Player(`youtube-player-${id}`, {
-            videoId: id,
-            host: "https://www.youtube-nocookie.com",
-            events: {
-                onReady: this.onPlayerReady,
-                onError: (e): void => {
-                    console.warn("Youtube Error:", e);
-                    this.loadVideo();
+        if (!this.playerMounted) {
+            console.log("creating new Player");
+            this.player = new window.YT.Player(`youtube-player`, {
+                host: "https://www.youtube-nocookie.com",
+                videoId: id,
+                events: {
+                    onReady: this.onPlayerReady,
+                    onError: (e): void => {
+                        console.warn("Youtube Error:", e);
+                        RegisterNotification("Youtube Player Encountered Error", "error");
+                    }
+                },
+                playerVars: {
+                    fs: 0,
+                    origin: "https://www.youtube.com"
                 }
-            },
-            playerVars: {
-                fs: 0,
-                origin: "https://www.youtube.com"
-            }
-        });
+            });
+        } else {
+            this.player?.loadVideoById(id);
+            console.log(this.player);
+        }
     };
 
     onPlayerReady = (): void => {
@@ -137,10 +143,10 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
     };
 
     render = (): JSX.Element => {
-        const { id, className } = this.props;
+        const { className } = this.props;
         return (
             <div class={className}>
-                <div id={`youtube-player-${id}`} />
+                <div id={`youtube-player`} />
             </div>
         );
     };

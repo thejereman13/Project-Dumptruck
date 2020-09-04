@@ -213,7 +213,7 @@ final class Room {
     @safe
     private nothrow void videoSyncLoop() {
         static int counter = 0;
-        if (roomUsers.userCount <= 0 && currentVideo.playing == false)  {
+        if (roomUsers.userCount <= 0 && usersPendingRemoval.length <= 0 && currentVideo.playing == false)  {
             videoLoop.stop();
             currentVideo = Video.init;
             counter = 0;
@@ -312,7 +312,6 @@ final class Room {
     public void removeUser(UUID id) {
         if (roomUsers.removeUser(id)) {
             postUserList();
-            writeln("User Left: ", id.toString());
             // When a user leaves, wait at least 5 seconds before removing their videos from queue
             // Multiple back-to-back leaves may continuously bump this callback further and further back,
             // but that shouldn't be a huge issue. Doing independent timers would likely cause more problems
@@ -335,6 +334,7 @@ final class Room {
     private bool authorizedUser(UUID id) {
         return roomUsers.adminUsers.any!(u => u == id);
     }
+
 
     private void setRoomSettings(Json settings) {
         const newSettings = DB.setRoomSettings(roomID, settings);

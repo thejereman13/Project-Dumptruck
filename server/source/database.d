@@ -174,13 +174,6 @@ DBRoomInfo getRoomInformation(long roomID, UUID user) {
         }
         DBRoomSettings roomSettings = DBRoomSettings("Room " ~ roomID.to!string, 0, false, true);
         conn.exec("UPDATE Rooms SET RoomSettings = (?) WHERE RoomID = (?)", serializeToJsonString(roomSettings), roomID);
-        // UUID[] adminList = [];
-        // if (!user.empty) {
-        //     writeln("Setting the Admin for an empty Room: ", roomID);
-        //     conn.exec("DELETE FROM RoomAdmins WHERE RoomID = (?)", roomID);
-        //     conn.exec("INSERT INTO RoomAdmins (RoomID, AdminUUID, Role) VALUES (?, ?, ?)", roomID, user.toString(), 0);
-        //     adminList ~= user;
-        // }
         return DBRoomInfo(roomID, roomSettings);
     } else {
         return roomInfo;
