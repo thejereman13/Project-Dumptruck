@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState, Ref } from "preact/hooks";
 import { useDebouncedCallback } from "use-debounce-preact";
 import { VideoInfo, PlaylistInfo, videoIDFromURL } from "../../utils/YoutubeTypes";
 import { SearchVideo, RequestAllPlaylists, GAPIInfo, RequestVideo } from "../../utils/GAPI";
@@ -15,10 +15,12 @@ export interface QueueModalProps {
     currentAPI: GAPIInfo | null;
     submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
+    onClose: () => void;
+    parentController: Ref<AbortController>;
 }
 
 export function QueueModal(props: QueueModalProps): JSX.Element {
-    const { currentAPI, submitNewVideo, submitAllVideos } = props;
+    const { currentAPI, submitNewVideo, submitAllVideos, parentController, onClose } = props;
     const [searchField, setSearchField] = useState("");
     const [queueTab, setQueueTab] = useState(0);
     const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
@@ -111,7 +113,10 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                                     <VideoDisplayCard
                                         key={list.id}
                                         info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
-                                        onClick={(): void => submitVideoFromList(list)}
+                                        onClick={(): void => {
+                                            submitVideoFromList(list);
+                                            onClose();
+                                        }}
                                     />
                                 );
                             })}
@@ -127,6 +132,7 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                                     info={list}
                                     onVideoClick={submitVideoFromList}
                                     onPlaylistClick={submitPlaylist}
+                                    parentController={parentController}
                                 />
                             );
                         })}

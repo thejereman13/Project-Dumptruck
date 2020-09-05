@@ -35,6 +35,9 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
             RequestVideoPreview(currentVideo.youtubeID, controller).then(setVideoInfo);
         }
     }, [currentVideo, controller]);
+
+    const closeModal = (): void => setQueueOpen(false);
+
     return (
         <div class={style.BottomBar}>
             <div class={style.bottomVideoInfo}>
@@ -70,8 +73,14 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                     </Button>
                 </div>
             </div>
-            <Modal className={style.QueueContainer} open={queueOpen} onClose={(): void => setQueueOpen(false)}>
-                <QueueModal currentAPI={currentAPI} submitNewVideo={submitNewVideo} submitAllVideos={submitAllVideos} />
+            <Modal className={style.QueueContainer} open={queueOpen} onClose={closeModal}>
+                <QueueModal
+                    parentController={controller}
+                    currentAPI={currentAPI}
+                    submitNewVideo={submitNewVideo}
+                    submitAllVideos={submitAllVideos}
+                    onClose={closeModal}
+                />
             </Modal>
         </div>
     );

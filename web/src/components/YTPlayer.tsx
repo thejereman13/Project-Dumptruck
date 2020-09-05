@@ -127,7 +127,9 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                     }
                 },
                 playerVars: {
-                    fs: 0,
+                    fs: 1,
+                    disablekb: 1,
+                    playsinline: 1,
                     origin: "https://www.youtube.com"
                 }
             });

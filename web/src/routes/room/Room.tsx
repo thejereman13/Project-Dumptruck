@@ -102,6 +102,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 case MessageType.UserOrder:
                     setUserQueue(msg.data);
                     break;
+                case MessageType.Error:
+                    RegisterNotification(msg.error ?? "Room Error", "error");
+                    break;
                 default:
                     console.warn("Invalid Websocket Type Received");
                     return;

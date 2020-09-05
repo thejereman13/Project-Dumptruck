@@ -1,12 +1,13 @@
 import { h, JSX } from "preact";
 import * as style from "./style.css";
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, Ref } from "preact/hooks";
 import { useGAPIContext, RequestVideosFromPlaylist } from "../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
 import { Tooltip } from "../components/Popup";
 import { useAbortController } from "./AbortController";
+import { RegisterNotification } from "./Notification";
 
 export interface VideoCardInfo {
     id: string;
@@ -93,12 +94,14 @@ export interface PlaylistCardProps {
     info: PlaylistInfo;
     onVideoClick?: (id: VideoCardInfo) => void;
     onPlaylistClick?: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
+    parentController: Ref<AbortController>;
 }
 
 export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick, onPlaylistClick } = props;
+    const { info, onVideoClick, onPlaylistClick, parentController } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
+    const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
 
     const GAPIContext = useGAPIContext();
 
@@ -109,7 +112,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
 
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {
-            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[]) => {
+            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[], final: boolean) => {
                 setVideoInfo(
                     infos.map(v => ({
                         id: v.id,
@@ -119,14 +122,16 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                         duration: v.duration
                     }))
                 );
+                setDurationsLoaded(final);
             });
         }
     }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
 
     const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
         if (!info.id) return;
-        if (!videoExpanded && videoInfo.length === 0 && GAPIContext?.isAPILoaded()) {
-            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[], final: boolean) => {
+        if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
+            RegisterNotification("Requesting Playlist Information . . . ", "info");
+            RequestVideosFromPlaylist(info.id, parentController, (infos: VideoInfo[], final: boolean) => {
                 if (final)
                     callback?.(
                         infos.map(v => ({

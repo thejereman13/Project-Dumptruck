@@ -45,6 +45,7 @@ export interface RoomInfo {
 export interface WSMessage {
     type: MessageType;
     data?: any;
+    error?: string;
     ID?: string;
     Room?: RoomInfo;
     Video?: Video;

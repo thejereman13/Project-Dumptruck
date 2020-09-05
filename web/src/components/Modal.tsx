@@ -10,7 +10,7 @@ export interface ModalProps {
     onClose?: () => void;
 }
 
-export function Modal(props: ModalProps): JSX.Element | null {
+export function Modal(props: ModalProps): JSX.Element {
     const { children, container, open, className, onClose } = props;
     const containerElement = document.getElementById(container ?? "app");
     if (open && containerElement !== null)
@@ -20,5 +20,5 @@ export function Modal(props: ModalProps): JSX.Element | null {
             </div>,
             containerElement
         );
-    return null;
+    return <div />;
 }

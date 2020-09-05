@@ -31,7 +31,7 @@ export function RegisterNotification(text: string, type: notificationType): void
         id,
         text,
         type,
-        timeout: type === "info" ? 1500 : 3000,
+        timeout: type === "info" ? 2000 : 5000,
         renderState: 0
     });
     updateRender?.();
@@ -65,6 +65,5 @@ export function RenderAllNotifications(): JSX.Element {
     } else if (newestNote.renderState === 2) {
         color += ` ${style.notificationHide}`;
     }
-    console.log(color);
     return <div class={[style.NotificationBackground, color].join(" ")}>{newestNote.text}</div>;
 }
