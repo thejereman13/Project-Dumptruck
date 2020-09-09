@@ -84,6 +84,16 @@ final class UserList {
         }
         return removed;
     }
+
+    public void removeAdmin(UUID id) {
+        const index = adminUsers.countUntil!(u => u == id);
+        if (index >= 0)
+            adminUsers = adminUsers.remove(index);
+    }
+    public void addAdmin(UUID id) {
+        if (!adminUsers.any!(a => a == id))
+            adminUsers ~= id;
+    }
 }
 
 struct SiteUser {

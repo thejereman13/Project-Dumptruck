@@ -36,7 +36,9 @@ enum MessageType {
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue", // Server updating the room user queue order
-    RoomSettings = "settings" // Admin updating the room settings
+    RoomSettings = "settings", // Admin updating the room settings
+    AdminAdd = "addAdmin", // Admin adding another admin
+    AdminRemove = "removeAdmin" // Admin removing another admin
 }
 
 struct RoomInfo {
@@ -81,6 +83,7 @@ final class Room {
             if (dbInfo.roomID > 0) {
                 readInRoomSettings(dbInfo.settings);
                 this.roomUsers.adminUsers = dbInfo.admins;
+                postJson(MessageType.Room, getRoomJson(), [], "Room");
             }
         });
         videoLoop = createTimer({
@@ -335,6 +338,19 @@ final class Room {
         return roomUsers.adminUsers.any!(u => u == id);
     }
 
+    private void addAdmin(Json userID, UUID id) {
+        UUID target = UUID(userID.get!string);
+        this.roomUsers.addAdmin(target);
+        postJson(MessageType.Room, getRoomJson(), [], "Room");
+    }
+    private void removeAdmin(Json userID, UUID id) {
+        UUID target = UUID(userID.get!string);
+        if (target != id) {
+            this.roomUsers.removeAdmin(target);
+            postJson(MessageType.Room, getRoomJson(), [], "Room");
+        }
+    }
+
 
     private void setRoomSettings(Json settings) {
         const newSettings = DB.setRoomSettings(roomID, settings);
@@ -367,10 +383,19 @@ final class Room {
                 }
                 break;
             case MessageType.QueueAdd:
-                queueVideo(j["data"], id);
+                if (!id.empty)
+                    queueVideo(j["data"], id);
                 break;
             case MessageType.QueueRemove:
                 unqueueVideo(j["data"], id);
+                break;
+            case MessageType.AdminAdd:
+                if (authorizedUser(id))
+                    addAdmin(j["data"], id);
+                break;
+            case MessageType.AdminRemove:
+                if (authorizedUser(id))
+                    removeAdmin(j["data"], id);
                 break;
             case MessageType.QueueMultiple:
                 queueAllVideo(j["data"], id);
