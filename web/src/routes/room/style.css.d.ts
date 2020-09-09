@@ -18,6 +18,7 @@ declare namespace StyleCssNamespace {
         bottomRightActions: string;
         bottomVideoIcon: string;
         bottomVideoInfo: string;
+        bottomVideoInfoFull: string;
         centerTooltipChild: string;
         playButton: string;
         progress: string;

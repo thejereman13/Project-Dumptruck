@@ -12,13 +12,14 @@ import { useAbortController } from "../../components/AbortController";
 import { Dropdown, DropdownOption } from "../../components/Dropdown";
 
 export interface UserQueueCardProps {
+    allowRemoval: boolean;
     user: RoomUser;
     playlist: Video[];
     removeVideo: (id: string) => void;
 }
 
 export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
-    const { playlist, user, removeVideo } = props;
+    const { playlist, user, removeVideo, allowRemoval } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -95,13 +96,17 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                         key={vid.youtubeID}
                         videoID={vid.youtubeID}
                         actionComponent={
-                            <Tooltip content="Remove From Queue">
-                                <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
-                                    <i style={{ fontSize: "24px" }} class="material-icons">
-                                        delete
-                                    </i>
-                                </Button>
-                            </Tooltip>
+                            allowRemoval ? (
+                                <Tooltip content="Remove From Queue">
+                                    <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
+                                        <i style={{ fontSize: "24px" }} class="material-icons">
+                                            delete
+                                        </i>
+                                    </Button>
+                                </Tooltip>
+                            ) : (
+                                undefined
+                            )
                         }
                     />
                 ))}
@@ -128,11 +133,12 @@ export interface VideoQueueProps {
     videoPlaylist: PlaylistByUser;
     userQueue: string[];
     currentUsers: RoomUser[];
+    allowRemoval: boolean;
     removeVideo: (id: string) => void;
 }
 
 export function VideoQueue(props: VideoQueueProps): JSX.Element {
-    const { userQueue, videoPlaylist, currentUsers, removeVideo } = props;
+    const { userQueue, videoPlaylist, currentUsers, removeVideo, allowRemoval } = props;
     return (
         <div class={style.scrollBox}>
             {userQueue.map(clientID => {
@@ -140,7 +146,13 @@ export function VideoQueue(props: VideoQueueProps): JSX.Element {
                 const playlistUser = currentUsers.find(u => u.clientID == clientID);
                 if (playlistUser === undefined) return <div />;
                 return (
-                    <UserQueueCard key={clientID} playlist={playlist} user={playlistUser} removeVideo={removeVideo} />
+                    <UserQueueCard
+                        key={clientID}
+                        playlist={playlist}
+                        user={playlistUser}
+                        removeVideo={removeVideo}
+                        allowRemoval={allowRemoval}
+                    />
                 );
             })}
         </div>

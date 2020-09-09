@@ -28,15 +28,17 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
     const [userID, setUserID] = useState("");
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
+    const [adminUsers, setAdminUsers] = useState<string[]>([]);
     const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
     const [userQueue, setUserQueue] = useState<string[]>([]);
-    const [sidebarTab, setSidebarTab] = useState(0);
-    const [settingsOpen, setSettingsOpen] = useState(false);
-
+    const [guestControls, setGuestControls] = useState(false);
     const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
     const [, setStateIncrement] = useState(0);
     const videoTime = useRef(0);
     const playing = useRef(false);
+
+    const [sidebarTab, setSidebarTab] = useState(0);
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
@@ -70,15 +72,19 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     if (msg.Room) {
                         setRoomTitle(msg.Room.roomName);
                         setCurrentUsers(msg.Room.userList);
+                        setAdminUsers(msg.Room.adminList);
                         setVideoInformation(msg.Room.video);
                         setVideoPlaylist(msg.Room.playlist);
                         setUserQueue(msg.Room.userQueue);
+                        setGuestControls(msg.Room.guestControls);
                         playing.current = msg.Room.video.playing;
                     }
                     break;
                 case MessageType.Room:
                     if (msg.Room) {
                         setRoomTitle(msg.Room.roomName);
+                        setGuestControls(msg.Room.guestControls);
+                        setAdminUsers(msg.Room.adminList);
                     }
                     break;
                 case MessageType.Video:
@@ -173,6 +179,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     };
 
+    const isAdmin = userID.length > 0 && adminUsers.some(u => u === userID);
+    const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
+
     return (
         <div class={style.PageRoot}>
             <div class={style.splitPane}>
@@ -180,21 +189,23 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     <div>
                         <div class={["mui--text-display1", style.centerTooltipChild].join(" ")}>
                             {roomTitle}
-                            <Tooltip
-                                className={[style.centerTooltipChild, style.settingButton].join(" ")}
-                                content="Edit Room Settings"
-                            >
-                                <Button
-                                    size="small"
-                                    variant="fab"
-                                    color="accent"
-                                    onClick={(): void => setSettingsOpen(true)}
+                            {isAdmin && (
+                                <Tooltip
+                                    className={[style.centerTooltipChild, style.settingButton].join(" ")}
+                                    content="Edit Room Settings"
                                 >
-                                    <i style={{ fontSize: "28px" }} class="material-icons">
-                                        settings
-                                    </i>
-                                </Button>
-                            </Tooltip>
+                                    <Button
+                                        size="small"
+                                        variant="fab"
+                                        color="accent"
+                                        onClick={(): void => setSettingsOpen(true)}
+                                    >
+                                        <i style={{ fontSize: "28px" }} class="material-icons">
+                                            settings
+                                        </i>
+                                    </Button>
+                                </Tooltip>
+                            )}
                         </div>
                     </div>
                     <YouTubeVideo
@@ -218,6 +229,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                                 userQueue={userQueue}
                                 currentUsers={currentUsers}
                                 removeVideo={removeVideo}
+                                allowRemoval={isAdmin}
                             />
                         </Tab>
                         <Tab index={1} tabIndex={sidebarTab}>
@@ -240,6 +252,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 skipVideo={skipVideo}
                 submitNewVideo={submitNewVideo}
                 submitAllVideos={submitAllVideos}
+                showControls={guestControls || isAdmin}
+                allowQueuing={apiLoaded}
             />
         </div>
     );

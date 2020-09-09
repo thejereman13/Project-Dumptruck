@@ -95,6 +95,10 @@
     width: 50%;
     max-width: 50%;
 }
+.bottomVideoInfoFull {
+    width: 100%;
+    max-width: 100%;
+}
 
 .bottomVideoIcon {
     max-height: 6rem;

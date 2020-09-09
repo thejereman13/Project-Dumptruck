@@ -17,12 +17,23 @@ export interface BottomBarProps {
     togglePlay: () => void;
     skipVideo: () => void;
     playing: boolean;
+    showControls: boolean;
+    allowQueuing: boolean;
     submitNewVideo: (videoID: YoutubeVideoInformation, videoTitle: string) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
 }
 
 export function BottomBar(props: BottomBarProps): JSX.Element {
-    const { currentVideo, togglePlay, skipVideo, playing, submitNewVideo, submitAllVideos } = props;
+    const {
+        currentVideo,
+        togglePlay,
+        skipVideo,
+        playing,
+        submitNewVideo,
+        submitAllVideos,
+        allowQueuing,
+        showControls
+    } = props;
     const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
     const [queueOpen, setQueueOpen] = useState<boolean>(false);
 
@@ -40,7 +51,13 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
 
     return (
         <div class={style.BottomBar}>
-            <div class={style.bottomVideoInfo}>
+            <div
+                class={
+                    !allowQueuing && !showControls
+                        ? [style.bottomVideoInfo, style.bottomVideoInfoFull].join(" ")
+                        : style.bottomVideoInfo
+                }
+            >
                 {videoInfo ? (
                     <img class={style.bottomVideoIcon} src={videoInfo?.thumbnailMaxRes?.url ?? ""} />
                 ) : (
@@ -50,29 +67,35 @@ export function BottomBar(props: BottomBarProps): JSX.Element {
                     {videoInfo?.title ?? "Nothing Currently Playing"}
                 </div>
             </div>
-            <div class={style.bottomMiddleActions}>
-                <Tooltip className={style.centerTooltipChild} content="Pause Room Playback">
-                    <Button size="small" variant="fab" onClick={togglePlay}>
-                        <i style={{ fontSize: "32px" }} class="material-icons">
-                            {playing ? "pause" : "play_arrow"}
-                        </i>
-                    </Button>
-                </Tooltip>
-                <Tooltip className={style.centerTooltipChild} content="Skip Current Video">
-                    <Button size="small" variant="fab" onClick={skipVideo}>
-                        <i style={{ fontSize: "32px" }} class="material-icons">
-                            skip_next
-                        </i>
-                    </Button>
-                </Tooltip>
-            </div>
-            <div class={style.bottomRightActions}>
-                <div class={style.centerTooltipChild}>
-                    <Button id="openQueue" onClick={(): void => setQueueOpen(true)}>
-                        Queue Video
-                    </Button>
+            {showControls ? (
+                <div class={style.bottomMiddleActions}>
+                    <Tooltip className={style.centerTooltipChild} content="Pause Room Playback">
+                        <Button size="small" variant="fab" onClick={togglePlay}>
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                {playing ? "pause" : "play_arrow"}
+                            </i>
+                        </Button>
+                    </Tooltip>
+                    <Tooltip className={style.centerTooltipChild} content="Skip Current Video">
+                        <Button size="small" variant="fab" onClick={skipVideo}>
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                skip_next
+                            </i>
+                        </Button>
+                    </Tooltip>
                 </div>
-            </div>
+            ) : (
+                <div class={style.bottomMiddleActions} />
+            )}
+            {allowQueuing && (
+                <div class={style.bottomRightActions}>
+                    <div class={style.centerTooltipChild}>
+                        <Button id="openQueue" onClick={(): void => setQueueOpen(true)}>
+                            Queue Video
+                        </Button>
+                    </div>
+                </div>
+            )}
             <Modal className={style.QueueContainer} open={queueOpen} onClose={closeModal}>
                 <QueueModal
                     parentController={controller}
