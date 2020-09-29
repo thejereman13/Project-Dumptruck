@@ -28,7 +28,7 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	auto eventWait = runTask({
 		size_t lastMessage = r.latestMessage;
 		while(socket.connected) {
-			const size_t newLatest = r.waitForMessage(lastMessage);
+			const size_t newLatest = r.waitForMessage(socket, lastMessage);
 			const messages = r.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
 				foreach(s; messages) {

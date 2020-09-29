@@ -1,5 +1,6 @@
 import { useRef, useEffect, useCallback } from "preact/hooks";
 import { WSMessage } from "./WebsocketTypes";
+import { RegisterNotification } from "../components/Notification";
 
 function getBaseURL(): string {
     if (process.env.NODE_ENV !== "production") {
@@ -37,6 +38,7 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             wsAttemptCounter.current += 1;
             if (wsAttemptCounter.current > WS_MAX_TRIES) {
                 console.error("Failed to Open Websocket for Room ", roomID);
+                RegisterNotification("Lost Connection to Server", "error");
                 return;
             }
             if (!websocketMounted) return;

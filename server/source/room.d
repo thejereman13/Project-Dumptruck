@@ -4,6 +4,7 @@ import vibe.core.core;
 import vibe.core.sync;
 import vibe.core.log;
 import vibe.data.json;
+import vibe.http.websockets;
 import core.time;
 import std.uuid;
 import std.algorithm;
@@ -94,6 +95,11 @@ final class Room {
         });
     }
 
+    ~this() {
+        clearUser.stop();
+        videoLoop.stop();
+    }
+
     private void readInRoomSettings(const DB.DBRoomSettings settings) {
         this.roomName = settings.name;
         this.videoTrim = settings.trim;
@@ -181,9 +187,11 @@ final class Room {
         postPlaylist();
     }
 
-    public size_t waitForMessage(size_t lastMessage) {
-        while (lastMessage == latestMessage)
-            pingEvent.wait();
+    public size_t waitForMessage(WebSocket socket, size_t lastMessage) {
+        int emitCount = 0;
+        while (socket.connected && lastMessage == latestMessage) {
+            emitCount = pingEvent.wait(emitCount + 1);
+        }
         return latestMessage;
     }
     public Message[] retrieveLatestMessages(size_t last, size_t latest) {
@@ -209,8 +217,14 @@ final class Room {
             }
             if (removed.length > 0)
                 postUserList();
+            pingEvent.emit();
             sleep(10.seconds);
         }
+        setTimer(60.seconds,
+        {
+            if (roomUsers.userCount == 0)
+                deleteRoom(roomID);
+        });
     }
 
     @safe
@@ -421,4 +435,11 @@ private Room[long] roomList;
 Room getOrCreateRoom(long roomID, UUID user) {
     if (roomID in roomList) return roomList[roomID];
     return roomList[roomID] = new Room(roomID, user);
+}
+
+void deleteRoom(long roomID) {
+    if (!roomID in roomList) return;
+    writeln("Deleting Room ", roomID);
+    destroy(roomList[roomID]);
+    roomList.remove(roomID);
 }

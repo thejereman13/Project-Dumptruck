@@ -236,3 +236,7 @@
     display: inline-flex;
     margin-right: 1rem;
 }
+
+.AdminName {
+    color: var(--theme-secondary-light) !important;
+}

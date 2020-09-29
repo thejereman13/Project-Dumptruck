@@ -179,7 +179,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     };
 
-    const isAdmin = userID.length > 0 && adminUsers.some(u => u === userID);
+    const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
 
     return (
@@ -233,7 +233,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                             />
                         </Tab>
                         <Tab index={1} tabIndex={sidebarTab}>
-                            <UserList currentUsers={currentUsers} />
+                            <UserList currentUsers={currentUsers} adminList={adminUsers} />
                         </Tab>
                     </div>
                 </div>

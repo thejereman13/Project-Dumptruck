@@ -136,9 +136,13 @@ void addRecentRoomToUser(UUID clientID, long roomID) {
         long[] recentRooms = data["recentRooms"].get!(Json[]).map!(j => j.get!long).array;
         if (!recentRooms.any!(r => r == roomID)) {
             recentRooms ~= roomID;
-            data["recentRooms"] = serializeToJson(recentRooms);
-            DB.setUserData(clientID, data.toString());
+        } else {
+            const index = recentRooms.countUntil!(r => r == roomID);
+            recentRooms = recentRooms.remove(index);
+            recentRooms ~= roomID;
         }
+        data["recentRooms"] = serializeToJson(recentRooms);
+        DB.setUserData(clientID, data.toString());
     }
 }
 

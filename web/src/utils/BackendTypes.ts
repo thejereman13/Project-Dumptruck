@@ -3,7 +3,7 @@ export interface SiteUser {
     googleID: string;
     name: string;
     email: string;
-    recentRooms: number[];
+    recentRooms: number[]; // list of room ids, ordered by recency (latest at the end)
 }
 
 export interface RoomUser {
