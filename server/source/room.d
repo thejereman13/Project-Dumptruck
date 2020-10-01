@@ -1,10 +1,8 @@
 module room;
 
 import vibe.core.core;
-import vibe.core.sync;
 import vibe.core.log;
 import vibe.data.json;
-import vibe.http.websockets;
 import core.time;
 import std.uuid;
 import std.algorithm;
@@ -14,33 +12,11 @@ import std.exception;
 
 import video;
 import user;
+import message;
 import sockets;
 import DB = database;
 
 import std.stdio;
-
-enum MessageType {
-    Sync = "sync", // Server synchronizing connected clients
-    Error = "error", // Server responding with an error code
-    Ping = "ping", // Client updating connection status
-    UserJoin = "userJoined", // Client joining the room
-    UserLeft = "userLeft", // Client leaving the room
-    UserList = "userList", // Server updating clients with the current list
-    Play = "play", // Server starting playback, Client requesting playback
-    Pause = "pause", // Server pausing playback, Client requesting pause
-    Skip = "skip", // Client requesting the next video
-    Video = "video", // Server setting the active Client video
-    Init = "init", // Server sending all initialization info
-    Room = "room", // Server sending all room information
-    QueueAdd = "addQueue", // Client adding a video id to queue
-    QueueMultiple = "allQueue", // Client adding multiple videos
-    QueueRemove = "removeQueue", // Client removing a video id from queue
-    QueueOrder = "orderQueue", // Server updating the client playlist
-    UserOrder = "userQueue", // Server updating the room user queue order
-    RoomSettings = "settings", // Admin updating the room settings
-    AdminAdd = "addAdmin", // Admin adding another admin
-    AdminRemove = "removeAdmin" // Admin removing another admin
-}
 
 struct RoomInfo {
     string roomName;
@@ -64,27 +40,27 @@ final class Room {
     private Timer clearUser;
 
     private UUID[] usersPendingRemoval;
-
-    private LocalManualEvent pingEvent;
-    public shared size_t latestMessage = 0;
-    private Message[64] messageQueue;
+    private shared bool roomLoopRunning = false;
+    private shared bool constructed = false;
 
     private UserList roomUsers;
+    public MessageQueue messageQueue;
 
     private Video currentVideo;
     private VideoPlaylist playlist = new VideoPlaylist();
 
     this(long ID, UUID creatingUser) {
+        this.constructed = true;
         this.roomID = ID;
         this.roomUsers = new UserList(ID);
-        pingEvent = createManualEvent();
-        roomLoop = runTask({
+        this.messageQueue = new MessageQueue();
+        runTask({
             writeln("Spooling Up Room: ", ID);
             auto dbInfo = DB.getRoomInformation(ID, creatingUser);
             if (dbInfo.roomID > 0) {
                 readInRoomSettings(dbInfo.settings);
                 this.roomUsers.adminUsers = dbInfo.admins;
-                postJson(MessageType.Room, getRoomJson(), [], "Room");
+                this.messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
             }
         });
         videoLoop = createTimer({
@@ -98,6 +74,7 @@ final class Room {
     ~this() {
         clearUser.stop();
         videoLoop.stop();
+        this.roomID = 0;
     }
 
     private void readInRoomSettings(const DB.DBRoomSettings settings) {
@@ -105,41 +82,6 @@ final class Room {
         this.videoTrim = settings.trim;
         this.guestControls = settings.guestControls;
         this.hifiTiming = settings.hifiTiming;
-    }
-
-    /* Posting Messages to clients */
-
-    private @trusted nothrow void postMessage(MessageType type, string msg = "", UUID[] targetUsers = [], string key = "data") {
-        try {
-            Json j = Json.emptyObject;
-            j["type"] = type;
-            if (msg.length > 0 && key.length > 0) j[key] = msg;
-            latestMessage = (latestMessage + 1) % messageQueue.length;
-            messageQueue[latestMessage] = Message(j.toString(), targetUsers);
-            pingEvent.emit();
-        } catch (Exception e) {
-            logException(e, "Failed to send Websocket Message");
-        }
-    }
-
-    private @trusted nothrow void postJson(MessageType type, Json msg, UUID[] targetUsers = [], string key = "data") {
-        try {
-            Json j = Json.emptyObject;
-            j["type"] = type;
-            j[key] = msg;
-            latestMessage = (latestMessage + 1) % messageQueue.length;
-            messageQueue[latestMessage] = Message(j.toString(), targetUsers);
-            pingEvent.emit();
-        } catch (Exception e) {
-            logException(e, "Failed to send Websocket Json");
-        }
-    }
-    private @trusted nothrow void postSerializedJson(T)(MessageType type, T obj) {
-        try {
-            postJson(type, serializeToJson(obj));
-        } catch (Exception e) {
-            logException(e, "Failed to serialize Object for " ~ type);
-        }
     }
 
     private Json getRoomJson() {
@@ -155,11 +97,11 @@ final class Room {
     }
 
     private @trusted void postUserList() {
-        postSerializedJson!(User[])(MessageType.UserList, roomUsers.getUserList());
+        messageQueue.postSerializedJson!(User[])(MessageType.UserList, roomUsers.getUserList());
     }
     private @trusted nothrow void postPlaylist() {
-        postSerializedJson!(Video[][string])(MessageType.QueueOrder, playlist.getPlaylist());
-        postSerializedJson!(string[])(MessageType.UserOrder, playlist.getUserQueue());
+        messageQueue.postSerializedJson!(Video[][string])(MessageType.QueueOrder, playlist.getPlaylist());
+        messageQueue.postSerializedJson!(string[])(MessageType.UserOrder, playlist.getUserQueue());
     }
 
     private @trusted nothrow void queueNextVideo() {
@@ -167,8 +109,7 @@ final class Room {
             currentVideo = playlist.getNextVideo();
             currentVideo.playing = true;
             try {
-                writeln("Room ", roomName, " Now Playing ", currentVideo.youtubeID);
-                postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
+                messageQueue.postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
             } catch (Exception e) {
                 logException(e, "Failed to Serialize CurrentVideo for Websocket");
             }
@@ -179,7 +120,7 @@ final class Room {
         } else {
             currentVideo = Video.init;
             try {
-                postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
+                messageQueue.postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
             } catch (Exception e) {
                 logException(e, "Failed to Serialize CurrentVideo for Websocket");
             }
@@ -187,29 +128,12 @@ final class Room {
         postPlaylist();
     }
 
-    public size_t waitForMessage(WebSocket socket, size_t lastMessage) {
-        int emitCount = 0;
-        while (socket.connected && lastMessage == latestMessage) {
-            emitCount = pingEvent.wait(emitCount + 1);
-        }
-        return latestMessage;
-    }
-    public Message[] retrieveLatestMessages(size_t last, size_t latest) {
-        const wrappedLast = (last + 1) % messageQueue.length;
-        const wrappedLatest = (latest + 1);
-        Message[] arr;
-        if (wrappedLast <= wrappedLatest) {
-            arr ~= messageQueue[wrappedLast .. wrappedLatest];
-        } else if (wrappedLast > wrappedLatest) {
-            arr ~= messageQueue[wrappedLast .. $];
-            arr ~= messageQueue[0 .. wrappedLatest];
-        }
-        return arr;
-    }
-
     /* Room Loops */
+    private Timer roomDeletionDelay;
 
     private void roomLoopOperation() {
+        if (!constructed) return;
+        roomLoopRunning = true;
         while(roomUsers.userCount > 0) {
             auto removed = roomUsers.updateUserStatus();
             foreach(id; removed) {
@@ -217,18 +141,24 @@ final class Room {
             }
             if (removed.length > 0)
                 postUserList();
-            pingEvent.emit();
+
+            messageQueue.pingEvent();
             sleep(10.seconds);
         }
-        setTimer(60.seconds,
+        roomLoopRunning = false;
+        roomDeletionDelay = setTimer(30.seconds,
         {
-            if (roomUsers.userCount == 0)
+            if (constructed && (!roomLoopRunning || roomUsers.userCount == 0)) {
+                messageQueue.stop();
+                roomDeletionDelay.stop();
                 deleteRoom(roomID);
+            }
         });
     }
 
     @safe
     private nothrow void videoSyncLoop() {
+        if (!constructed) return;
         static int counter = 0;
         if (roomUsers.userCount <= 0 && usersPendingRemoval.length <= 0 && currentVideo.playing == false)  {
             videoLoop.stop();
@@ -242,9 +172,9 @@ final class Room {
             if (currentVideo.timeStamp <= (currentVideo.duration + videoTrim)) {
                 // Post every 4 seconds unless in hifi mode and userCount is less than 50
                 if (counter == 0 || (hifiTiming && roomUsers.userCount < 50))
-                    postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
+                    messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
             } else {
-                postMessage(MessageType.Pause);
+                messageQueue.postMessage(MessageType.Pause);
                 currentVideo.playing = false;
                 queueNextVideo();
             }
@@ -254,6 +184,7 @@ final class Room {
     }
     @safe
     private nothrow void removeUsersFromQueue() {
+        if (!constructed) return;
         foreach (id; usersPendingRemoval) {
             if (!roomUsers.activeUser(id)) {
                 playlist.removeUser(id);
@@ -271,7 +202,7 @@ final class Room {
                 postPlaylist();
                 if (currentVideo.youtubeID.length == 0) queueNextVideo();
             } else {
-                postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
+                messageQueue.postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
             }
         } else {
             logWarn("Failed to validate Video");
@@ -281,7 +212,7 @@ final class Room {
         if (playlist.removeVideoFromQueue(videoID.get!string, userID)) {
             postPlaylist();
         } else {
-            postMessage(MessageType.Error, "Insufficient Permissions", [userID], "error");
+            messageQueue.postMessage(MessageType.Error, "Insufficient Permissions", [userID], "error");
         }
     }
     private void queueAllVideo(Json videosInfo, UUID userID) {
@@ -293,7 +224,7 @@ final class Room {
                     successCounter++;
                     if (currentVideo.youtubeID.length == 0) queueNextVideo();
                 } else {
-                    postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
+                    messageQueue.postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
                 }
             } else {
                 logWarn("Failed to validate Video");
@@ -305,7 +236,8 @@ final class Room {
     /* Room Users */
 
     public Json addUser(UUID clientID) {
-        if (!roomLoop.running) {
+        if (!constructed) return Json.emptyObject;
+        if (!roomLoopRunning) {
             roomLoop = runTask({
                 roomLoopOperation();
             });
@@ -327,6 +259,7 @@ final class Room {
         return j;
     }
     public void removeUser(UUID id) {
+        if (!constructed) return;
         if (roomUsers.removeUser(id)) {
             postUserList();
             // When a user leaves, wait at least 5 seconds before removing their videos from queue
@@ -339,12 +272,13 @@ final class Room {
             }
             clearUser.rearm(5.seconds, false);
         }
-        if (roomUsers.userCount == 0) {
+        if (roomUsers.userCount == 0 && roomLoopRunning) {
             roomLoop.join();
             currentVideo = Video.init;
         }
     }
     public bool activeUser(UUID id) {
+        if (!constructed) return false;
         return roomUsers.activeUser(id);
     }
 
@@ -355,13 +289,13 @@ final class Room {
     private void addAdmin(Json userID, UUID id) {
         UUID target = UUID(userID.get!string);
         this.roomUsers.addAdmin(target);
-        postJson(MessageType.Room, getRoomJson(), [], "Room");
+        messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
     }
     private void removeAdmin(Json userID, UUID id) {
         UUID target = UUID(userID.get!string);
         if (target != id) {
             this.roomUsers.removeAdmin(target);
-            postJson(MessageType.Room, getRoomJson(), [], "Room");
+            messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
         }
     }
 
@@ -370,11 +304,12 @@ final class Room {
         const newSettings = DB.setRoomSettings(roomID, settings);
         if (newSettings.name.length > 0) {
             readInRoomSettings(newSettings);
-            postJson(MessageType.Room, getRoomJson(), [], "Room");
+            messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
         }
     }
 
     public void receivedMessage(UUID id, string message) {
+        if (!constructed) return;
         Json j = parseJson(message);
         switch (j["type"].get!string) {
             case MessageType.Ping:
@@ -383,17 +318,17 @@ final class Room {
             case MessageType.Play:
                 if (guestControls || authorizedUser(id)) {
                     currentVideo.playing = true;
-                    postMessage(MessageType.Play);
+                    messageQueue.postMessage(MessageType.Play);
                     if (currentVideo.playing)
-                        postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
+                        messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
                 }
                 break;
             case MessageType.Pause:
                 if (guestControls || authorizedUser(id)) {
                     currentVideo.playing = false;
-                    postMessage(MessageType.Pause);
+                    messageQueue.postMessage(MessageType.Pause);
                     if (currentVideo.playing)
-                        postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
+                        messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
                 }
                 break;
             case MessageType.QueueAdd:

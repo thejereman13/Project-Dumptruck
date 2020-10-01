@@ -8,11 +8,6 @@ import std.algorithm;
 
 import room;
 
-struct Message {
-	string message;
-	UUID[] targets;
-}
-
 void handleWebsocketConnection(scope WebSocket socket) {
 	const long roomID = socket.request.queryString.to!long;
 	writeln("New Socket for Room: ", roomID);
@@ -26,13 +21,14 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	const UUID id = userInfo["ID"].get!UUID;
 	socket.send(userInfo.toString());
 	auto eventWait = runTask({
-		size_t lastMessage = r.latestMessage;
+		size_t lastMessage = r.messageQueue.latestMessage;
 		while(socket.connected) {
-			const size_t newLatest = r.waitForMessage(socket, lastMessage);
-			const messages = r.retrieveLatestMessages(lastMessage, newLatest);
+			const size_t newLatest = r.messageQueue.waitForMessage(socket, lastMessage);
+			const messages = r.messageQueue.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
 				foreach(s; messages) {
-					if (s.targets.length == 0 || s.targets.any!((s) => s == id))
+					const cTargets = s.targets.length == 0 ? cast(UUID[])s.targets.dup : [];
+					if (s.targets.length == 0 || cTargets.any!((t) => t == id))
 						socket.send(s.message);
 				}
 			}
