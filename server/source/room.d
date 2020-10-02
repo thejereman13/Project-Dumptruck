@@ -41,19 +41,20 @@ final class Room {
 
     private UUID[] usersPendingRemoval;
     private shared bool roomLoopRunning = false;
-    private shared bool constructed = false;
+    public shared bool constructed = false;
 
     private UserList roomUsers;
     public MessageQueue messageQueue;
 
     private Video currentVideo;
-    private VideoPlaylist playlist = new VideoPlaylist();
+    private VideoPlaylist playlist;
 
     this(long ID, UUID creatingUser) {
         this.constructed = true;
         this.roomID = ID;
         this.roomUsers = new UserList(ID);
         this.messageQueue = new MessageQueue();
+        this.playlist = new VideoPlaylist();
         runTask({
             writeln("Spooling Up Room: ", ID);
             auto dbInfo = DB.getRoomInformation(ID, creatingUser);
@@ -134,6 +135,7 @@ final class Room {
     private void roomLoopOperation() {
         if (!constructed) return;
         roomLoopRunning = true;
+        writeln(roomID, " Room Loop Started");
         while(roomUsers.userCount > 0) {
             auto removed = roomUsers.updateUserStatus();
             foreach(id; removed) {
@@ -145,11 +147,13 @@ final class Room {
             messageQueue.pingEvent();
             sleep(10.seconds);
         }
+        writeln(roomID, " Room Loop Stopped");
         roomLoopRunning = false;
         roomDeletionDelay = setTimer(30.seconds,
         {
             if (constructed && (!roomLoopRunning || roomUsers.userCount == 0)) {
                 messageQueue.stop();
+                videoLoop.stop();
                 roomDeletionDelay.stop();
                 deleteRoom(roomID);
             }
@@ -237,12 +241,12 @@ final class Room {
 
     public Json addUser(UUID clientID) {
         if (!constructed) return Json.emptyObject;
+        UUID id = roomUsers.addUser(clientID);
         if (!roomLoopRunning) {
             roomLoop = runTask({
                 roomLoopOperation();
             });
         }
-        UUID id = roomUsers.addUser(clientID);
 
         // If the room was created by a guest user (before they finished logging in)
         // assign admin access to the first person to join the room (probably the person still logging in)
@@ -260,6 +264,7 @@ final class Room {
     }
     public void removeUser(UUID id) {
         if (!constructed) return;
+        writeln("Removing User ", id);
         if (roomUsers.removeUser(id)) {
             postUserList();
             // When a user leaves, wait at least 5 seconds before removing their videos from queue

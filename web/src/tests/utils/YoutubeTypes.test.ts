@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { videoIDFromURL, parseDurationString, parsePlaylistItemJSON } from "../../utils/YoutubeTypes";
+import { videoIDFromURL, parseDurationString, parsePlaylistItemJSON, playlistIDFromURL } from "../../utils/YoutubeTypes";
 
 const mockPlaylistItem = {
     "kind": "youtube#playlistItem",
@@ -38,18 +38,30 @@ const mockPlaylistItem = {
   }
 
 describe("Youtube Types", () => {
-    it("Parses URLS", () => {
-        const expected: { [key: string]: string } = {
+    it("Parses Video URLS", () => {
+        const expected: { [key: string]: string | undefined } = {
             "https://youtu.be/6cwisxAlHUU": "6cwisxAlHUU",
             "https://www.youtube.com/watch?v=6cwisxAlHUU&list=LLiEPjqLpcqpMK-VDQq2Ae7A&index=4&t=0s": "6cwisxAlHUU",
             "https://youtu.be/gOiTXSri3FE?list=LLiEPjqLpcqpMK-VDQq2Ae7A&t=1": "gOiTXSri3FE",
             "https://www.youtube.com/watch?v=htYR2GdA7OE&t=14072s": "htYR2GdA7OE",
             "https://www.youtube.com/watch?time_continue=28&v=J4Jfnz-m0Vg&feature=emb_logo": "J4Jfnz-m0Vg",
-            "https://www.youtube.com/watch?v=_MF-BfpZhd8&t=0s": "_MF-BfpZhd8"
+            "https://www.youtube.com/watch?v=_MF-BfpZhd8&t=0s": "_MF-BfpZhd8",
+            "https://www.youtube.com/playlist?list=PLoG6vM6glhuivsTG97O2CEhKprdAe0s6e": undefined
         };
 
         Object.keys(expected).forEach(url => {
             expect(videoIDFromURL(url)).toEqual(expected[url]);
+        });
+    });
+
+    it("Parses Playlist URLs", () => {
+        const expected: { [key: string]: string | undefined } = {
+            "https://www.youtube.com/playlist?list=PLoG6vM6glhuivsTG97O2CEhKprdAe0s6e": "PLoG6vM6glhuivsTG97O2CEhKprdAe0s6e",
+            "https://www.youtube.com/playlist?list=PLoG6vM6glhuhBKhPhqD9CZCgI9iuyCQxL": "PLoG6vM6glhuhBKhPhqD9CZCgI9iuyCQxL",
+            "https://youtu.be/gOiTXSri3FE?list=LLiEPjqLpcqpMK-VDQq2Ae7A&t=1": undefined,
+        };
+        Object.keys(expected).forEach(url => {
+            expect(playlistIDFromURL(url)).toEqual(expected[url]);
         });
     });
 

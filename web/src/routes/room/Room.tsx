@@ -15,6 +15,7 @@ import { Modal } from "../../components/Modal";
 import { SettingModal } from "./SettingModal";
 import { Tooltip } from "../../components/Popup";
 import { RegisterNotification } from "../../components/Notification";
+import { CopyToClipboard } from "../../utils/Clipboard";
 
 export interface RoomProps {
     roomID: string;
@@ -189,6 +190,21 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     <div>
                         <div class={["mui--text-display1", style.centerTooltipChild].join(" ")}>
                             {roomTitle}
+                            <Tooltip
+                                className={[style.centerTooltipChild, style.settingButton].join(" ")}
+                                content="Share Room URL"
+                            >
+                                <Button
+                                    size="small"
+                                    variant="fab"
+                                    color="accent"
+                                    onClick={(): void => CopyToClipboard(document.URL, "Room URL")}
+                                >
+                                    <i style={{ fontSize: "28px" }} class="material-icons">
+                                        share
+                                    </i>
+                                </Button>
+                            </Tooltip>
                             {isAdmin && (
                                 <Tooltip
                                     className={[style.centerTooltipChild, style.settingButton].join(" ")}

@@ -22,7 +22,7 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	socket.send(userInfo.toString());
 	auto eventWait = runTask({
 		size_t lastMessage = r.messageQueue.latestMessage;
-		while(socket.connected) {
+		while(socket.connected && r.constructed) {
 			const size_t newLatest = r.messageQueue.waitForMessage(socket, lastMessage);
 			const messages = r.messageQueue.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
@@ -42,7 +42,7 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	}
 
 	while(socket.waitForData()) {
-		if (r.activeUser(id)) {
+		if (r.constructed && r.activeUser(id)) {
 			r.receivedMessage(id, socket.receiveText());
 		} else {
 			socket.close(1000, "User Timed Out");

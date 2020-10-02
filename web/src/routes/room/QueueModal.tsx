@@ -1,13 +1,20 @@
 import { h, JSX } from "preact";
 import { useEffect, useState, Ref } from "preact/hooks";
 import { useDebouncedCallback } from "use-debounce-preact";
-import { VideoInfo, PlaylistInfo, videoIDFromURL } from "../../utils/YoutubeTypes";
-import { SearchVideo, RequestAllPlaylists, GAPIInfo, RequestVideo } from "../../utils/GAPI";
+import { VideoInfo, PlaylistInfo, videoIDFromURL, playlistIDFromURL } from "../../utils/YoutubeTypes";
+import {
+    SearchVideo,
+    RequestAllPlaylists,
+    GAPIInfo,
+    RequestVideo,
+    RequestLikedVideos,
+    RequestPlaylist
+} from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
 import * as style from "./style.css";
 import { Tabs, Tab } from "../../components/Tabs";
-import { VideoDisplayCard, PlaylistCard, VideoCardInfo } from "../../components/VideoCard";
+import { VideoDisplayCard, PlaylistCard, VideoCardInfo, LikedVideosCard } from "../../components/VideoCard";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { useAbortController } from "../../components/AbortController";
 
@@ -24,7 +31,9 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     const [searchField, setSearchField] = useState("");
     const [queueTab, setQueueTab] = useState(0);
     const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
+    const [searchPlaylist, setSearchPlaylist] = useState<PlaylistInfo | null>(null);
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
+    const [likedPreview, setLikedPreview] = useState<VideoInfo | null>(null);
 
     const controller = useAbortController();
 
@@ -32,13 +41,27 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
         (search: string) => {
             if (currentAPI?.isAPILoaded() && search.length > 0) {
                 const id = videoIDFromURL(search);
+                const pid = playlistIDFromURL(search);
                 if (id)
                     RequestVideo(id, controller, vid => {
-                        if (!controller.current.signal.aborted) setSearchResults([vid]);
+                        if (!controller.current.signal.aborted) {
+                            setSearchResults([vid]);
+                            setSearchPlaylist(null);
+                        }
+                    });
+                else if (pid)
+                    RequestPlaylist(pid, controller, play => {
+                        if (!controller.current.signal.aborted) {
+                            setSearchPlaylist(play);
+                            setSearchResults([]);
+                        }
                     });
                 else
                     SearchVideo(search, controller, results => {
-                        if (!controller.current.signal.aborted) setSearchResults(results);
+                        if (!controller.current.signal.aborted) {
+                            setSearchResults(results);
+                            setSearchPlaylist(null);
+                        }
                     });
             } else {
                 setSearchResults([]);
@@ -51,6 +74,13 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
     useEffect(() => {
         if (currentAPI?.isAPILoaded()) {
             RequestAllPlaylists(controller, setUserPlaylists);
+            RequestLikedVideos(
+                controller,
+                vids => {
+                    if (vids.length > 0) setLikedPreview(vids[0]);
+                },
+                true
+            );
         }
     }, [currentAPI, controller]);
 
@@ -108,6 +138,14 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                             <Button id="openQueue">Search</Button>
                         </div>
                         <div class={style.scrollBox}>
+                            {searchPlaylist && (
+                                <PlaylistCard
+                                    info={searchPlaylist}
+                                    onVideoClick={submitVideoFromList}
+                                    onPlaylistClick={submitPlaylist}
+                                    parentController={parentController}
+                                />
+                            )}
                             {searchResults.map(list => {
                                 return (
                                     <VideoDisplayCard
@@ -125,6 +163,21 @@ export function QueueModal(props: QueueModalProps): JSX.Element {
                 </Tab>
                 <Tab index={1} tabIndex={queueTab}>
                     <div class={style.scrollBox}>
+                        {likedPreview !== null && (
+                            <LikedVideosCard
+                                info={{
+                                    id: "",
+                                    channel: "",
+                                    description: "",
+                                    title: "Liked Videos",
+                                    videoCount: 0,
+                                    thumbnailMaxRes: likedPreview.thumbnailMaxRes
+                                }}
+                                onVideoClick={submitVideoFromList}
+                                onPlaylistClick={submitPlaylist}
+                                parentController={parentController}
+                            />
+                        )}
                         {userPlaylists.map(list => {
                             return (
                                 <PlaylistCard

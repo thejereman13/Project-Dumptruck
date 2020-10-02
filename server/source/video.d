@@ -88,7 +88,6 @@ final class VideoPlaylist {
 
     public @trusted nothrow bool addVideoToQueue(UUID userID, YoutubeVideoInformation videoInfo) {
         if (!playlist.keys.any!((u) => playlist[u].any!((a) => a.youtubeID == videoInfo.videoID))) {
-            assumeWontThrow(writeln("Queuing up Video: ", videoInfo.videoID));
             if (!(userID in playlist)) playlist[userID] = [];
             playlist[userID] ~= Video(
                 videoInfo.videoID,

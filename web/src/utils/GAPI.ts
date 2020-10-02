@@ -107,29 +107,77 @@ export function useGoogleLoginAPI(): GAPIInfo {
 export const GAPIContext = createContext<GAPIInfo | null>(null);
 export const useGAPIContext = (): GAPIInfo | null => useContext(GAPIContext);
 
-/* Util functions for fetching information from the GAPI */
+/*
+ *      Util functions for fetching information from the GAPI
+ *
+ */
 
 export function RequestAllPlaylists(
     controller: Ref<AbortController>,
-    responseCallback: (playlists: PlaylistInfo[]) => void
+    responseCallback: (playlists: PlaylistInfo[], final: boolean) => void
 ): void {
-    gapi.client
-        .request({
-            path: "https://www.googleapis.com/youtube/v3/playlists",
-            params: {
-                part: "snippet,contentDetails",
-                mine: true,
-                maxResults: 50
-            }
-        })
-        .then(resp => {
-            //  TODO: handle more than one page
-            // console.log(resp.result.pageInfo);
-            if (!controller.current.signal.aborted) responseCallback(resp.result.items.map(parsePlaylistJSON));
-        })
-        .catch(() => {
-            RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
-        });
+    let returnArr: PlaylistInfo[] = [];
+    const addPage = (pageToken?: string): void => {
+        gapi.client
+            .request({
+                path: "https://www.googleapis.com/youtube/v3/playlists",
+                params: {
+                    part: "snippet,contentDetails",
+                    mine: true,
+                    maxResults: 50,
+                    pageToken
+                }
+            })
+            .then(resp => {
+                if (controller.current.signal.aborted) return;
+                returnArr = [...returnArr, ...resp.result.items.map(parsePlaylistJSON)];
+                if (resp.result.nextPageToken) {
+                    responseCallback(returnArr, false);
+                    addPage(resp.result.nextPageToken);
+                } else {
+                    responseCallback(returnArr, true);
+                }
+            })
+            .catch(() => {
+                RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
+            });
+    };
+    addPage();
+}
+
+export function RequestLikedVideos(
+    controller: Ref<AbortController>,
+    responseCallback: (item: VideoInfo[], final: boolean) => void,
+    peek = false
+): void {
+    let returnArr: VideoInfo[] = [];
+    const addPage = (pageToken?: string): void => {
+        gapi.client
+            .request({
+                path: "https://www.googleapis.com/youtube/v3/videos",
+                params: {
+                    part: "snippet, contentDetails",
+                    myRating: "like",
+                    maxResults: peek ? 1 : 50,
+                    pageToken
+                }
+            })
+            .then(resp => {
+                if (controller.current.signal.aborted) return;
+                returnArr = [...returnArr, ...resp.result.items.map(parseVideoJSON)];
+                if (!peek && resp.result.nextPageToken) {
+                    responseCallback(returnArr, false);
+                    addPage(resp.result.nextPageToken);
+                } else {
+                    responseCallback(returnArr, true);
+                }
+            })
+            .catch(e => {
+                console.log(e);
+                RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
+            });
+    };
+    addPage();
 }
 
 /**
@@ -148,7 +196,6 @@ export function RequestVideosFromPlaylist(
     const getAllDurations = (): void => {
         const startIndex = durationCount * 50;
         const elementCount = Math.min(returnArr.length - startIndex, 50);
-        console.log(startIndex, elementCount);
         gapi.client
             .request({
                 path: "https://www.googleapis.com/youtube/v3/videos",
@@ -225,6 +272,28 @@ export function RequestVideo(
         })
         .catch(() => {
             RegisterNotification("Network Error: Failed to Retrieve Video Information", "error");
+        });
+}
+
+export function RequestPlaylist(
+    playlistID: string,
+    controller: Ref<AbortController>,
+    responseCallback: (playlist: PlaylistInfo) => void
+): void {
+    gapi.client
+        .request({
+            path: "https://www.googleapis.com/youtube/v3/playlists",
+            params: {
+                part: "snippet,contentDetails",
+                id: playlistID
+            }
+        })
+        .then(resp => {
+            if (resp.result.items.length === 1 && !controller.current.signal.aborted)
+                responseCallback(parsePlaylistJSON(resp.result.items[0]));
+        })
+        .catch(() => {
+            RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
         });
 }
 

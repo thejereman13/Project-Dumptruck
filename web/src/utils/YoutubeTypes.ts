@@ -44,6 +44,14 @@ export function parseDurationString(time: string): number {
     return hours * 3600 + minutes * 60 + seconds;
 }
 
+export function getBasicThumbnail(id: string): Thumbnail {
+    return {
+        url: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
+        width: 320,
+        height: 180
+    };
+}
+
 function getCorrectThumbnail(thumbnailList: any): Thumbnail {
     // return the highest resolution available except maxRes
     // maybe add more complicated logic later to base size off of screen DPI/zoom/etc
@@ -56,13 +64,23 @@ export function videoIDFromURL(url: string): string | undefined {
     return undefined;
 }
 
+export function playlistIDFromURL(url: string): string | undefined {
+    const matches = /(youtu\S*)(playlist\?.*list=)([a-zA-Z0-9_-]*)/.exec(url);
+    if (matches && matches.length >= 4 && matches[3].length === 34) return matches[3];
+    return undefined;
+}
+
 export function parsePlaylistJSON(playlistObject: any): PlaylistInfo {
     return {
         id: playlistObject.id,
-        title: decodeHtml(playlistObject.snippet.localized.title),
-        description: decodeHtml(playlistObject.snippet.localized.description),
+        title: decodeHtml(playlistObject.snippet.localized?.title ?? playlistObject.snippet.title ?? ""),
+        description: decodeHtml(
+            playlistObject.snippet.localized?.description ?? playlistObject.snippet.description ?? ""
+        ),
         channel: decodeHtml(playlistObject.snippet.channelTitle),
-        thumbnailMaxRes: getCorrectThumbnail(playlistObject.snippet.thumbnails),
+        thumbnailMaxRes: playlistObject.snippet.thumbnails
+            ? getCorrectThumbnail(playlistObject.snippet.thumbnails)
+            : getBasicThumbnail(playlistObject.id),
         videoCount: playlistObject.contentDetails.itemCount
     };
 }
@@ -79,10 +97,15 @@ export function parsePlaylistItemJSON(itemObject: any): VideoInfo {
 export function parseVideoJSON(videoObject: any): VideoInfo {
     return {
         id: videoObject.id,
-        title: decodeHtml(videoObject.snippet.localized.title),
+        title: decodeHtml(videoObject.snippet.localized?.title ?? videoObject.snippet.title ?? ""),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails),
-        duration: parseDurationString(videoObject.contentDetails.duration)
+        thumbnailMaxRes: videoObject.snippet.thumbnails
+            ? getCorrectThumbnail(videoObject.snippet.thumbnails)
+            : getBasicThumbnail(videoObject.id),
+        duration:
+            videoObject.contentDetails && videoObject.contentDetails
+                ? parseDurationString(videoObject.contentDetails.duration)
+                : 0
     };
 }
 
@@ -91,7 +114,9 @@ export function parseSearchVideoJSON(videoObject: any): VideoInfo {
         id: videoObject.id.videoId,
         title: decodeHtml(videoObject.snippet.title),
         channel: decodeHtml(videoObject.snippet.channelTitle),
-        thumbnailMaxRes: getCorrectThumbnail(videoObject.snippet.thumbnails)
+        thumbnailMaxRes: videoObject.snippet.thumbnails
+            ? getCorrectThumbnail(videoObject.snippet.thumbnails)
+            : getBasicThumbnail(videoObject.id.videoId)
     };
 }
 
