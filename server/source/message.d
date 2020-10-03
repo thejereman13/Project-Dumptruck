@@ -6,6 +6,8 @@ import vibe.data.json;
 import vibe.http.websockets;
 import std.uuid;
 
+import std.stdio;
+
 struct Message {
 	string message;
 	UUID[] targets;
@@ -99,9 +101,8 @@ final class MessageQueue {
     }
 
     public size_t waitForMessage(WebSocket socket, size_t lastMessage) {
-        int emitCount = 0;
         while (running && socket.connected && lastMessage == latestMessage) {
-            emitCount = messageEvent.wait(emitCount + 1);
+            messageEvent.wait();
         }
         return latestMessage;
     }
