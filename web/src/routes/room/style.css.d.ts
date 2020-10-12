@@ -9,6 +9,7 @@ declare namespace StyleCssNamespace {
         QueueCard: string;
         QueueCardInfo: string;
         QueueContainer: string;
+        QueueExpandedTitle: string;
         QueueIcon: string;
         QueueInfo: string;
         QueueVideos: string;

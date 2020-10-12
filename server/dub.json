@@ -7,7 +7,7 @@
 			"versions": [
 				"release"
 			],
-      "buildOptions": ["debugInfo"],
+      		"buildOptions": ["debugInfo"]
 		},
 		{
 			"name": "testing",
@@ -17,22 +17,22 @@
 				"integration"
 			]
 		},
-    {
-      "name": "deployment",
-      "targetName": "dumptruckFM",
-      "targetType": "executable",
-      "versions": [
+		{
+			"name": "deployment",
+			"targetName": "dumptruckFM",
+			"targetType": "executable",
+			"versions": [
 				"release"
 			],
-      "subConfigurations": {
-        "vibe-d:tls": "openssl-1.1"
-      },
-    }
+			"subConfigurations": {
+				"vibe-d:tls": "openssl-1.1"
+			}
+		}
 	],
 	"dependencies": {
 		"mysql-native": ">=2.3.0",
-		"vibe-d": "~>0.8.6",
+		"vibe-d": "~>0.9.2",
 		"vibe-d:tls": ">=0.0.0"
 	},
-	"name": "dumptruckserver",
+	"name": "dumptruckserver"
 }

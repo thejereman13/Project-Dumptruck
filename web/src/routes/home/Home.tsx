@@ -20,7 +20,6 @@ export function Home(): JSX.Element {
             GetCurrentUser(controller).then(usr => {
                 setCurrentUser(usr);
             });
-        console.log("Room Mount");
     }, [controller, gapi]);
 
     useEffect(() => {

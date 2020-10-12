@@ -15,7 +15,7 @@ import authentication;
 import video;
 import user;
 
-const WebServerVersion = "0.0.9";
+const WebServerVersion = "0.1.0";
 
 version(release)
 void main()

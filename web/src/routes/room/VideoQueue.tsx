@@ -4,22 +4,24 @@ import { RoomUser } from "../../utils/BackendTypes";
 import Button from "preact-mui/lib/button";
 import { VideoCard, VideoCardInfo } from "../../components/VideoCard";
 import * as style from "./style.css";
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useMemo } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { Tooltip } from "../../components/Popup";
 import { useAbortController } from "../../components/AbortController";
 import { Dropdown, DropdownOption } from "../../components/Dropdown";
+import { memo } from "preact/compat";
 
 export interface UserQueueCardProps {
     allowRemoval: boolean;
     user: RoomUser;
     playlist: Video[];
     removeVideo: (id: string) => void;
+    removeAll: (userID: string) => void;
 }
 
 export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
-    const { playlist, user, removeVideo, allowRemoval } = props;
+    const { playlist, user, removeVideo, removeAll, allowRemoval } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
     const [menuOpen, setMenuOpen] = useState(false);
@@ -28,6 +30,10 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
         if (playlist && playlist.length > 0) setVideoExpanded(true);
     };
     const hideVideos = (): void => setVideoExpanded(false);
+
+    useEffect(() => {
+        if (playlist.length < 1) setVideoExpanded(false);
+    }, [playlist]);
 
     const controller = useAbortController();
 
@@ -47,12 +53,15 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
 
     const openMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
         setMenuOpen(true);
-        console.log("open Menu");
         event.stopPropagation();
     };
     const closeMenu = (): void => {
         setMenuOpen(false);
-        console.log("close Menu");
+    };
+
+    const clearQueue = (): void => {
+        removeAll(user.clientID);
+        closeMenu();
     };
 
     const cardContent = videoInfo && (
@@ -63,22 +72,24 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{videoInfo.title}</div>
                     <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{`Queued By ${user.name}`}</div>
                 </div>
-                <div class={style.QueueActionDiv}>
-                    <Dropdown
-                        base={
-                            <Button onClick={openMenu} size="small" variant="fab">
-                                <i style={{ fontSize: "32px" }} class="material-icons">
-                                    more_vert
-                                </i>
-                            </Button>
-                        }
-                        open={menuOpen}
-                        onClose={closeMenu}
-                    >
-                        <DropdownOption>Clear from Queue</DropdownOption>
-                        <DropdownOption>Reorder</DropdownOption>
-                    </Dropdown>
-                </div>
+                {allowRemoval && (
+                    <div class={style.QueueActionDiv}>
+                        <Dropdown
+                            base={
+                                <Button onClick={openMenu} size="small" variant="fab">
+                                    <i style={{ fontSize: "32px" }} class="material-icons">
+                                        more_vert
+                                    </i>
+                                </Button>
+                            }
+                            open={menuOpen}
+                            onClose={closeMenu}
+                        >
+                            <DropdownOption onClick={clearQueue}>Remove All Videos</DropdownOption>
+                            <DropdownOption>Reorder</DropdownOption>
+                        </Dropdown>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -90,6 +101,11 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                 videoExpanded && playlist && playlist.length > 1 ? style.QueueVideosExpanded : ""
             ].join(" ")}
         >
+            {videoExpanded && (
+                <div
+                    class={["mui--text-subhead", style.QueueExpandedTitle].join(" ")}
+                >{`${user.name}'s Upcoming Videos:`}</div>
+            )}
             {videoExpanded &&
                 playlist.map(vid => (
                     <VideoCard
@@ -133,28 +149,44 @@ export interface VideoQueueProps {
     videoPlaylist: PlaylistByUser;
     userQueue: string[];
     currentUsers: RoomUser[];
+    currentUser: string;
     allowRemoval: boolean;
     removeVideo: (id: string) => void;
+    removeAll: (userID: string) => void;
 }
 
-export function VideoQueue(props: VideoQueueProps): JSX.Element {
-    const { userQueue, videoPlaylist, currentUsers, removeVideo, allowRemoval } = props;
-    return (
-        <div class={style.scrollBox}>
-            {userQueue.map(clientID => {
-                const playlist = videoPlaylist[clientID];
-                const playlistUser = currentUsers.find(u => u.clientID == clientID);
-                if (playlistUser === undefined) return <div />;
-                return (
-                    <UserQueueCard
-                        key={clientID}
-                        playlist={playlist}
-                        user={playlistUser}
-                        removeVideo={removeVideo}
-                        allowRemoval={allowRemoval}
-                    />
-                );
-            })}
-        </div>
-    );
-}
+export const VideoQueue = memo(
+    (props: VideoQueueProps): JSX.Element => {
+        const { userQueue, videoPlaylist, currentUsers, currentUser, removeVideo, removeAll, allowRemoval } = props;
+        return (
+            <div class={style.scrollBox}>
+                {userQueue.map(clientID => {
+                    const playlist = videoPlaylist[clientID];
+                    const playlistUser = currentUsers.find(u => u.clientID == clientID);
+                    if (playlistUser === undefined) return <div />;
+                    return (
+                        <UserQueueCard
+                            key={clientID}
+                            playlist={playlist}
+                            user={playlistUser}
+                            removeVideo={removeVideo}
+                            removeAll={removeAll}
+                            allowRemoval={allowRemoval || currentUser === clientID}
+                        />
+                    );
+                })}
+            </div>
+        );
+    },
+    (prev: VideoQueueProps, next: VideoQueueProps) => {
+        const same =
+            prev.videoPlaylist === next.videoPlaylist &&
+            prev.userQueue === next.userQueue &&
+            prev.currentUser === next.currentUser &&
+            prev.currentUsers === next.currentUsers &&
+            prev.allowRemoval === next.allowRemoval &&
+            prev.removeVideo === next.removeVideo &&
+            prev.removeAll === next.removeAll;
+        return same;
+    }
+);

@@ -131,7 +131,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiUser]);
 
-    const togglePlay = (): void => {
+    const togglePlay = useCallback((): void => {
         if (ws)
             ws.send(
                 JSON.stringify({
@@ -141,44 +141,66 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         else {
             WSErrorMessage();
         }
-    };
-    const skipVideo = (): void => {
+    }, [ws]);
+    const skipVideo = useCallback((): void => {
         if (ws) ws.send(JSON.stringify({ type: MessageType.Skip }));
-    };
+    }, [ws]);
 
-    const submitNewVideo = (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
-        if (ws) {
-            ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
-            RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
-        } else {
-            WSErrorMessage();
-        }
-    };
-    const submitAllVideos = (newVideos: YoutubeVideoInformation[], playlistTitle: string): void => {
-        if (ws) {
-            ws.send(JSON.stringify({ type: MessageType.QueueMultiple, data: newVideos }));
-            RegisterNotification(
-                `Queued All Videos from ${playlistTitle.length > 0 ? playlistTitle : "Playlist"}`,
-                "info"
-            );
-        } else {
-            WSErrorMessage();
-        }
-    };
-    const removeVideo = (id: string): void => {
-        if (ws) {
-            ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
-        } else {
-            WSErrorMessage();
-        }
-    };
-    const updateSettings = (settings: RoomSettings): void => {
-        if (ws) {
-            ws.send(JSON.stringify({ type: MessageType.RoomSettings, data: settings }));
-        } else {
-            WSErrorMessage();
-        }
-    };
+    const submitNewVideo = useCallback(
+        (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
+                RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
+    const submitAllVideos = useCallback(
+        (newVideos: YoutubeVideoInformation[], playlistTitle: string): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.QueueMultiple, data: newVideos }));
+                RegisterNotification(
+                    `Queued All Videos from ${playlistTitle.length > 0 ? playlistTitle : "Playlist"}`,
+                    "info"
+                );
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
+    const removeVideo = useCallback(
+        (id: string): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
+    const removeAllVideos = useCallback(
+        (userID: string): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.QueueClear, data: userID }));
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
+    const updateSettings = useCallback(
+        (settings: RoomSettings): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.RoomSettings, data: settings }));
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
 
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
@@ -243,8 +265,10 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                             <VideoQueue
                                 videoPlaylist={videoPlaylist}
                                 userQueue={userQueue}
+                                currentUser={userID}
                                 currentUsers={currentUsers}
                                 removeVideo={removeVideo}
+                                removeAll={removeAllVideos}
                                 allowRemoval={isAdmin}
                             />
                         </Tab>

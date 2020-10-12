@@ -89,7 +89,7 @@ export function parsePlaylistItemJSON(itemObject: any): VideoInfo {
     return {
         id: itemObject.snippet.resourceId.videoId,
         title: decodeHtml(itemObject.snippet.title),
-        channel: decodeHtml(itemObject.snippet.channelTitle),
+        channel: "",
         thumbnailMaxRes: getCorrectThumbnail(itemObject.snippet.thumbnails)
     };
 }

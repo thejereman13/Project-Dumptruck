@@ -40,6 +40,18 @@ export async function ClearUserInfo(): Promise<boolean> {
     return false;
 }
 
+export async function LogoutUser(): Promise<boolean> {
+    try {
+        const resp = await fetch("/api/logout", {
+            method: "POST"
+        });
+        return resp.ok;
+    } catch (e) {
+        console.warn(e);
+    }
+    return false;
+}
+
 export async function GetRoomInfo(roomID: string, controller: Ref<AbortController>): Promise<RoomInfo | null> {
     try {
         const resp = await fetch(`/api/room/${roomID}`, { signal: controller.current.signal });

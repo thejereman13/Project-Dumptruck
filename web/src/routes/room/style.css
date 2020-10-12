@@ -216,6 +216,11 @@
 .QueueActionDiv {
     margin-left: auto;
 }
+.QueueExpandedTitle {
+    margin: 0.5rem 2rem 0 2rem;
+    padding-left: 1rem;
+    border-bottom: 1px solid;
+}
 .VideoCardButton {
     display: flex;
     height: unset;

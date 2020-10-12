@@ -1,7 +1,7 @@
 import { h, JSX } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { SiteUser } from "../../utils/BackendTypes";
-import { GetCurrentUser, ClearUserInfo } from "../../utils/RestCalls";
+import { GetCurrentUser, ClearUserInfo, LogoutUser } from "../../utils/RestCalls";
 import { route } from "preact-router";
 import * as style from "./style.css";
 import { useAbortController } from "../../components/AbortController";
@@ -24,11 +24,17 @@ export function Profile(): JSX.Element {
         });
     }, [controller]);
 
-    function onSignOut(): void {
+    const onSignOut = (): void => {
         gapi?.forceSignOut();
         ClearUserInfo();
         route("/");
-    }
+    };
+
+    const onLogOut = (): void => {
+        gapi?.forceSignOut();
+        LogoutUser();
+        route("/");
+    };
 
     function onSignOutFailure(): void {
         console.warn("Sign Out Failure");
@@ -47,8 +53,17 @@ export function Profile(): JSX.Element {
                     <h2>{`Signed in as ${user.name}`}</h2>
                     <h4>{user.email}</h4>
                     <br />
-                    <div class="mui--text-title">Disconnect Account:</div>
+                    <div class="mui--text-title">Log Out:</div>
+                    <GoogleLogout
+                        clientId={CLIENTID}
+                        onFailure={onSignOutFailure}
+                        onLogoutSuccess={onLogOut}
+                        theme="dark"
+                        buttonText="Log Out"
+                    />
                     <br />
+                    <br />
+                    <div class="mui--text-title">Disconnect Account:</div>
                     <GoogleLogout
                         clientId={CLIENTID}
                         onFailure={onSignOutFailure}

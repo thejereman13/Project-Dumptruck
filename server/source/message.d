@@ -29,6 +29,7 @@ enum MessageType {
     QueueAdd = "addQueue", // Client adding a video id to queue
     QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
+    QueueClear = "clearQueue", // Client removing all of a users' videos
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue", // Server updating the room user queue order
     RoomSettings = "settings", // Admin updating the room settings
@@ -39,7 +40,7 @@ enum MessageType {
 final class MessageQueue {
     private shared ManualEvent messageEvent;
     public shared size_t latestMessage = 0;
-    private shared Message[64] messageQueue;
+    private shared Message[256] messageQueue;
 
     private shared bool running = false;
 

@@ -79,10 +79,11 @@ export function useGoogleLoginAPI(): GAPIInfo {
         });
     }, []);
 
-    const onFailure = useCallback((): void => {
-        console.warn("Failed to Load Login");
+    const onFailure = useCallback((preventNotification?: boolean): void => {
         setAPILoaded(false);
         setSiteUser(null);
+        if (preventNotification) return;
+        console.warn("Failed to Load Login");
         RegisterNotification("Failed to Login with Google", "error");
     }, []);
 
@@ -90,7 +91,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
         clientId: CLIENTID,
         scope: "https://www.googleapis.com/auth/youtube",
         onSuccess: onSuccess,
-        onFailure: onFailure,
+        onFailure: () => onFailure(),
         isSignedIn: true,
         cookiePolicy: "single_host_origin",
         responseType: "id_token permission"
@@ -100,7 +101,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
         getUser: (): LoggedInUser | null => siteUser,
         isAPILoaded: (): boolean => isGAPILoaded,
         forceSignIn: onSuccess,
-        forceSignOut: onFailure
+        forceSignOut: (): void => onFailure(true)
     };
 }
 

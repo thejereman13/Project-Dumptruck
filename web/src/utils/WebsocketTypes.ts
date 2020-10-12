@@ -16,9 +16,12 @@ export enum MessageType {
     QueueAdd = "addQueue", // Client adding a video id to queue
     QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
+    QueueClear = "clearQueue", // Client removing all of a users' videos
     QueueOrder = "orderQueue", // Server updating the client playlist
     UserOrder = "userQueue", // Server updating the room user queue order
-    RoomSettings = "settings" // Admin updating the room settings
+    RoomSettings = "settings", // Admin updating the room settings
+    AdminAdd = "addAdmin", // Admin adding another admin
+    AdminRemove = "removeAdmin" // Admin removing another admin
 }
 
 export interface Video {

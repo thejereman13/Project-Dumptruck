@@ -236,6 +236,14 @@ final class Room {
         }
         if (successCounter) postPlaylist();
     }
+    private void clearQueue(Json message, UUID id) {
+        const UUID target = UUID(message["data"].get!string);
+        if (target.empty) return;
+        if (authorizedUser(id) || target == id) {
+            playlist.removeUser(id);
+            postPlaylist();
+        }
+    }
 
     /* Room Users */
 
@@ -297,7 +305,7 @@ final class Room {
         messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
     }
     private void removeAdmin(Json userID, UUID id) {
-        UUID target = UUID(userID.get!string);
+        const UUID target = UUID(userID.get!string);
         if (target != id) {
             this.roomUsers.removeAdmin(target);
             messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
@@ -353,6 +361,9 @@ final class Room {
                 break;
             case MessageType.QueueMultiple:
                 queueAllVideo(j["data"], id);
+                break;
+            case MessageType.QueueClear:
+                clearQueue(j, id);
                 break;
             case MessageType.Skip:
                 if (guestControls || authorizedUser(id)) {
