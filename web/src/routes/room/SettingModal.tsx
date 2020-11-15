@@ -83,7 +83,10 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
 
     const submitSettings = (): void => {
         if (roomSettings !== null) {
-            updateSettings(roomSettings.settings);
+            roomSettings.settings.name = roomSettings.settings.name.trim();
+            if (roomSettings.settings.name.length > 0) {
+                updateSettings(roomSettings.settings);
+            }
             onClose();
         }
     };

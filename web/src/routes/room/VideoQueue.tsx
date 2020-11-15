@@ -4,7 +4,7 @@ import { RoomUser } from "../../utils/BackendTypes";
 import Button from "preact-mui/lib/button";
 import { VideoCard, VideoCardInfo } from "../../components/VideoCard";
 import * as style from "./style.css";
-import { useState, useEffect, useMemo } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { Tooltip } from "../../components/Popup";

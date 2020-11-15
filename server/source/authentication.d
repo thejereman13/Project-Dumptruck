@@ -31,7 +31,7 @@ void validateToken(string clientId, string token, HTTPServerResponse response) {
             req.method = HTTPMethod.GET;
         }, (scope res) {
             const b = res.readJson();
-            if (b["aud"].get!string == "841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com" &&
+            if (b["aud"].get!string == "907313861790-8u0up50k8acr0cqlt654lbi7dmo4aafc.apps.googleusercontent.com" &&
                 b["sub"] == clientId) {
                 auto user = makeSiteUser(b["sub"].get!string, b["name"].get!string, b["email"].get!string);
                 auto session = response.startSession();

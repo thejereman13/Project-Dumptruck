@@ -111,9 +111,9 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
     loadVideo = (): void => {
         const { id } = this.props;
         this.id = id;
-        if (!id || !this.YTLoaded) return;
+        if (!this.YTLoaded) return;
 
-        if (!this.playerMounted) {
+        if (!this.playerMounted && id) {
             this.player = new window.YT.Player(`youtube-player`, {
                 host: "https://www.youtube-nocookie.com",
                 videoId: id,
@@ -132,7 +132,12 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                 }
             });
         } else {
-            this.player?.loadVideoById(id);
+            if (!id) {
+                this.player?.destroy();
+                this.playerMounted = false;
+            } else {
+                this.player?.loadVideoById(id);
+            }
         }
     };
 

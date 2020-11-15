@@ -71,7 +71,7 @@ export default {
 
         config.plugins.push(
             new webpack.DefinePlugin({
-                CLIENTID: JSON.stringify("841595651790-s771569jg29jlktsq4ac4nk56fg0coht.apps.googleusercontent.com")
+                CLIENTID: JSON.stringify("907313861790-8u0up50k8acr0cqlt654lbi7dmo4aafc.apps.googleusercontent.com")
             })
         );
         config.plugins.push(new CompressionPlugin());
