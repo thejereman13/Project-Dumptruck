@@ -4,7 +4,8 @@ declare namespace StyleCssNamespace {
         DropdownBackdrop: string;
         DropdownContainer: string;
         DropdownOption: string;
-        ModalBackground: string;
+        ModalCancel: string;
+        ModalOverlay: string;
         NotificationBackground: string;
         PlaylistButtonActive: string;
         PlaylistCard: string;

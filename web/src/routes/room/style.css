@@ -141,15 +141,17 @@
     padding: 8rem 0;
     display: flex;
     overflow: hidden;
+    position: relative;
 }
 
 .SettingContainer {
     max-height: 100%;
     width: 25%;
-    margin: 0 8rem;
-    padding: 8rem 0;
+    min-width: 32rem;
+    margin: 8rem 8rem;
     display: flex;
     overflow: hidden;
+    position: relative;
 }
 
 .ModalBox {

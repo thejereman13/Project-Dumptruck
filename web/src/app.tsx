@@ -9,6 +9,7 @@ import { Header } from "./components/Header";
 import Room from "./routes/room";
 import { useGoogleLoginAPI, GAPIContext } from "./utils/GAPI";
 import { RenderAllNotifications } from "./components/Notification";
+import { useEscapeModal } from "./components/Modal";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 if ((module as any).hot) {
@@ -24,6 +25,8 @@ const App: FunctionalComponent = () => {
     };
 
     const GAPI = useGoogleLoginAPI();
+
+    useEscapeModal();
 
     return (
         <GAPIContext.Provider value={GAPI}>

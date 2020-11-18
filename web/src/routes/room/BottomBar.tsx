@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useCallback, useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { useGAPIContext } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
@@ -37,7 +37,6 @@ export const BottomBar = memo(
             showControls
         } = props;
         const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
-        const [queueOpen, setQueueOpen] = useState<boolean>(false);
 
         const currentAPI = useGAPIContext();
 
@@ -48,10 +47,6 @@ export const BottomBar = memo(
                 RequestVideoPreview(currentVideo.youtubeID, controller).then(setVideoInfo);
             }
         }, [currentVideo, controller]);
-
-        const closeModal = useCallback((): void => setQueueOpen(false), []);
-
-        console.log("Queue Modal Open: ", queueOpen);
 
         return (
             <div class={style.BottomBar}>
@@ -94,21 +89,23 @@ export const BottomBar = memo(
                 {allowQueuing && (
                     <div class={style.bottomRightActions}>
                         <div class={style.centerTooltipChild}>
-                            <Button id="openQueue" onClick={(): void => setQueueOpen(true)}>
+                            <Button id="openQueue" onClick={(): string => (window.location.href = "#Queue")}>
                                 Queue Video
                             </Button>
                         </div>
                     </div>
                 )}
-                <Modal className={style.QueueContainer} open={queueOpen} onClose={closeModal}>
-                    <QueueModal
-                        parentController={controller}
-                        currentAPI={currentAPI}
-                        submitNewVideo={submitNewVideo}
-                        submitAllVideos={submitAllVideos}
-                        onClose={closeModal}
-                    />
-                </Modal>
+                {allowQueuing && (
+                    <Modal className={style.QueueContainer} idName="Queue">
+                        <QueueModal
+                            parentController={controller}
+                            currentAPI={currentAPI}
+                            submitNewVideo={submitNewVideo}
+                            submitAllVideos={submitAllVideos}
+                            onClose={(): string => (window.location.href = "#")}
+                        />
+                    </Modal>
+                )}
             </div>
         );
     },

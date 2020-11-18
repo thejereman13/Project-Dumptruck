@@ -39,7 +39,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const playing = useRef(false);
 
     const [sidebarTab, setSidebarTab] = useState(0);
-    const [settingsOpen, setSettingsOpen] = useState(false);
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
@@ -238,7 +237,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                                         size="small"
                                         variant="fab"
                                         color="accent"
-                                        onClick={(): void => setSettingsOpen(true)}
+                                        onClick={(): string => (window.location.href = "#RoomSettings")}
                                     >
                                         <i style={{ fontSize: "28px" }} class="material-icons">
                                             settings
@@ -280,13 +279,15 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     </div>
                 </div>
             </div>
-            <Modal className={style.SettingContainer} open={settingsOpen} onClose={(): void => setSettingsOpen(false)}>
-                <SettingModal
-                    roomID={roomID}
-                    updateSettings={updateSettings}
-                    onClose={(): void => setSettingsOpen(false)}
-                />
-            </Modal>
+            {isAdmin && (
+                <Modal className={style.SettingContainer} idName="RoomSettings">
+                    <SettingModal
+                        roomID={roomID}
+                        updateSettings={updateSettings}
+                        onClose={(): string => (window.location.href = "#")}
+                    />
+                </Modal>
+            )}
             <BottomBar
                 playing={playing.current}
                 currentVideo={currentVideo}
