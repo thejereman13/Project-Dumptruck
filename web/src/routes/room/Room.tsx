@@ -200,6 +200,26 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         },
         [ws]
     );
+    const removeAdmin = useCallback(
+        (id: string): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.AdminRemove, data: id }));
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
+    const addAdmin = useCallback(
+        (id: string): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ type: MessageType.AdminAdd, data: id }));
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
 
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
@@ -274,7 +294,14 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                             />
                         </Tab>
                         <Tab index={1} tabIndex={sidebarTab}>
-                            <UserList currentUsers={currentUsers} adminList={adminUsers} />
+                            <UserList
+                                currentUsers={currentUsers}
+                                adminList={adminUsers}
+                                isAdmin={isAdmin}
+                                userID={userID}
+                                addAdmin={addAdmin}
+                                removeAdmin={removeAdmin}
+                            />
                         </Tab>
                     </div>
                 </div>
@@ -284,6 +311,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     <SettingModal
                         roomID={roomID}
                         updateSettings={updateSettings}
+                        removeAdmin={removeAdmin}
                         onClose={(): string => (window.location.href = "#")}
                     />
                 </Modal>

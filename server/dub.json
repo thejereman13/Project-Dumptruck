@@ -5,7 +5,8 @@
 			"targetName": "dumptruckServer",
 			"targetType": "executable",
 			"versions": [
-				"release"
+				"release",
+				"VibeHighEventPriority"
 			],
       		"buildOptions": ["debugInfo"]
 		},
@@ -22,7 +23,8 @@
 			"targetName": "dumptruckFM",
 			"targetType": "executable",
 			"versions": [
-				"release"
+				"release",
+				"VibeHighEventPriority"
 			],
 			"subConfigurations": {
 				"vibe-d:tls": "openssl-1.1"

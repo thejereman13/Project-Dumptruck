@@ -104,8 +104,16 @@ body {
     background-color: var(--theme-primary-light);
 }
 
+.mui-btn--fab.mui-btn--tiny {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+}
+
 .mui-btn--accent {
     background-color: transparent !important;
+    box-shadow: none;
+    margin: 0;
 }
 .mui-btn--accent:hover {
     background-color: #fff4 !important;

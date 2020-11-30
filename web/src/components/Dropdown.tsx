@@ -8,32 +8,31 @@ import { useAbortController } from "./AbortController";
 
 export interface DropdownOptionProps {
     className?: string;
-    children: JSX.Element | string;
-    onClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+    display: JSX.Element | string;
+    onClick?: (event?: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
-export function DropdownOption(props: DropdownOptionProps): JSX.Element {
-    const { children, onClick, className } = props;
+function DropdownOption(props: DropdownOptionProps): JSX.Element {
+    const { display, onClick, className } = props;
     return (
         <Button
             className={["mui-btn", "mui-btn--flat", className ?? "", style.DropdownOption].join(" ")}
             onClick={onClick}
         >
-            {children}
+            {display}
         </Button>
     );
 }
 
 export interface DropdownProps {
     className?: string;
-    base: JSX.Element;
-    children: JSX.Element[];
-    open: boolean;
+    base: (open: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) => JSX.Element;
+    options: DropdownOptionProps[];
     onClose?: () => void;
 }
 
 export function Dropdown(props: DropdownProps): JSX.Element {
-    const { base, children, className, onClose, open } = props;
+    const { base, options, className, onClose } = props;
     const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null);
     const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
     const { styles, attributes } = usePopper(referenceElement, popperElement, { placement: "bottom-end" });
@@ -53,6 +52,16 @@ export function Dropdown(props: DropdownProps): JSX.Element {
         [controller]
     );
 
+    const [open, setMenuOpen] = useState(false);
+    const openMenu = useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+        setMenuOpen(true);
+        event.stopPropagation();
+    }, []);
+    const closeMenu = useCallback((): void => {
+        setMenuOpen(false);
+        onClose?.();
+    }, [onClose]);
+
     const containerElement = document.getElementById("app");
     const portal =
         containerElement &&
@@ -66,18 +75,27 @@ export function Dropdown(props: DropdownProps): JSX.Element {
                 }}
                 {...attributes.popper}
             >
-                {children}
+                {options.map((opt, ind) => (
+                    <DropdownOption
+                        key={ind}
+                        {...opt}
+                        onClick={(): void => {
+                            setMenuOpen(false);
+                            opt.onClick?.();
+                        }}
+                    />
+                ))}
             </div>,
             containerElement
         );
     const clickOff =
         containerElement &&
         open &&
-        createPortal(<div onClick={onClose} className={style.DropdownBackdrop} />, containerElement);
+        createPortal(<div onClick={closeMenu} className={style.DropdownBackdrop} />, containerElement);
 
     return (
         <div className={className} ref={setReferenceRef}>
-            {base}
+            {base(openMenu)}
             {portal}
             {clickOff}
         </div>

@@ -8,15 +8,17 @@ import * as style from "./style.css";
 import { GetRoomInfo, GetAnyUser } from "../../utils/RestCalls";
 import { useAbortController } from "../../components/AbortController";
 import { RegisterNotification } from "../../components/Notification";
+import { Tooltip } from "../../components/Popup";
 
 export interface SettingModalProps {
     roomID: string;
     updateSettings: (settings: RoomSettings) => void;
+    removeAdmin: (id: string) => void;
     onClose: () => void;
 }
 
 export function SettingModal(props: SettingModalProps): JSX.Element {
-    const { roomID, updateSettings, onClose } = props;
+    const { roomID, updateSettings, onClose, removeAdmin } = props;
     const [roomSettings, setRoomSettings] = useState<RoomInfo | null>(null);
     const [roomAdmins, setRoomAdmins] = useState<SiteUser[]>([]);
 
@@ -58,7 +60,6 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
         const val = Number(event.currentTarget.value);
         if (!Number.isNaN(val)) {
             newSettings.settings.trim = Math.floor(val);
-            console.log(val);
             setRoomSettings(newSettings);
         }
     };
@@ -125,8 +126,18 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
                     <br />
                     <div class="mui--text-title">Room Admins:</div>
                     {roomAdmins.map(admin => (
-                        <div class="mui--text-subhead" key={admin.id}>
-                            {admin.name}
+                        <div key={admin.id} class={style.UserRow}>
+                            <div class="mui--text-subhead">{admin.name}</div>
+                            <Tooltip className={style.centerTooltipChild} content="Remove Admin">
+                                <Button
+                                    onClick={(): void => removeAdmin(admin.id)}
+                                    size="tiny"
+                                    variant="fab"
+                                    color="accent"
+                                >
+                                    <i class={["material-icons", style.settingRemoveIcon].join(" ")}>delete</i>
+                                </Button>
+                            </Tooltip>
                         </div>
                     ))}
                     <Button onClick={submitSettings}>Save</Button>

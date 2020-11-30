@@ -306,9 +306,11 @@ final class Room {
     }
     private void removeAdmin(Json userID, UUID id) {
         const UUID target = UUID(userID.get!string);
-        if (target != id) {
+        if (target != id && this.roomUsers.adminUsers.length > 1) {
             this.roomUsers.removeAdmin(target);
             messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
+        } else {
+            messageQueue.postMessage(MessageType.Error, "Can not Remove Admin", [id], "error");
         }
     }
 

@@ -26,7 +26,7 @@ export function Home(): JSX.Element {
         if (currentUser !== null) {
             Promise.all(currentUser.recentRooms.map(async a => await GetRoomInfo(a.toString(), controller))).then(
                 results => {
-                    if (!results.some(r => r === null))
+                    if (!controller.current.signal.aborted && !results.some(r => r === null))
                         setRoomInfo(
                             results.reduce((arr: RoomInfo[], current: RoomInfo | null) => {
                                 if (current) arr.push(current);

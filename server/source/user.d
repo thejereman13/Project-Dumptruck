@@ -36,11 +36,12 @@ final class UserList {
     public UUID addUser(UUID clientID) {
         const id = clientID.empty ? randomUUID() : clientID;
         const user = getSiteUser(clientID);
-        const name = clientID.empty || user.id.empty ? "Guest-" ~ id.toString() : user.name;
+        const guest = clientID.empty || user.id.empty;
+        const name = guest ? "Guest-" ~ id.toString() : user.name;
         if (id in roomUsers)
             roomUsers[id].userCount++;
         else
-            roomUsers[id] = User(id, name, 1, 1);
+            roomUsers[id] = User(id, name, 1, guest ? 0 : 1);
             //  Defaulting each user's role to 1
         roomUserStatus[id] = true;
         if (!clientID.empty) {
@@ -75,7 +76,6 @@ final class UserList {
         foreach (User u; roomUsers) {
             if (u.clientID in roomUserStatus) {
                 if (!roomUserStatus[u.clientID]) {
-                    writeln("Lost User ", u.clientID);
                     removeUser(u.clientID);
                     removed ~= u.clientID;
                 }

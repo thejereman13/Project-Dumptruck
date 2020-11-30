@@ -28,7 +28,7 @@ void handleWebsocketConnection(scope WebSocket socket) {
 			const messages = r.messageQueue.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
 				foreach(s; messages) {
-					const cTargets = s.targets.length == 0 ? cast(UUID[])s.targets.dup : [];
+					const cTargets = s.targets.length == 0 ? [] : cast(UUID[])s.targets.dup;
 					if (s.targets.length == 0 || cTargets.any!((t) => t == id))
 						socket.send(s.message);
 				}

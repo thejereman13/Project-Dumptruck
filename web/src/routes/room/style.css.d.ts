@@ -15,6 +15,8 @@ declare namespace StyleCssNamespace {
         QueueVideos: string;
         QueueVideosExpanded: string;
         SettingContainer: string;
+        UserRow: string;
+        UserRowTitle: string;
         VideoCardButton: string;
         bottomMiddleActions: string;
         bottomRightActions: string;
@@ -28,6 +30,7 @@ declare namespace StyleCssNamespace {
         searchDiv: string;
         searchPanel: string;
         settingButton: string;
+        settingRemoveIcon: string;
         settingTrimField: string;
         settingTrimLabel: string;
         sidePanel: string;

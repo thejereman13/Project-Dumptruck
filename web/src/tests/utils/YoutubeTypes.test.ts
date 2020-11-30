@@ -79,7 +79,9 @@ describe("Youtube Types", () => {
 
     it("Parses Playlist Items", () => {
         const video = parsePlaylistItemJSON(mockPlaylistItem);
-        expect(video.channel).toEqual("Silvagunner");
+        
+        // parsing removes the channel name since it's not the wanted value
+        expect(video.channel).toEqual("");
         expect(video.duration).toBeUndefined();
         expect(video.id).toEqual("htYR2GdA7OE");
         expect(video.title).toEqual("SampleTitle");

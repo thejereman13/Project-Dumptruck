@@ -9,7 +9,7 @@ import { RequestVideoPreview } from "../../utils/RestCalls";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { Tooltip } from "../../components/Popup";
 import { useAbortController } from "../../components/AbortController";
-import { Dropdown, DropdownOption } from "../../components/Dropdown";
+import { Dropdown } from "../../components/Dropdown";
 import { memo } from "preact/compat";
 
 export interface UserQueueCardProps {
@@ -24,7 +24,6 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     const { playlist, user, removeVideo, removeAll, allowRemoval } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
-    const [menuOpen, setMenuOpen] = useState(false);
 
     const expandVideos = (): void => {
         if (playlist && playlist.length > 0) setVideoExpanded(true);
@@ -32,7 +31,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     const hideVideos = (): void => setVideoExpanded(false);
 
     useEffect(() => {
-        if (playlist.length < 1) setVideoExpanded(false);
+        if (playlist.length < 2) setVideoExpanded(false);
     }, [playlist]);
 
     const controller = useAbortController();
@@ -51,17 +50,8 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
         }
     }, [playlist, controller]);
 
-    const openMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-        setMenuOpen(true);
-        event.stopPropagation();
-    };
-    const closeMenu = (): void => {
-        setMenuOpen(false);
-    };
-
     const clearQueue = (): void => {
         removeAll(user.clientID);
-        closeMenu();
     };
 
     const cardContent = videoInfo && (
@@ -75,19 +65,15 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                 {allowRemoval && (
                     <div class={style.QueueActionDiv}>
                         <Dropdown
-                            base={
-                                <Button onClick={openMenu} size="small" variant="fab">
+                            base={(open): JSX.Element => (
+                                <Button onClick={open} size="small" variant="fab">
                                     <i style={{ fontSize: "32px" }} class="material-icons">
                                         more_vert
                                     </i>
                                 </Button>
-                            }
-                            open={menuOpen}
-                            onClose={closeMenu}
-                        >
-                            <DropdownOption onClick={clearQueue}>Remove All Videos</DropdownOption>
-                            <DropdownOption>Reorder</DropdownOption>
-                        </Dropdown>
+                            )}
+                            options={[{ onClick: clearQueue, display: "Remove All Videos" }]}
+                        />
                     </div>
                 )}
             </div>

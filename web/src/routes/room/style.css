@@ -131,7 +131,7 @@
 }
 
 .settingButton {
-    margin-left: 1rem;
+    margin-left: 2rem;
 }
 
 .QueueContainer {
@@ -213,7 +213,8 @@
     background-color: var(--dp4-surface);
 }
 .QueueVideosExpanded {
-    height: 36rem;
+    max-height: 36rem;
+    height: unset;
 }
 .QueueActionDiv {
     margin-left: auto;
@@ -243,7 +244,19 @@
     display: inline-flex;
     margin-right: 1rem;
 }
+.settingRemoveIcon {
+    font-size: 24px;
+    color: var(--theme-secondary);
+}
 
 .AdminName {
     color: var(--theme-secondary-light) !important;
+}
+
+.UserRow {
+    display: flex;
+    justify-content: space-between;
+}
+.UserRowTitle {
+    line-height: 44px;
 }
