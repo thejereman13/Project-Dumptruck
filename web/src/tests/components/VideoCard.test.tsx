@@ -9,7 +9,7 @@ describe("Video Card", () => {
             id: "htYR2GdA7OE",
             thumbnailURL: "https://i.ytimg.com/vi/htYR2GdA7OE/default.jpg",
             title: "Sample Title",
-            duration: 90
+            duration: 96
         };
         const wrapper = mount(<VideoDisplayCard info={videoInfo} />);
         expect(wrapper.exists()).toBe(true);
@@ -17,8 +17,19 @@ describe("Video Card", () => {
         expect(wrapper.find("img").prop("src")).toEqual(videoInfo.thumbnailURL);
         expect(wrapper.find(".mui--text-subhead")).toHaveLength(1);
         expect(wrapper.find(".mui--text-subhead").text()).toEqual(videoInfo.title);
-        expect(wrapper.find(".mui--text-body1")).toHaveLength(1);
-        expect(wrapper.find(".mui--text-body1").text()).toEqual(videoInfo.channel);
+        expect(wrapper.find(".mui--text-body1")).toHaveLength(2);
+        expect(
+            wrapper
+                .find(".mui--text-body1")
+                .last()
+                .text()
+        ).toEqual(videoInfo.channel);
+        expect(
+            wrapper
+                .find(".mui--text-body1")
+                .first()
+                .text()
+        ).toEqual("01:36");
     });
 
     it("Clicks", () => {

@@ -1,6 +1,6 @@
 import { h, JSX } from "preact";
 import * as style from "./style.css";
-import { useState, useEffect, Ref } from "preact/hooks";
+import { useState, useEffect, Ref, useRef } from "preact/hooks";
 import { useGAPIContext, RequestVideosFromPlaylist, RequestLikedVideos } from "../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { VideoInfo, PlaylistInfo, durationToString } from "../utils/YoutubeTypes";
@@ -8,6 +8,7 @@ import { RequestVideoPreview } from "../utils/RestCalls";
 import { Tooltip } from "../components/Popup";
 import { useAbortController } from "./AbortController";
 import { RegisterNotification } from "./Notification";
+import { memo } from "preact/compat";
 
 export interface VideoCardInfo {
     id: string;
@@ -67,33 +68,61 @@ export interface VideoCardProps {
     actionComponent?: JSX.Element;
 }
 
-export function VideoCard(props: VideoCardProps): JSX.Element {
-    const { videoID, duration, onClick, actionComponent } = props;
-    const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
+let infoStore: VideoCardInfo[] = [];
+const infoStoreLength = 128;
 
-    const controller = useAbortController();
-
-    useEffect(() => {
-        if (videoID) {
-            RequestVideoPreview(videoID, controller).then((info: VideoInfo | null) => {
-                if (info)
-                    setVideoInfo({
-                        id: info.id,
-                        title: info.title,
-                        channel: info.channel,
-                        duration: duration,
-                        thumbnailURL: info.thumbnailMaxRes.url
-                    });
-            });
-        }
-    }, [videoID, duration, controller]);
-
-    return videoInfo ? (
-        <VideoDisplayCard info={videoInfo} onClick={onClick} actionComponent={actionComponent} />
-    ) : (
-        <div />
-    );
+function pushInfoStore(videoInfo: VideoCardInfo): VideoCardInfo {
+    if (infoStore.includes(videoInfo)) return videoInfo;
+    if (infoStore.push(videoInfo) > infoStoreLength) infoStore = infoStore.slice(1);
+    return videoInfo;
 }
+
+export const VideoCard = memo(
+    function VideoCard(props: VideoCardProps): JSX.Element {
+        const { videoID, duration, onClick, actionComponent } = props;
+        const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
+
+        const controller = useAbortController();
+
+        const vidID = useRef<VideoInfo>(null);
+
+        useEffect(() => {
+            if (videoID) {
+                const ind = infoStore.findIndex(inf => inf.id === videoID);
+                if (ind >= 0) {
+                    setVideoInfo(infoStore[ind]);
+                } else {
+                    console.log("Not Found Info: ", videoID);
+                    RequestVideoPreview(videoID, controller).then((info: VideoInfo | null) => {
+                        if (info) {
+                            setVideoInfo(
+                                pushInfoStore({
+                                    id: info.id,
+                                    title: info.title,
+                                    channel: info.channel,
+                                    duration: duration,
+                                    thumbnailURL: info.thumbnailMaxRes.url
+                                })
+                            );
+                            vidID.current = info;
+                        }
+                    });
+                }
+            }
+        }, [videoID, duration, controller]);
+
+        const workingInfo = infoStore.find(inf => inf.id === videoID) ?? videoInfo;
+        return workingInfo ? (
+            <VideoDisplayCard info={workingInfo} onClick={onClick} actionComponent={actionComponent} />
+        ) : (
+            <div />
+        );
+    },
+    (prev: VideoCardProps, next: VideoCardProps) => {
+        const same = prev.videoID === next.videoID;
+        return same;
+    }
+);
 
 export interface PlaylistCardProps {
     info: PlaylistInfo;

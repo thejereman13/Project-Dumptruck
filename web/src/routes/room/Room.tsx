@@ -3,9 +3,8 @@ import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import Button from "preact-mui/lib/button";
 import { YouTubeVideo } from "../../components/YTPlayer";
-import { useWebsockets } from "../../utils/Websockets";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
-import { RoomUser, YoutubeVideoInformation, RoomSettings } from "../../utils/BackendTypes";
+import { RoomUser } from "../../utils/BackendTypes";
 import { UserList } from "./UserList";
 import { VideoQueue } from "./VideoQueue";
 import { Tabs, Tab } from "../../components/Tabs";
@@ -17,14 +16,11 @@ import { Tooltip } from "../../components/Popup";
 import { RegisterNotification } from "../../components/Notification";
 import { CopyToClipboard } from "../../utils/Clipboard";
 import { EditModal } from "./EditModal";
+import { useRoomWebsockets } from "./RoomWebsockets";
 
 export interface RoomProps {
     roomID: string;
 }
-
-const WSErrorMessage = (): void => {
-    RegisterNotification("Failed to Connect to Server", "error");
-};
 
 export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomTitle, setRoomTitle] = useState("");
@@ -41,6 +37,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const [sidebarTab, setSidebarTab] = useState(0);
     const [editedQueue, setEditedQueue] = useState<string>("");
+
+    const settingsClosed = useRef<() => void | null>(null);
+    const editClosed = useRef<() => void | null>(null);
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
@@ -123,7 +122,20 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     );
     const currentAPI = useGAPIContext();
     const apiUser = currentAPI?.getUser() ?? null;
-    const ws = useWebsockets(roomID, newMessage);
+    const {
+        ws,
+        addAdmin,
+        removeAdmin,
+        removeAllVideos,
+        removeVideo,
+        skipVideo,
+        submitAllVideos,
+        submitNewVideo,
+        togglePlay,
+        updateSettings,
+        reorderQueue
+    } = useRoomWebsockets(roomID, newMessage);
+
     useEffect(() => {
         if (apiUser && apiUser.id !== userID) {
             ws?.close();
@@ -131,97 +143,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiUser]);
-
-    const togglePlay = useCallback((): void => {
-        if (ws)
-            ws.send(
-                JSON.stringify({
-                    type: playing.current ? MessageType.Pause : MessageType.Play
-                })
-            );
-        else {
-            WSErrorMessage();
-        }
-    }, [ws]);
-    const skipVideo = useCallback((): void => {
-        if (ws) ws.send(JSON.stringify({ type: MessageType.Skip }));
-    }, [ws]);
-
-    const submitNewVideo = useCallback(
-        (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
-                RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
-    const submitAllVideos = useCallback(
-        (newVideos: YoutubeVideoInformation[], playlistTitle: string): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueMultiple, data: newVideos }));
-                RegisterNotification(
-                    `Queued All Videos from ${playlistTitle.length > 0 ? playlistTitle : "Playlist"}`,
-                    "info"
-                );
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
-    const removeVideo = useCallback(
-        (id: string): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
-    const removeAllVideos = useCallback(
-        (userID: string): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueClear, data: userID }));
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
-    const updateSettings = useCallback(
-        (settings: RoomSettings): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.RoomSettings, data: settings }));
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
-    const removeAdmin = useCallback(
-        (id: string): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.AdminRemove, data: id }));
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
-    const addAdmin = useCallback(
-        (id: string): void => {
-            if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.AdminAdd, data: id }));
-            } else {
-                WSErrorMessage();
-            }
-        },
-        [ws]
-    );
 
     const openEditModal = useCallback((id: string): void => {
         window.location.href = "#EditQueue";
@@ -322,28 +243,36 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 </div>
             </div>
             {isAdmin && (
-                <Modal className={style.SettingContainer} idName="RoomSettings">
+                <Modal className={style.SettingContainer} idName="RoomSettings" onClose={settingsClosed.current}>
                     <SettingModal
                         roomID={roomID}
                         updateSettings={updateSettings}
                         removeAdmin={removeAdmin}
+                        closeCallback={settingsClosed}
                         onClose={(): string => (window.location.href = "#")}
                     />
                 </Modal>
             )}
-            <Modal className={style.QueueContainer} idName="EditQueue">
+            <Modal className={style.QueueContainer} idName="EditQueue" onClose={editClosed.current}>
                 <EditModal
                     userID={editedQueue}
                     playlist={videoPlaylist[editedQueue] ?? []}
                     userName={currentUsers.find(u => u.clientID === editedQueue)?.name ?? ""}
                     self={editedQueue === userID}
                     removeVideo={removeVideo}
+                    closeCallback={editClosed}
+                    updatePlaylist={(user, newPlaylist): void =>
+                        reorderQueue(
+                            user,
+                            newPlaylist.map(v => ({ videoID: v.youtubeID, duration: v.duration }))
+                        )
+                    }
                 />
             </Modal>
             <BottomBar
                 playing={playing.current}
                 currentVideo={currentVideo}
-                togglePlay={togglePlay}
+                togglePlay={(): void => togglePlay(playing.current)}
                 skipVideo={skipVideo}
                 submitNewVideo={submitNewVideo}
                 submitAllVideos={submitAllVideos}

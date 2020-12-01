@@ -244,6 +244,15 @@ final class Room {
             postPlaylist();
         }
     }
+    private void updateQueue(Json videos, UUID userID, Json target) {
+        const UUID targetID = UUID(target.get!string);
+        const YoutubeVideoInformation[] arr = videos.get!(Json[]).map!validateVideoInfo.array;
+        if ((authorizedUser(userID) || userID == targetID) && playlist.replaceVideosInQueue(targetID, arr)) {
+            postPlaylist();
+        } else {
+            messageQueue.postMessage(MessageType.Error, "Could Not Reorder User Queue", [userID], "error");
+        }
+    }
 
     /* Room Users */
 
@@ -366,6 +375,9 @@ final class Room {
                 break;
             case MessageType.QueueClear:
                 clearQueue(j, id);
+                break;
+            case MessageType.QueueReorder:
+                updateQueue(j["data"], id, j["target"]);
                 break;
             case MessageType.Skip:
                 if (guestControls || authorizedUser(id)) {

@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { Ref, useEffect, useState } from "preact/hooks";
 import Checkbox from "preact-mui/lib/checkbox";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
@@ -15,10 +15,11 @@ export interface SettingModalProps {
     updateSettings: (settings: RoomSettings) => void;
     removeAdmin: (id: string) => void;
     onClose: () => void;
+    closeCallback: Ref<() => void>;
 }
 
 export function SettingModal(props: SettingModalProps): JSX.Element {
-    const { roomID, updateSettings, onClose, removeAdmin } = props;
+    const { roomID, updateSettings, onClose, removeAdmin, closeCallback } = props;
     const [roomSettings, setRoomSettings] = useState<RoomInfo | null>(null);
     const [roomAdmins, setRoomAdmins] = useState<SiteUser[]>([]);
 
@@ -83,6 +84,7 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
     };
 
     const submitSettings = (): void => {
+        console.log("updating Settings");
         if (roomSettings !== null) {
             roomSettings.settings.name = roomSettings.settings.name.trim();
             if (roomSettings.settings.name.length > 0) {
@@ -91,6 +93,7 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
             onClose();
         }
     };
+    if (closeCallback) closeCallback.current = submitSettings;
 
     return (
         <div class={style.ModalBox} onClick={(e): void => e.stopPropagation()}>

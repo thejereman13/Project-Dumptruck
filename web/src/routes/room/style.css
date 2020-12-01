@@ -181,6 +181,7 @@
 }
 .scrollBox {
     overflow-y: auto;
+    overflow-x: hidden;
     width: 100%;
 }
 
@@ -233,6 +234,10 @@
 }
 .VideoDuration {
     font-weight: 600;
+}
+
+.EditCard:hover > div {
+    background: var(--dp16-surface);
 }
 
 .settingTrimField {

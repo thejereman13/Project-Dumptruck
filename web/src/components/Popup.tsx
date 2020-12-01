@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useState, useCallback, useRef } from "preact/hooks";
+import { useState, useCallback, useRef, useEffect } from "preact/hooks";
 import { createPortal } from "preact/compat";
 import { usePopper } from "react-popper";
 import * as style from "./style.css";
@@ -25,6 +25,11 @@ export function Tooltip(props: PopupProps): JSX.Element {
     });
     const controller = useAbortController();
     const active = useRef(false);
+    useEffect(() => {
+        return (): void => {
+            active.current = false;
+        };
+    }, []);
 
     const setPopperRef = useCallback(
         (r: HTMLDivElement | null): void => {

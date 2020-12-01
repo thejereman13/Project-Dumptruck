@@ -3,6 +3,7 @@ declare namespace StyleCssNamespace {
     export interface IStyleCss {
         AdminName: string;
         BottomBar: string;
+        EditCard: string;
         ModalBox: string;
         PageRoot: string;
         QueueActionDiv: string;

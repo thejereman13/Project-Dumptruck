@@ -102,6 +102,12 @@ final class VideoPlaylist {
         return false;
     }
 
+    public @trusted nothrow bool replaceVideosInQueue(UUID userID, const YoutubeVideoInformation[] videoInfos) {
+        if (userID !in playlist) return false;
+        playlist[userID] = videoInfos.map!(vi => Video(vi.videoID, false, 0, vi.duration, userID)).array;
+        return true;
+    }
+
     public @trusted nothrow bool removeVideoFromQueue(string videoID, UUID userID) {
         if (userID in playlist) {
             const index = playlist[userID].countUntil!((v) => v.youtubeID == videoID);

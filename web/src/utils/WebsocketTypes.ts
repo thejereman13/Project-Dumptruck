@@ -18,6 +18,7 @@ export enum MessageType {
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueClear = "clearQueue", // Client removing all of a users' videos
     QueueOrder = "orderQueue", // Server updating the client playlist
+    QueueReorder = "reorderQueue", // Client reordering a users' videos
     UserOrder = "userQueue", // Server updating the room user queue order
     RoomSettings = "settings", // Admin updating the room settings
     AdminAdd = "addAdmin", // Admin adding another admin

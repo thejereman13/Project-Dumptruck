@@ -104,6 +104,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                 >{`${user.name}'s Upcoming Videos:`}</div>
             )}
             {videoExpanded &&
+                playlist &&
                 playlist.map(vid => (
                     <VideoCard
                         key={vid.youtubeID}

@@ -6,13 +6,14 @@ export interface ModalProps {
     idName: string;
     className?: string;
     children: JSX.Element | JSX.Element[];
+    onClose?: () => void;
 }
 
 export function Modal(props: ModalProps): JSX.Element {
-    const { children, idName, className } = props;
+    const { children, idName, className, onClose } = props;
     return (
         <div id={idName} class={style.ModalOverlay}>
-            <a class={style.ModalCancel} href="#"></a>
+            <a class={style.ModalCancel} href="#" onClick={onClose}></a>
             <div class={className}>{children}</div>
         </div>
     );
