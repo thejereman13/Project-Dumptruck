@@ -3,7 +3,7 @@ import * as style from "./style.css";
 import { useState, useEffect, Ref } from "preact/hooks";
 import { useGAPIContext, RequestVideosFromPlaylist, RequestLikedVideos } from "../utils/GAPI";
 import Button from "preact-mui/lib/button";
-import { VideoInfo, PlaylistInfo } from "../utils/YoutubeTypes";
+import { VideoInfo, PlaylistInfo, durationToString } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
 import { Tooltip } from "../components/Popup";
 import { useAbortController } from "./AbortController";
@@ -34,11 +34,14 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
             {info.thumbnailURL && (
                 <img class={style.VideoIcon} src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
             )}
+            <div class={["mui--text-body1", style.VideoDuration].join(" ")}>{durationToString(info.duration)}</div>
             <div class={style.VideoInfo}>
                 <Tooltip content={info.title} delay={800}>
                     <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
                 </Tooltip>
-                <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
+                <div class={["mui--text-body1", style.textEllipsis].join(" ")}>
+                    {info.channel?.length > 0 ? info.channel : ". . ."}
+                </div>
             </div>
             {actionComponent !== undefined && <div class={style.VideoActionDiv}>{actionComponent}</div>}
         </div>
@@ -59,12 +62,13 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
 
 export interface VideoCardProps {
     videoID: string;
+    duration?: number;
     onClick?: (id: string) => void;
     actionComponent?: JSX.Element;
 }
 
 export function VideoCard(props: VideoCardProps): JSX.Element {
-    const { videoID, onClick, actionComponent } = props;
+    const { videoID, duration, onClick, actionComponent } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
 
     const controller = useAbortController();
@@ -77,11 +81,12 @@ export function VideoCard(props: VideoCardProps): JSX.Element {
                         id: info.id,
                         title: info.title,
                         channel: info.channel,
+                        duration: duration,
                         thumbnailURL: info.thumbnailMaxRes.url
                     });
             });
         }
-    }, [videoID, controller]);
+    }, [videoID, duration, controller]);
 
     return videoInfo ? (
         <VideoDisplayCard info={videoInfo} onClick={onClick} actionComponent={actionComponent} />

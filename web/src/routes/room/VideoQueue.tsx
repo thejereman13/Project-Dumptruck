@@ -6,7 +6,7 @@ import { VideoCard, VideoCardInfo } from "../../components/VideoCard";
 import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
-import { VideoInfo } from "../../utils/YoutubeTypes";
+import { durationToString, VideoInfo } from "../../utils/YoutubeTypes";
 import { Tooltip } from "../../components/Popup";
 import { useAbortController } from "../../components/AbortController";
 import { Dropdown } from "../../components/Dropdown";
@@ -18,10 +18,11 @@ export interface UserQueueCardProps {
     playlist: Video[];
     removeVideo: (id: string) => void;
     removeAll: (userID: string) => void;
+    openEdit: (id: string) => void;
 }
 
 export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
-    const { playlist, user, removeVideo, removeAll, allowRemoval } = props;
+    const { playlist, user, removeVideo, removeAll, openEdit, allowRemoval } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
 
@@ -44,6 +45,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                         id: info.id,
                         title: info.title,
                         channel: info.channel,
+                        duration: playlist[0].duration,
                         thumbnailURL: info.thumbnailMaxRes.url
                     });
             });
@@ -53,6 +55,9 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     const clearQueue = (): void => {
         removeAll(user.clientID);
     };
+    const editQueue = (): void => {
+        openEdit(user.clientID);
+    };
 
     const cardContent = videoInfo && (
         <div class={style.QueueCard}>
@@ -61,6 +66,9 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                 <div class={style.QueueInfo}>
                     <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{videoInfo.title}</div>
                     <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{`Queued By ${user.name}`}</div>
+                    <div class={["mui--text-body1", style.VideoDuration].join(" ")}>
+                        {durationToString(videoInfo.duration)}
+                    </div>
                 </div>
                 {allowRemoval && (
                     <div class={style.QueueActionDiv}>
@@ -72,7 +80,10 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                                     </i>
                                 </Button>
                             )}
-                            options={[{ onClick: clearQueue, display: "Remove All Videos" }]}
+                            options={[
+                                { onClick: clearQueue, display: "Clear Video Queue" },
+                                { onClick: editQueue, display: "Edit Queue" }
+                            ]}
                         />
                     </div>
                 )}
@@ -97,6 +108,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <VideoCard
                         key={vid.youtubeID}
                         videoID={vid.youtubeID}
+                        duration={vid.duration}
                         actionComponent={
                             allowRemoval ? (
                                 <Tooltip content="Remove From Queue">
@@ -139,11 +151,22 @@ export interface VideoQueueProps {
     allowRemoval: boolean;
     removeVideo: (id: string) => void;
     removeAll: (userID: string) => void;
+    openEdit: (id: string) => void;
 }
 
 export const VideoQueue = memo(
     (props: VideoQueueProps): JSX.Element => {
-        const { userQueue, videoPlaylist, currentUsers, currentUser, removeVideo, removeAll, allowRemoval } = props;
+        const {
+            userQueue,
+            videoPlaylist,
+            currentUsers,
+            currentUser,
+            removeVideo,
+            removeAll,
+            openEdit,
+            allowRemoval
+        } = props;
+
         return (
             <div class={style.scrollBox}>
                 {userQueue.map(clientID => {
@@ -157,6 +180,7 @@ export const VideoQueue = memo(
                             user={playlistUser}
                             removeVideo={removeVideo}
                             removeAll={removeAll}
+                            openEdit={openEdit}
                             allowRemoval={allowRemoval || currentUser === clientID}
                         />
                     );

@@ -16,6 +16,7 @@ import { SettingModal } from "./SettingModal";
 import { Tooltip } from "../../components/Popup";
 import { RegisterNotification } from "../../components/Notification";
 import { CopyToClipboard } from "../../utils/Clipboard";
+import { EditModal } from "./EditModal";
 
 export interface RoomProps {
     roomID: string;
@@ -39,6 +40,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const playing = useRef(false);
 
     const [sidebarTab, setSidebarTab] = useState(0);
+    const [editedQueue, setEditedQueue] = useState<string>("");
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
@@ -221,6 +223,18 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         [ws]
     );
 
+    const openEditModal = useCallback((id: string): void => {
+        window.location.href = "#EditQueue";
+        setEditedQueue(id);
+    }, []);
+
+    useEffect(() => {
+        if (window.location.href === "#EditQueue") {
+            if (editedQueue.length === 0 || currentUsers.findIndex(u => u.clientID === editedQueue) < 0)
+                window.location.href = "#";
+        }
+    }, [editedQueue, currentUsers]);
+
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
 
@@ -290,6 +304,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                                 currentUsers={currentUsers}
                                 removeVideo={removeVideo}
                                 removeAll={removeAllVideos}
+                                openEdit={openEditModal}
                                 allowRemoval={isAdmin}
                             />
                         </Tab>
@@ -316,6 +331,15 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     />
                 </Modal>
             )}
+            <Modal className={style.QueueContainer} idName="EditQueue">
+                <EditModal
+                    userID={editedQueue}
+                    playlist={videoPlaylist[editedQueue] ?? []}
+                    userName={currentUsers.find(u => u.clientID === editedQueue)?.name ?? ""}
+                    self={editedQueue === userID}
+                    removeVideo={removeVideo}
+                />
+            </Modal>
             <BottomBar
                 playing={playing.current}
                 currentVideo={currentVideo}

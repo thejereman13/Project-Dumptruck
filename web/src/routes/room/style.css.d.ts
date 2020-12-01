@@ -18,6 +18,7 @@ declare namespace StyleCssNamespace {
         UserRow: string;
         UserRowTitle: string;
         VideoCardButton: string;
+        VideoDuration: string;
         bottomMiddleActions: string;
         bottomRightActions: string;
         bottomVideoIcon: string;

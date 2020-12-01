@@ -44,6 +44,20 @@ export function parseDurationString(time: string): number {
     return hours * 3600 + minutes * 60 + seconds;
 }
 
+export function durationToString(duration: number | undefined): string {
+    if (duration === undefined) return "";
+    const hours = Math.floor(duration / 3600);
+    duration -= hours * 3600;
+    const minutes = Math.floor(duration / 60);
+    duration -= minutes * 60;
+    const seconds = Math.floor(duration);
+    return `${hours > 0 ? `${hours.toLocaleString()}:` : ""}${minutes.toLocaleString(undefined, {
+        minimumIntegerDigits: 2
+    })}:${seconds.toLocaleString(undefined, {
+        minimumIntegerDigits: 2
+    })}`;
+}
+
 export function getBasicThumbnail(id: string): Thumbnail {
     return {
         url: `https://i.ytimg.com/vi/${id}/mqdefault.jpg`,
@@ -102,10 +116,7 @@ export function parseVideoJSON(videoObject: any): VideoInfo {
         thumbnailMaxRes: videoObject.snippet.thumbnails
             ? getCorrectThumbnail(videoObject.snippet.thumbnails)
             : getBasicThumbnail(videoObject.id),
-        duration:
-            videoObject.contentDetails && videoObject.contentDetails
-                ? parseDurationString(videoObject.contentDetails.duration)
-                : 0
+        duration: videoObject.contentDetails ? parseDurationString(videoObject.contentDetails.duration) : 0
     };
 }
 

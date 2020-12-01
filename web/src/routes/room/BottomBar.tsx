@@ -62,13 +62,18 @@ export const BottomBar = memo(
                     ) : (
                         <div class={style.bottomVideoIcon} />
                     )}
-                    <div class={["mui--text-title", style.textEllipsis].join(" ")}>
-                        {videoInfo?.title ?? "Nothing Currently Playing"}
-                    </div>
+                    <Tooltip className={style.textEllipsis} content={videoInfo?.title ?? ""} delay={800}>
+                        <div class={["mui--text-title", style.textEllipsis].join(" ")}>
+                            {videoInfo?.title ?? "Nothing Currently Playing"}
+                        </div>
+                    </Tooltip>
                 </div>
                 {showControls ? (
                     <div class={style.bottomMiddleActions}>
-                        <Tooltip className={style.centerTooltipChild} content="Pause Room Playback">
+                        <Tooltip
+                            className={style.centerTooltipChild}
+                            content={`${playing ? "Pause" : "Resume"} Room Playback`}
+                        >
                             <Button size="small" variant="fab" onClick={togglePlay}>
                                 <i style={{ fontSize: "32px" }} class="material-icons">
                                     {playing ? "pause" : "play_arrow"}

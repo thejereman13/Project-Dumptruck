@@ -231,6 +231,9 @@
     width: 100%;
     margin: 0 !important;
 }
+.VideoDuration {
+    font-weight: 600;
+}
 
 .settingTrimField {
     display: inline-flex;

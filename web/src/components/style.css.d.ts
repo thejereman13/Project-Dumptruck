@@ -17,6 +17,7 @@ declare namespace StyleCssNamespace {
         VideoActionDiv: string;
         VideoCard: string;
         VideoCardButton: string;
+        VideoDuration: string;
         VideoIcon: string;
         VideoInfo: string;
         active: string;
