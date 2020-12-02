@@ -18,6 +18,7 @@ import { VideoDisplayCard, PlaylistCard, VideoCardInfo, LikedVideosCard } from "
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { useAbortController } from "../../components/AbortController";
 import { memo } from "preact/compat";
+import { getQueueCookie, setQueueCookie } from "../../utils/Cookies";
 
 export interface QueueModalProps {
     currentAPI: GAPIInfo | null;
@@ -31,7 +32,7 @@ export const QueueModal = memo(
     function QueueModal(props: QueueModalProps): JSX.Element {
         const { currentAPI, submitNewVideo, submitAllVideos, parentController, onClose } = props;
         const [searchField, setSearchField] = useState("");
-        const [queueTab, setQueueTab] = useState(0);
+        const [queueTab, setQueueTab] = useState(getQueueCookie());
         const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
         const [searchPlaylist, setSearchPlaylist] = useState<PlaylistInfo | null>(null);
         const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
@@ -58,13 +59,14 @@ export const QueueModal = memo(
                                 setSearchResults([]);
                             }
                         });
-                    else
-                        SearchVideo(search, controller, results => {
-                            if (!controller.current.signal.aborted) {
-                                setSearchResults(results);
-                                setSearchPlaylist(null);
-                            }
-                        });
+                    // Search requests are too expensive to be doing automatically
+                    // else
+                    //     SearchVideo(search, controller, results => {
+                    //         if (!controller.current.signal.aborted) {
+                    //             setSearchResults(results);
+                    //             setSearchPlaylist(null);
+                    //         }
+                    //     });
                 } else {
                     setSearchResults([]);
                 }
@@ -72,6 +74,20 @@ export const QueueModal = memo(
             200,
             [currentAPI]
         );
+
+        const searchVideos = (): void => {
+            if (searchField.trim().length > 0)
+                SearchVideo(searchField.trim(), controller, results => {
+                    if (!controller.current.signal.aborted) {
+                        setSearchResults(results);
+                        setSearchPlaylist(null);
+                    }
+                });
+        };
+
+        const trySearchVideos = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+            if (e.key === "Enter") searchVideos();
+        };
 
         useEffect(() => {
             if (currentAPI?.isAPILoaded()) {
@@ -122,10 +138,15 @@ export const QueueModal = memo(
             );
         };
 
+        const updateTab = (tab: number): void => {
+            setQueueTab(tab);
+            setQueueCookie(tab);
+        };
+
         return (
             <div class={style.ModalBox} onClick={(e): void => e.stopPropagation()}>
                 <div>
-                    <Tabs tabNames={["Search", "Playlists"]} index={queueTab} onIndex={setQueueTab} />
+                    <Tabs tabNames={["Search", "Playlists"]} index={queueTab} onIndex={updateTab} />
                 </div>
                 <div class={style.sidePanelTabBody}>
                     <Tab index={0} tabIndex={queueTab}>
@@ -136,8 +157,9 @@ export const QueueModal = memo(
                                     label="Search For a Video"
                                     value={searchField}
                                     onChange={updateVideoSearch}
+                                    onKeyDown={trySearchVideos}
                                 />
-                                <Button id="openQueue">Search</Button>
+                                <Button onClick={searchVideos}>Search</Button>
                             </div>
                             <div class={style.scrollBox}>
                                 {searchPlaylist && (

@@ -13,7 +13,6 @@ void removeUser(HTTPServerRequest req, HTTPServerResponse res) {
     res.writeJsonBody("{}", 201, false);
 }
 
-//TODO: add levels of Role restrictions
 void checkUserLogin(HTTPServerRequest req, HTTPServerResponse res) {
     if (!req.session) {
         res.writeBody("", 401);

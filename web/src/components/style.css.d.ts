@@ -20,11 +20,14 @@ declare namespace StyleCssNamespace {
         VideoDuration: string;
         VideoIcon: string;
         VideoInfo: string;
+        VolumeBox: string;
+        VolumeSlider: string;
         active: string;
         header: string;
         headerNav: string;
         headerRight: string;
         headerUserIcon: string;
+        headerWatch: string;
         notificationError: string;
         notificationHide: string;
         notificationInfo: string;

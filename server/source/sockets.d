@@ -1,7 +1,6 @@
 module sockets;
 import vibe.vibe;
 import vibe.http.websockets;
-import vibe.core.sync;
 import std.stdio;
 import std.uuid;
 import std.algorithm;
@@ -11,7 +10,6 @@ import room;
 
 void handleWebsocketConnection(scope WebSocket socket) {
 	const long roomID = socket.request.queryString.to!long;
-	writeln("New Socket for Room: ", roomID);
 	UUID userID = UUID.init;
 	auto session = (cast(HTTPServerRequest)(socket.request)).session;
 	if (session) {
@@ -28,8 +26,7 @@ void handleWebsocketConnection(scope WebSocket socket) {
 			const messages = r.messageQueue.retrieveLatestMessages(lastMessage, newLatest);
 			if (socket.connected) {
 				foreach(s; messages) {
-					const cTargets = s.targets.length == 0 ? [] : cast(UUID[])s.targets.dup;
-					if (s.targets.length == 0 || cTargets.any!((t) => t == id))
+					if (s.targets.length == 0 || s.targets.any!((t) => t == id))
 						socket.send(s.message);
 				}
 			}
@@ -38,11 +35,13 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	});
 
 	scope(exit) {
-		socket.close();
+		if (socket.connected)
+			socket.close();
 		eventWait.joinUninterruptible();
 	}
 
 	while(socket.waitForData()) {
+		if (!socket.connected) break;
 		if (r.constructed && r.activeUser(id)) {
 			r.receivedMessage(id, socket.receiveText());
 		} else {

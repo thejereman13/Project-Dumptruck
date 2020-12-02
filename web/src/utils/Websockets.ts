@@ -16,6 +16,14 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
     const ws = useRef<WebSocket | null>(null);
     const wsAttemptCounter = useRef<number>(0);
 
+    const closeWSSession = useCallback((ev: BeforeUnloadEvent | null): undefined => {
+        console.log("c");
+        ws.current?.close();
+        ws.current = null;
+        if (ev) delete ev["returnValue"];
+        return undefined;
+    }, []);
+
     const onMessage = useCallback((ev: MessageEvent) => {
         const message = JSON.parse(ev.data) as WSMessage;
         messageCallback(message);
@@ -58,10 +66,13 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
         if (ws.current === null) {
             createWebSocket();
         }
+
+        // When the page unloads/refreshes, attempt to remove the current user from backend
+        // This fixes refreshes adding to the user count
+        window.onbeforeunload = closeWSSession;
+
         return (): void => {
-            console.log("c");
-            ws.current?.close();
-            ws.current = null;
+            closeWSSession(null);
             clearTimeout(ping);
             websocketMounted = false;
         };

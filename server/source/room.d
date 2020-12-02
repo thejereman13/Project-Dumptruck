@@ -40,8 +40,8 @@ final class Room {
     private Timer clearUser;
 
     private UUID[] usersPendingRemoval;
-    private shared bool roomLoopRunning = false;
-    public shared bool constructed = false;
+    private bool roomLoopRunning = false;
+    public bool constructed = false;
 
     private UserList roomUsers;
     public MessageQueue messageQueue;
@@ -56,7 +56,7 @@ final class Room {
         this.messageQueue = new MessageQueue();
         this.playlist = new VideoPlaylist();
         runTask({
-            writeln("Spooling Up Room: ", ID);
+            logInfo("Spooling Up Room: " ~ ID.to!string);
             auto dbInfo = DB.getRoomInformation(ID, creatingUser);
             if (dbInfo.roomID > 0) {
                 readInRoomSettings(dbInfo.settings);
@@ -135,7 +135,6 @@ final class Room {
     private void roomLoopOperation() {
         if (!constructed) return;
         roomLoopRunning = true;
-        writeln(roomID, " Room Loop Started");
         while(roomUsers.userCount > 0) {
             auto removed = roomUsers.updateUserStatus();
             foreach(id; removed) {
@@ -147,7 +146,6 @@ final class Room {
             messageQueue.pingEvent();
             sleep(10.seconds);
         }
-        writeln(roomID, " Room Loop Stopped");
         roomLoopRunning = false;
         roomDeletionDelay = setTimer(30.seconds,
         {
@@ -281,10 +279,9 @@ final class Room {
     }
     public void removeUser(UUID id) {
         if (!constructed) return;
-        writeln("Removing User ", id);
         if (roomUsers.removeUser(id)) {
             postUserList();
-            // When a user leaves, wait at least 5 seconds before removing their videos from queue
+            // When a user leaves, wait at least 8 seconds before removing their videos from queue
             // Multiple back-to-back leaves may continuously bump this callback further and further back,
             // but that shouldn't be a huge issue. Doing independent timers would likely cause more problems
             // than it's worth.
@@ -292,7 +289,7 @@ final class Room {
             if (clearUser.pending) {
                 clearUser.stop();
             }
-            clearUser.rearm(5.seconds, false);
+            clearUser.rearm(8.seconds, false);
         }
         if (roomUsers.userCount == 0 && roomLoopRunning) {
             roomLoop.join();
@@ -404,7 +401,7 @@ Room getOrCreateRoom(long roomID, UUID user) {
 
 void deleteRoom(long roomID) {
     if (!roomID in roomList) return;
-    writeln("Deleting Room ", roomID);
+    logInfo("Deallocating Room " ~ roomID.to!string);
     destroy(roomList[roomID]);
     roomList.remove(roomID);
 }

@@ -12,25 +12,32 @@ import { RequestVideoPreview } from "../../utils/RestCalls";
 import { Tooltip } from "../../components/Popup";
 import { useAbortController } from "../../components/AbortController";
 import { memo } from "preact/compat";
+import { VolumeSlider } from "../../components/VolumeSlider";
 
 export interface BottomBarProps {
     currentVideo: Video | null;
     togglePlay: () => void;
     skipVideo: () => void;
     playing: boolean;
+    hasVideo: boolean;
     showControls: boolean;
     allowQueuing: boolean;
     submitNewVideo: (videoID: YoutubeVideoInformation, videoTitle: string) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
+    playerVolume: number;
+    setPlayerVolume: (value: number) => void;
 }
 
 export const BottomBar = memo(
     function BottomBar(props: BottomBarProps): JSX.Element {
         const {
+            hasVideo,
             currentVideo,
             togglePlay,
             skipVideo,
             playing,
+            playerVolume,
+            setPlayerVolume,
             submitNewVideo,
             submitAllVideos,
             allowQueuing,
@@ -70,18 +77,21 @@ export const BottomBar = memo(
                 </div>
                 {showControls ? (
                     <div class={style.bottomMiddleActions}>
+                        <Tooltip className={style.centerTooltipChild} content="Adjust Video Volume">
+                            <VolumeSlider disabled={!hasVideo} volume={playerVolume} setVolume={setPlayerVolume} />
+                        </Tooltip>
                         <Tooltip
                             className={style.centerTooltipChild}
                             content={`${playing ? "Pause" : "Resume"} Room Playback`}
                         >
-                            <Button size="small" variant="fab" onClick={togglePlay}>
+                            <Button disabled={!hasVideo} size="small" variant="fab" onClick={togglePlay}>
                                 <i style={{ fontSize: "32px" }} class="material-icons">
                                     {playing ? "pause" : "play_arrow"}
                                 </i>
                             </Button>
                         </Tooltip>
                         <Tooltip className={style.centerTooltipChild} content="Skip Current Video">
-                            <Button size="small" variant="fab" onClick={skipVideo}>
+                            <Button disabled={!hasVideo} size="small" variant="fab" onClick={skipVideo}>
                                 <i style={{ fontSize: "32px" }} class="material-icons">
                                     skip_next
                                 </i>
@@ -116,14 +126,17 @@ export const BottomBar = memo(
     },
     (prev: BottomBarProps, next: BottomBarProps) => {
         const same =
+            prev.hasVideo === next.hasVideo &&
             prev.allowQueuing === next.allowQueuing &&
             prev.currentVideo === next.currentVideo &&
             prev.playing === next.playing &&
             prev.showControls === next.showControls &&
+            prev.playerVolume === next.playerVolume &&
             prev.skipVideo === next.skipVideo &&
             prev.submitAllVideos === next.submitAllVideos &&
             prev.submitNewVideo === next.submitNewVideo &&
-            prev.togglePlay === next.togglePlay;
+            prev.togglePlay === next.togglePlay &&
+            prev.setPlayerVolume === next.setPlayerVolume;
         return same;
     }
 );

@@ -18,7 +18,7 @@ struct User {
 
 final class UserList {
     private User[UUID] roomUsers;
-    private shared bool[UUID] roomUserStatus;
+    private bool[UUID] roomUserStatus;
     private long roomID;
     
     public UUID[] adminUsers;

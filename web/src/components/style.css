@@ -12,10 +12,15 @@
     float: left;
     margin: 0;
     padding: 0 15px;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 400;
     line-height: unset;
     color: var(--text-secondary);
+}
+.headerWatch {
+    float: left;
+    height: 100%;
+    padding: 0.5rem 0 0.5rem 1rem;
 }
 
 .headerNav {
@@ -89,7 +94,7 @@
     margin: 0 !important;
 }
 .VideoCard > .VideoDuration {
-    font-weight: 600;
+    font-weight: 500;
     position: absolute;
     background: var(--dp2-surface);
     padding: 0 0.4rem;
@@ -209,6 +214,7 @@
     background-color: var(--dp8-surface);
     padding: 0.5rem 0;
     border-radius: 0.5rem;
+    box-shadow: 0.2rem 0.4rem 0.8rem 0px rgba(0, 0, 0, 0.5);
 }
 .DropdownOption {
     height: auto;
@@ -222,4 +228,20 @@
     left: 0;
     width: 100%;
     height: 100%;
+}
+
+.VolumeBox {
+    width: 4rem;
+    height: 32rem;
+    margin: 0 0.5rem;
+    position: relative;
+}
+.VolumeSlider {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--theme-primary);
+    border-radius: 0.5rem;
 }

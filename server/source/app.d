@@ -1,12 +1,9 @@
 import vibe.vibe;
 import vibe.http.websockets;
-import vibe.core.sync;
 import vibe.core.log;
 import std.uuid;
 import std.stdio;
 import std.functional;
-import core.thread;
-import core.sync.mutex;
 
 import sockets;
 import configuration;
@@ -15,7 +12,7 @@ import authentication;
 import video;
 import user;
 
-const WebServerVersion = "0.1.1";
+const WebServerVersion = "0.2.0";
 
 version(release)
 void main()
@@ -33,7 +30,7 @@ void main()
 	settings.sessionStore = new MemorySessionStore;
 	settings.useCompressionIfPossible = true;
 
-	// setLogLevel(LogLevel.debugV);
+	setLogLevel(LogLevel.diagnostic);
 
 	setup();
 
@@ -53,10 +50,6 @@ void main()
 	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string, fileSettings));
 	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html", fileSettings));
 
-	// router.any("*", &checkUserLogin);
-	// router.post("/user", &createUser);
-	// router.put("/user", &updateUser);
-	// router.delete_("/user", &removeUser);
 	logInfo("Starting Web Server: " ~ WebServerVersion);
 	auto l = listenHTTP(settings, router);
 	scope(exit) {

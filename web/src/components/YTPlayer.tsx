@@ -29,6 +29,17 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
     player: YT.Player | undefined;
     synchronizationState: SynchronizationState;
 
+    setVolume(level: number): number {
+        if (!this.player || !this.playerMounted) return 0;
+        const val = Math.max(0, Math.min(level, 100));
+        this.player.setVolume(val);
+        return val;
+    }
+    getVolume(): number {
+        if (!this.player || !this.playerMounted) return 0;
+        return this.player.getVolume();
+    }
+
     synchronizeYoutube(videoTime: number, playing: boolean): void {
         if (!this.player || !this.playerMounted) return;
         switch (this.synchronizationState) {

@@ -17,6 +17,7 @@ import { RegisterNotification } from "../../components/Notification";
 import { CopyToClipboard } from "../../utils/Clipboard";
 import { EditModal } from "./EditModal";
 import { useRoomWebsockets } from "./RoomWebsockets";
+import { getVolumeCookie, setVolumeCookie } from "../../utils/Cookies";
 
 export interface RoomProps {
     roomID: string;
@@ -31,6 +32,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [userQueue, setUserQueue] = useState<string[]>([]);
     const [guestControls, setGuestControls] = useState(false);
     const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
+    const [playerVolume, setPlayerVolume] = useState<number>(0);
     const [, setStateIncrement] = useState(0);
     const videoTime = useRef(0);
     const playing = useRef(false);
@@ -54,6 +56,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const playerMount = useCallback((): void => {
         if (youtubePlayer.current) {
             youtubePlayer.current.synchronizeYoutube(videoTime.current, playing.current);
+            const Cvol = getVolumeCookie();
+            console.log(Cvol);
+            if (Cvol < 0) {
+                setPlayerVolume(youtubePlayer.current.getVolume());
+            } else {
+                setPlayerVolume(youtubePlayer.current.setVolume(Cvol));
+            }
         }
     }, []);
 
@@ -144,6 +153,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apiUser]);
 
+    const updateVolume = useCallback((vol: number): void => {
+        if (youtubePlayer.current) {
+            setPlayerVolume(youtubePlayer.current.setVolume(vol));
+            setVolumeCookie(vol);
+        }
+    }, []);
+
     const openEditModal = useCallback((id: string): void => {
         window.location.href = "#EditQueue";
         setEditedQueue(id);
@@ -158,6 +174,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
+    const hasVideo = youtubePlayer.current?.playerMounted ?? false;
 
     return (
         <div class={style.PageRoot}>
@@ -270,6 +287,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 />
             </Modal>
             <BottomBar
+                hasVideo={hasVideo}
                 playing={playing.current}
                 currentVideo={currentVideo}
                 togglePlay={(): void => togglePlay(playing.current)}
@@ -278,6 +296,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 submitAllVideos={submitAllVideos}
                 showControls={guestControls || isAdmin}
                 allowQueuing={apiLoaded}
+                playerVolume={playerVolume}
+                setPlayerVolume={updateVolume}
             />
         </div>
     );

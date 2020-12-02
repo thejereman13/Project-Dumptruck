@@ -10,8 +10,9 @@ export function Header(): JSX.Element {
 
     return (
         <header class={["mui--appbar-height", "mui--appbar-line-height", style.header].join(" ")}>
+            <img className={style.headerWatch} src="/assets/watch1.png" />
             <Tooltip content={`Version: ${APPVERSION}`} delay={1000}>
-                <h1>Dumptruck FM</h1>
+                <h1>Krono</h1>
             </Tooltip>
             <nav>
                 <Link class={style.headerNav} activeClassName={style.active} href="/">

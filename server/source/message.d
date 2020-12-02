@@ -39,14 +39,14 @@ enum MessageType {
 }
 
 final class MessageQueue {
-    private shared ManualEvent messageEvent;
-    public shared size_t latestMessage = 0;
-    private shared Message[256] messageQueue;
+    private LocalManualEvent messageEvent;
+    public size_t latestMessage = 0;
+    private Message[256] messageQueue;
 
-    private shared bool running = false;
+    private bool running = false;
 
     this() {
-        messageEvent = createSharedManualEvent();
+        messageEvent = createManualEvent();
         running = true;
     }
 
@@ -68,8 +68,7 @@ final class MessageQueue {
             j["type"] = type;
             if (msg.length > 0 && key.length > 0) j[key] = msg;
             latestMessage = (latestMessage + 1) % messageQueue.length;
-            shared UUID[] sharedUsers = cast(shared(UUID[]))targetUsers.dup;
-            messageQueue[latestMessage] = shared Message(j.toString(), sharedUsers);
+            messageQueue[latestMessage] = Message(j.toString(), targetUsers);
             messageEvent.emit();
         } catch (Exception e) {
             logException(e, "Failed to send Websocket Message");
@@ -83,8 +82,7 @@ final class MessageQueue {
             j["type"] = type;
             j[key] = msg;
             latestMessage = (latestMessage + 1) % messageQueue.length;
-            shared UUID[] sharedUsers = cast(shared(UUID[]))targetUsers.dup;
-            messageQueue[latestMessage] = shared Message(j.toString(), sharedUsers);
+            messageQueue[latestMessage] = Message(j.toString(), targetUsers);
             messageEvent.emit();
         } catch (Exception e) {
             logException(e, "Failed to send Websocket Json");
@@ -108,11 +106,11 @@ final class MessageQueue {
         }
         return latestMessage;
     }
-    public shared(Message)[] retrieveLatestMessages(size_t last, size_t latest) {
+    public Message[] retrieveLatestMessages(size_t last, size_t latest) {
         if (!running) return [];
         const wrappedLast = (last + 1) % messageQueue.length;
         const wrappedLatest = (latest + 1);
-        shared Message[] arr;
+        Message[] arr;
         if (wrappedLast <= wrappedLatest) {
             arr ~= messageQueue[wrappedLast .. wrappedLatest];
         } else if (wrappedLast > wrappedLatest) {
