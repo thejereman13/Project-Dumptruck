@@ -220,17 +220,23 @@ final class Room {
     private void queueAllVideo(Json videosInfo, UUID userID) {
         YoutubeVideoInformation[] arr = videosInfo.get!(Json[]).map!validateVideoInfo.array;
         auto successCounter = 0;
+        auto failureCounter = 0;
         foreach (YoutubeVideoInformation newVid; arr) {
             if (newVid.videoID.length > 0) {
                 if (playlist.addVideoToQueue(userID, newVid)) {
                     successCounter++;
                     if (currentVideo.youtubeID.length == 0) queueNextVideo();
                 } else {
-                    messageQueue.postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
+                    failureCounter++;
                 }
             } else {
                 logWarn("Failed to validate Video");
             }
+        }
+        if (failureCounter > 1) {
+            messageQueue.postMessage(MessageType.Error, "Some Videos Already in Queue: Skipping", [userID], "error");
+        } else if (failureCounter == 1) {
+            messageQueue.postMessage(MessageType.Error, "Video Already in Queue: Skipping", [userID], "error");
         }
         if (successCounter) postPlaylist();
     }

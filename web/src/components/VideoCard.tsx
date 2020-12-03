@@ -7,8 +7,9 @@ import { VideoInfo, PlaylistInfo, durationToString } from "../utils/YoutubeTypes
 import { RequestVideoPreview } from "../utils/RestCalls";
 import { Tooltip } from "../components/Popup";
 import { useAbortController } from "./AbortController";
-import { RegisterNotification } from "./Notification";
+import { RegisterLoadingNotification } from "./Notification";
 import { memo } from "preact/compat";
+import { DotLoader } from "./LoadingAnimations";
 
 export interface VideoCardInfo {
     id: string;
@@ -136,6 +137,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const GAPIContext = useGAPIContext();
 
@@ -146,6 +148,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
 
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {
+            setLoading(true);
             RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[], final: boolean) => {
                 setVideoInfo(
                     infos.map(v => ({
@@ -157,6 +160,9 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                     }))
                 );
                 setDurationsLoaded(final);
+                if (final) {
+                    setLoading(false);
+                }
             });
         }
     }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
@@ -164,9 +170,10 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
     const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
         if (!info.id) return;
         if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
-            RegisterNotification("Requesting Playlist Information . . . ", "info");
+            const finish = RegisterLoadingNotification("Requesting Playlist Information");
             RequestVideosFromPlaylist(info.id, parentController, (infos: VideoInfo[], final: boolean) => {
-                if (final)
+                if (final) {
+                    finish();
                     callback?.(
                         infos.map(v => ({
                             id: v.id,
@@ -177,6 +184,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                         })),
                         info
                     );
+                }
             });
         } else {
             callback?.(videoInfo, info);
@@ -208,9 +216,10 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
                     <img class={style.PlaylistIcon} src={info.thumbnailMaxRes.url} />
                 )}
                 <div class={style.PlaylistInfo}>
-                    <div class="mui--text-subhead">{info.title}</div>
-                    <div class="mui--text-body1">{info.channel}</div>
+                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
+                    <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
                 </div>
+                {loading && <DotLoader />}
                 <div class={style.VideoActionDiv}>
                     <Tooltip content="Queue All">
                         <Button size="small" variant="fab" onClick={queueAll}>
@@ -282,6 +291,7 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const GAPIContext = useGAPIContext();
 
@@ -296,6 +306,7 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
 
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && videoExpanded && videoInfo.length === 0) {
+            setLoading(true);
             RequestLikedVideos(controller, (infos: VideoInfo[], final: boolean) => {
                 setVideoInfo(
                     infos.map(v => ({
@@ -307,15 +318,19 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
                     }))
                 );
                 setDurationsLoaded(final);
+                if (final) {
+                    setLoading(false);
+                }
             });
         }
     }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
 
     const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
         if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
-            RegisterNotification("Requesting Video Information . . . ", "info");
+            const finish = RegisterLoadingNotification("Requesting Video Information");
             RequestLikedVideos(parentController, (infos: VideoInfo[], final: boolean) => {
-                if (final)
+                if (final) {
+                    finish();
                     callback?.(
                         infos.map(v => ({
                             id: v.id,
@@ -326,6 +341,7 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
                         })),
                         info
                     );
+                }
             });
         } else {
             callback?.(videoInfo, info);
@@ -357,9 +373,10 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
                     <img class={style.PlaylistIcon} src={info.thumbnailMaxRes.url} />
                 )}
                 <div class={style.PlaylistInfo}>
-                    <div class="mui--text-subhead">{info.title}</div>
-                    <div class="mui--text-body1">{info.channel}</div>
+                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
+                    <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
                 </div>
+                {loading && <DotLoader />}
                 <div class={style.VideoActionDiv}>
                     <Tooltip content="Queue All">
                         <Button size="small" variant="fab" onClick={queueAll}>

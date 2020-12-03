@@ -7,6 +7,7 @@ declare namespace StyleCssNamespace {
         ModalCancel: string;
         ModalOverlay: string;
         NotificationBackground: string;
+        NotificationText: string;
         PlaylistButtonActive: string;
         PlaylistCard: string;
         PlaylistCardInfo: string;
@@ -31,6 +32,7 @@ declare namespace StyleCssNamespace {
         notificationError: string;
         notificationHide: string;
         notificationInfo: string;
+        notificationLoading: string;
         popupTooltip: string;
         textEllipsis: string;
     }

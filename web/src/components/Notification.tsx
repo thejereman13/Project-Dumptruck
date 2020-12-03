@@ -1,8 +1,9 @@
 import { h, JSX } from "preact";
 import { useState, useEffect } from "preact/hooks";
+import { BlockLoader } from "./LoadingAnimations";
 import * as style from "./style.css";
 
-type notificationType = "info" | "error";
+type notificationType = "info" | "error" | "loading";
 
 interface NotificationObject {
     id: Date;
@@ -37,12 +38,19 @@ export function RegisterNotification(text: string, type: notificationType): void
     updateRender?.();
 }
 
+export function RegisterLoadingNotification(text: string): () => void {
+    RegisterNotification(text, "loading");
+    return hideNotification;
+}
+
 function getTypeClass(note: NotificationObject): string {
     switch (note.type) {
         case "info":
             return style.notificationInfo;
         case "error":
             return style.notificationError;
+        case "loading":
+            return style.notificationLoading;
         default:
             return "";
     }
@@ -61,9 +69,16 @@ export function RenderAllNotifications(): JSX.Element {
     let color = getTypeClass(newestNote);
     if (newestNote.renderState === 0) {
         newestNote.renderState++;
-        setTimeout(hideNotification, newestNote.timeout);
+        if (newestNote.type !== "loading") {
+            setTimeout(hideNotification, newestNote.timeout);
+        }
     } else if (newestNote.renderState === 2) {
         color += ` ${style.notificationHide}`;
     }
-    return <div class={[style.NotificationBackground, color].join(" ")}>{newestNote.text}</div>;
+    return (
+        <div className={[style.NotificationBackground, color].join(" ")}>
+            <div className={style.NotificationText}>{newestNote.text}</div>
+            {newestNote.type === "loading" && <BlockLoader />}
+        </div>
+    );
 }
