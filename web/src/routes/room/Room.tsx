@@ -45,6 +45,10 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
+    useEffect(() => {
+        if (roomTitle.length > 0) document.title = "Krono: " + roomTitle;
+    }, [roomTitle]);
+
     const setVideoInformation = useCallback((video: Video) => {
         console.log("New Video", video);
         videoTime.current = video.timeStamp;

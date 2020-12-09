@@ -7,12 +7,6 @@ import std.uuid;
 import database;
 import user;
 
-void removeUser(HTTPServerRequest req, HTTPServerResponse res) {
-    string userName = req.json["User"].to!string;
-    database.deleteUser(userName);
-    res.writeJsonBody("{}", 201, false);
-}
-
 void checkUserLogin(HTTPServerRequest req, HTTPServerResponse res) {
     if (!req.session) {
         res.writeBody("", 401);

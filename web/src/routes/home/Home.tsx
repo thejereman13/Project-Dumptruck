@@ -7,7 +7,6 @@ import { GetCurrentUser, GetRoomInfo } from "../../utils/RestCalls";
 import { RoomInfo, SiteUser } from "../../utils/BackendTypes";
 import { useAbortController } from "../../components/AbortController";
 import { useGAPIContext } from "../../utils/GAPI";
-import { BlockLoader, DotLoader } from "../../components/LoadingAnimations";
 
 export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);
@@ -54,7 +53,6 @@ export function Home(): JSX.Element {
     return (
         <div class={style.home}>
             <h1>Home</h1>
-            <DotLoader />
             {currentUser !== null && (
                 <div>
                     {adminRooms.length > 0 && (
