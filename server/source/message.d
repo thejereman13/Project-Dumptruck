@@ -20,6 +20,8 @@ enum MessageType {
     UserJoin = "userJoined", // Client joining the room
     UserLeft = "userLeft", // Client leaving the room
     UserList = "userList", // Server updating clients with the current list
+    UserReady = "userReady", // Client has loaded the next video
+    UserError = "userError", // Client has encountered a playback error
     Play = "play", // Server starting playback, Client requesting playback
     Pause = "pause", // Server pausing playback, Client requesting pause
     Skip = "skip", // Client requesting the next video

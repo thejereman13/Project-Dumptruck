@@ -91,11 +91,13 @@ export const QueueModal = memo(
 
         useEffect(() => {
             if (currentAPI?.isAPILoaded()) {
-                RequestAllPlaylists(controller, setUserPlaylists);
+                RequestAllPlaylists(controller, list => {
+                    if (list) setUserPlaylists(list);
+                });
                 RequestLikedVideos(
                     controller,
                     vids => {
-                        if (vids.length > 0) setLikedPreview(vids[0]);
+                        if (vids && vids.length > 0) setLikedPreview(vids[0]);
                     },
                     true
                 );

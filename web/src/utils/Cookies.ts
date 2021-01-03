@@ -1,6 +1,6 @@
 function setCookie(cname: string, cvalue: any): void {
     const d = new Date();
-    d.setTime(d.getTime() + 10 * 24 * 3600 * 1000);
+    d.setTime(d.getTime() + 1000 * 24 * 3600 * 1000);
     document.cookie = `${cname}=${cvalue};expires=${d.toUTCString()};path=/`;
 }
 function getCookie(cname: string): string | null {

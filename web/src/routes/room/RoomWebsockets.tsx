@@ -20,6 +20,8 @@ export interface RoomWebsocketCallbacks {
     submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     togglePlay: (playing: boolean) => void;
     updateSettings: (settings: RoomSettings) => void;
+    logError: () => void;
+    logReady: () => void;
 }
 
 export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) => void): RoomWebsocketCallbacks {
@@ -130,6 +132,13 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
         [ws]
     );
 
+    const logError = useCallback((): void => {
+        if (ws) ws.send(JSON.stringify({ type: MessageType.UserError }));
+    }, [ws]);
+    const logReady = useCallback((): void => {
+        if (ws) ws.send(JSON.stringify({ type: MessageType.UserReady }));
+    }, [ws]);
+
     return {
         ws,
         addAdmin,
@@ -141,6 +150,8 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
         submitAllVideos,
         submitNewVideo,
         togglePlay,
-        updateSettings
+        updateSettings,
+        logError,
+        logReady
     };
 }

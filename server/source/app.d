@@ -9,10 +9,9 @@ import sockets;
 import configuration;
 import database;
 import authentication;
-import video;
-import user;
+import site_user;
 
-const WebServerVersion = "0.3.0";
+const WebServerVersion = "0.4.0";
 
 version(release)
 void main()
@@ -42,7 +41,7 @@ void main()
 	router.post("/api/login", &userLogin);
 	router.get("/api/login", &getUserLogin);
 	router.post("/api/logout", &userLogout);
-	router.get("/api/video/:id", &videoInfoRequest);
+	// router.get("/api/video/:id", &videoInfoRequest);
 	router.get("/api/user", &getUserInfo);
 	router.delete_("/api/user", &clearUserInfo);
 	router.get("/api/user/:id", &getPublicUserInfo);

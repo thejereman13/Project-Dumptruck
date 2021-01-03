@@ -5,6 +5,8 @@ export interface YouTubeVideoProps {
     className: string;
     id: string;
     playerMount: () => void;
+    playerError: () => void;
+    playerReady: () => void;
 }
 
 enum SynchronizationState {
@@ -42,6 +44,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
 
     synchronizeYoutube(videoTime: number, playing: boolean): void {
         if (!this.player || !this.playerMounted) return;
+        // console.log("Sync", videoTime, playing, new Date().toUTCString());
         switch (this.synchronizationState) {
             case SynchronizationState.Reset:
                 if (playing) {
@@ -120,7 +123,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
     };
 
     loadVideo = (): void => {
-        const { id } = this.props;
+        const { id, playerError } = this.props;
         this.id = id;
         if (!this.YTLoaded) return;
 
@@ -133,7 +136,9 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                     onError: (e): void => {
                         console.warn("Youtube Error:", e);
                         RegisterNotification("Youtube Player Encountered Error", "error");
+                        playerError();
                     }
+                    // onStateChange: (e): void => this.onPlayerStateChange(e.data)
                 },
                 playerVars: {
                     fs: 1,
@@ -148,6 +153,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                 this.playerMounted = false;
             } else {
                 this.player?.loadVideoById(id);
+                this.player?.pauseVideo();
             }
         }
     };
@@ -156,6 +162,16 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
         this.playerMounted = true;
         this.props.playerMount();
     };
+
+    // Temporarily abandoned due to difficulties determining the correct loading state.
+    // lastState = -4;
+    // onPlayerStateChange = (state: number): void => {
+    //     // Once the player finishes buffering or becomes queued, it is ready
+    //     if ((this.lastState === 3 && state !== 3) || (this.lastState !== 5 && state === 5)) {
+    //         this.props.playerReady();
+    //     }
+    //     this.lastState = state;
+    // };
 
     render = (): JSX.Element => {
         const { className } = this.props;

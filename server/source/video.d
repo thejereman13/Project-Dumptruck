@@ -43,7 +43,11 @@ final class VideoPlaylist {
         return retPlaylist;
     }
     public @trusted nothrow string[] getUserQueue() {
-        return array(userQueue.filter!(u => u in playlist).map!(u => u.toString()));
+        if (userQueue.length == 0) return [];
+
+        size_t nextIndex = (lastUser + 1) % userQueue.length;
+        return (userQueue[nextIndex .. $] ~ userQueue[0 .. lastUser])
+            .filter!(u => u in playlist).map!(u => u.toString()).array;
     }
 
     public @trusted nothrow bool hasNextVideo() {

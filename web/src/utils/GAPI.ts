@@ -115,7 +115,7 @@ export const useGAPIContext = (): GAPIInfo | null => useContext(GAPIContext);
 
 export function RequestAllPlaylists(
     controller: Ref<AbortController>,
-    responseCallback: (playlists: PlaylistInfo[], final: boolean) => void
+    responseCallback: (playlists: PlaylistInfo[] | undefined, final: boolean) => void
 ): void {
     let returnArr: PlaylistInfo[] = [];
     const addPage = (pageToken?: string): void => {
@@ -141,6 +141,7 @@ export function RequestAllPlaylists(
             })
             .catch(() => {
                 RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
+                responseCallback(undefined, true);
             });
     };
     addPage();
@@ -148,7 +149,7 @@ export function RequestAllPlaylists(
 
 export function RequestLikedVideos(
     controller: Ref<AbortController>,
-    responseCallback: (item: VideoInfo[], final: boolean) => void,
+    responseCallback: (item: VideoInfo[] | undefined, final: boolean) => void,
     peek = false
 ): void {
     let returnArr: VideoInfo[] = [];
@@ -173,9 +174,9 @@ export function RequestLikedVideos(
                     responseCallback(returnArr, true);
                 }
             })
-            .catch(e => {
-                console.log(e);
+            .catch(() => {
                 RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
+                responseCallback(undefined, true);
             });
     };
     addPage();
@@ -190,7 +191,7 @@ export function RequestLikedVideos(
 export function RequestVideosFromPlaylist(
     playlistID: string,
     controller: Ref<AbortController>,
-    responseCallback: (item: VideoInfo[], final: boolean) => void
+    responseCallback: (item: VideoInfo[] | undefined, final: boolean) => void
 ): void {
     let returnArr: VideoInfo[] = [];
     let durationCount = 0;
@@ -207,14 +208,28 @@ export function RequestVideosFromPlaylist(
                 }
             })
             .then(resp => {
-                if (resp.result.items.length === elementCount && !controller.current.signal.aborted) {
-                    resp.result.items.forEach((result: any, index: number) => {
-                        returnArr[startIndex + index] = parseVideoJSON(result);
-                    });
+                if (!controller.current.signal.aborted) {
+                    if (resp.result.items.length === elementCount) {
+                        resp.result.items.forEach((result: any, index: number) => {
+                            returnArr[startIndex + index] = parseVideoJSON(result);
+                        });
+                    } else {
+                        let i = 0;
+                        resp.result.items.forEach((result: any) => {
+                            const vid = parseVideoJSON(result);
+                            // Skip over any invalid videos that couldn't be returned by GAPI request
+                            while (returnArr[startIndex + i].id !== vid.id) {
+                                i++;
+                            }
+                            returnArr[startIndex + i] = vid;
+                            i++;
+                        });
+                    }
 
                     if (startIndex + elementCount < returnArr.length) {
                         durationCount += 1;
                         getAllDurations();
+                        responseCallback(returnArr, false);
                     } else {
                         responseCallback(returnArr, true);
                     }
@@ -222,6 +237,7 @@ export function RequestVideosFromPlaylist(
             })
             .catch(() => {
                 RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
+                responseCallback(undefined, true);
             });
     };
 
@@ -249,6 +265,7 @@ export function RequestVideosFromPlaylist(
             })
             .catch(() => {
                 RegisterNotification("Network Error: Failed to Retrieve Playlist Information", "error");
+                responseCallback(undefined, true);
             });
     };
     addPage();

@@ -93,7 +93,6 @@ export const VideoCard = memo(
                 if (ind >= 0) {
                     setVideoInfo(infoStore[ind]);
                 } else {
-                    console.log("Not Found Info: ", videoID);
                     RequestVideoPreview(videoID, controller).then((info: VideoInfo | null) => {
                         if (info) {
                             setVideoInfo(
@@ -149,16 +148,17 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {
             setLoading(true);
-            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[], final: boolean) => {
-                setVideoInfo(
-                    infos.map(v => ({
-                        id: v.id,
-                        title: v.title,
-                        channel: v.channel,
-                        thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                        duration: v.duration
-                    }))
-                );
+            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[] | undefined, final: boolean) => {
+                if (infos)
+                    setVideoInfo(
+                        infos.map(v => ({
+                            id: v.id,
+                            title: v.title,
+                            channel: v.channel,
+                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
+                            duration: v.duration
+                        }))
+                    );
                 setDurationsLoaded(final);
                 if (final) {
                     setLoading(false);
@@ -171,19 +171,20 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
         if (!info.id) return;
         if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
             const finish = RegisterLoadingNotification("Requesting Playlist Information");
-            RequestVideosFromPlaylist(info.id, parentController, (infos: VideoInfo[], final: boolean) => {
+            RequestVideosFromPlaylist(info.id, parentController, (infos: VideoInfo[] | undefined, final: boolean) => {
                 if (final) {
                     finish();
-                    callback?.(
-                        infos.map(v => ({
-                            id: v.id,
-                            title: v.title,
-                            channel: v.channel,
-                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                            duration: v.duration
-                        })),
-                        info
-                    );
+                    if (infos)
+                        callback?.(
+                            infos.map(v => ({
+                                id: v.id,
+                                title: v.title,
+                                channel: v.channel,
+                                thumbnailURL: v.thumbnailMaxRes?.url ?? "",
+                                duration: v.duration
+                            })),
+                            info
+                        );
                 }
             });
         } else {
@@ -307,16 +308,17 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && videoExpanded && videoInfo.length === 0) {
             setLoading(true);
-            RequestLikedVideos(controller, (infos: VideoInfo[], final: boolean) => {
-                setVideoInfo(
-                    infos.map(v => ({
-                        id: v.id,
-                        title: v.title,
-                        channel: v.channel,
-                        thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                        duration: v.duration
-                    }))
-                );
+            RequestLikedVideos(controller, (infos: VideoInfo[] | undefined, final: boolean) => {
+                if (infos)
+                    setVideoInfo(
+                        infos.map(v => ({
+                            id: v.id,
+                            title: v.title,
+                            channel: v.channel,
+                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
+                            duration: v.duration
+                        }))
+                    );
                 setDurationsLoaded(final);
                 if (final) {
                     setLoading(false);
@@ -328,19 +330,20 @@ export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
     const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
         if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
             const finish = RegisterLoadingNotification("Requesting Video Information");
-            RequestLikedVideos(parentController, (infos: VideoInfo[], final: boolean) => {
+            RequestLikedVideos(parentController, (infos: VideoInfo[] | undefined, final: boolean) => {
                 if (final) {
                     finish();
-                    callback?.(
-                        infos.map(v => ({
-                            id: v.id,
-                            title: v.title,
-                            channel: v.channel,
-                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                            duration: v.duration
-                        })),
-                        info
-                    );
+                    if (infos)
+                        callback?.(
+                            infos.map(v => ({
+                                id: v.id,
+                                title: v.title,
+                                channel: v.channel,
+                                thumbnailURL: v.thumbnailMaxRes?.url ?? "",
+                                duration: v.duration
+                            })),
+                            info
+                        );
                 }
             });
         } else {

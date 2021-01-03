@@ -146,7 +146,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         submitNewVideo,
         togglePlay,
         updateSettings,
-        reorderQueue
+        reorderQueue,
+        logError,
+        logReady
     } = useRoomWebsockets(roomID, newMessage);
 
     useEffect(() => {
@@ -228,6 +230,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         className={style.videoDiv}
                         id={currentVideo?.youtubeID ?? ""}
                         playerMount={playerMount}
+                        playerError={logError}
+                        playerReady={logReady}
                     />
                 </div>
                 <div class={style.sidePanel}>

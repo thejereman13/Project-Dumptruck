@@ -5,7 +5,7 @@ import std.stdio;
 import std.uuid;
 
 import database;
-import user;
+import site_user;
 
 void checkUserLogin(HTTPServerRequest req, HTTPServerResponse res) {
     if (!req.session) {

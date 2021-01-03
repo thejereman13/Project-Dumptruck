@@ -34,6 +34,8 @@ final class Room {
     private int videoTrim;
     private bool guestControls;
     private bool hifiTiming;
+    private bool skipErrors;
+    private bool waitUsers;
 
     private Task roomLoop;
     private Timer videoLoop;
@@ -83,6 +85,8 @@ final class Room {
         this.videoTrim = settings.trim;
         this.guestControls = settings.guestControls;
         this.hifiTiming = settings.hifiTiming;
+        this.skipErrors = settings.skipErrors;
+        this.waitUsers = settings.waitUsers;
     }
 
     private Json getRoomJson() {
@@ -103,30 +107,6 @@ final class Room {
     private @trusted nothrow void postPlaylist() {
         messageQueue.postSerializedJson!(Video[][string])(MessageType.QueueOrder, playlist.getPlaylist());
         messageQueue.postSerializedJson!(string[])(MessageType.UserOrder, playlist.getUserQueue());
-    }
-
-    private @trusted nothrow void queueNextVideo() {
-        if (playlist.hasNextVideo()) {
-            currentVideo = playlist.getNextVideo();
-            currentVideo.playing = true;
-            try {
-                messageQueue.postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
-            } catch (Exception e) {
-                logException(e, "Failed to Serialize CurrentVideo for Websocket");
-            }
-            if (videoLoop.pending) {
-                videoLoop.stop();
-            }
-            videoLoop.rearm(1.seconds, true);
-        } else {
-            currentVideo = Video.init;
-            try {
-                messageQueue.postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
-            } catch (Exception e) {
-                logException(e, "Failed to Serialize CurrentVideo for Websocket");
-            }
-        }
-        postPlaylist();
     }
 
     /* Room Loops */
@@ -172,8 +152,8 @@ final class Room {
             if (currentVideo.timeStamp < 4) // Ensure syncing at the beginning of the video
                 counter = 0;
             if (currentVideo.timeStamp <= (currentVideo.duration + videoTrim)) {
-                // Post every 4 seconds unless in hifi mode and userCount is less than 50
-                if (counter == 0 || (hifiTiming && roomUsers.userCount < 50))
+                // Post every 4 seconds unless in hifi mode and userCount is less than 32
+                if (counter == 0 || (hifiTiming && roomUsers.userCount < 32))
                     messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
             } else {
                 messageQueue.postMessage(MessageType.Pause);
@@ -196,6 +176,37 @@ final class Room {
     }
 
     /* Video Queue */
+
+    private @trusted nothrow void queueNextVideo() {
+        if (playlist.hasNextVideo()) {
+            currentVideo = playlist.getNextVideo();
+            // if not waiting on users, start playing the video immediately
+            currentVideo.playing = !this.waitUsers;
+            try {
+                messageQueue.postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
+            } catch (Exception e) {
+                logException(e, "Failed to Serialize CurrentVideo for Websocket");
+            }
+            roomUsers.clearTempUserLists();
+            if (videoLoop.pending) {
+                videoLoop.stop();
+            }
+            if (!this.waitUsers) {
+                videoLoop.rearm(1.seconds, true);
+            }
+        } else {
+            currentVideo = Video.init;
+            try {
+                messageQueue.postJson(MessageType.Video, serializeToJson(currentVideo), [], "Video");
+            } catch (Exception e) {
+                logException(e, "Failed to Serialize CurrentVideo for Websocket");
+            }
+            if (videoLoop.pending) {
+                videoLoop.stop();
+            }
+        }
+        postPlaylist();
+    }
 
     private void queueVideo(Json videoInfo, UUID userID) {
         auto newVideo = validateVideoInfo(videoInfo);
@@ -311,18 +322,33 @@ final class Room {
         return roomUsers.adminUsers.any!(u => u == id);
     }
 
-    private void addAdmin(Json userID, UUID id) {
+    private void addAdmin(Json userID) {
         UUID target = UUID(userID.get!string);
-        this.roomUsers.addAdmin(target);
+        roomUsers.addAdmin(target);
         messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
     }
     private void removeAdmin(Json userID, UUID id) {
         const UUID target = UUID(userID.get!string);
         if (target != id && this.roomUsers.adminUsers.length > 1) {
-            this.roomUsers.removeAdmin(target);
+            roomUsers.removeAdmin(target);
             messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
         } else {
             messageQueue.postMessage(MessageType.Error, "Can not Remove Admin", [id], "error");
+        }
+    }
+
+    private void logUserError(UUID id) {
+        // skip the current video if more than half of the users have encountered an error
+        if (skipErrors && roomUsers.setUserErrored(id) >= 0.5) {
+            queueNextVideo();
+        }
+    }
+    private void logUserReady(UUID id) {
+        // queue the next video once 90% of active users have loaded it
+        if (waitUsers && roomUsers.setUserReady(id) >= 0.9) {
+            currentVideo.playing = true;
+            messageQueue.postMessage(MessageType.Play);
+            videoLoop.rearm(1.seconds, true);
         }
     }
 
@@ -336,7 +362,7 @@ final class Room {
     }
 
     public void receivedMessage(UUID id, string message) {
-        if (!constructed) return;
+        if (!constructed || id.empty) return;
         Json j = parseJson(message);
         switch (j["type"].get!string) {
             case MessageType.Ping:
@@ -346,32 +372,20 @@ final class Room {
                 if (guestControls || authorizedUser(id)) {
                     currentVideo.playing = true;
                     messageQueue.postMessage(MessageType.Play);
-                    if (currentVideo.playing)
-                        messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
+                    messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
                 }
                 break;
             case MessageType.Pause:
                 if (guestControls || authorizedUser(id)) {
                     currentVideo.playing = false;
                     messageQueue.postMessage(MessageType.Pause);
-                    if (currentVideo.playing)
-                        messageQueue.postMessage(MessageType.Sync, currentVideo.timeStamp.to!string);
                 }
                 break;
             case MessageType.QueueAdd:
-                if (!id.empty)
-                    queueVideo(j["data"], id);
+                queueVideo(j["data"], id);
                 break;
             case MessageType.QueueRemove:
                 unqueueVideo(j["data"], id);
-                break;
-            case MessageType.AdminAdd:
-                if (authorizedUser(id))
-                    addAdmin(j["data"], id);
-                break;
-            case MessageType.AdminRemove:
-                if (authorizedUser(id))
-                    removeAdmin(j["data"], id);
                 break;
             case MessageType.QueueMultiple:
                 queueAllVideo(j["data"], id);
@@ -381,6 +395,20 @@ final class Room {
                 break;
             case MessageType.QueueReorder:
                 updateQueue(j["data"], id, j["target"]);
+                break;
+            case MessageType.AdminAdd:
+                if (authorizedUser(id))
+                    addAdmin(j["data"]);
+                break;
+            case MessageType.AdminRemove:
+                if (authorizedUser(id))
+                    removeAdmin(j["data"], id);
+                break;
+            case MessageType.UserError:
+                logUserError(id);
+                break;
+            case MessageType.UserReady:
+                logUserReady(id);
                 break;
             case MessageType.Skip:
                 if (guestControls || authorizedUser(id)) {

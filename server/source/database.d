@@ -141,10 +141,12 @@ struct DBRoomSettings {
     int trim; // trim the ending of the video in seconds (positive shortens, negative will add time)
     bool guestControls; // default false
     bool publicVisibility; // default true
-    bool hifiTiming; // default false
+    bool hifiTiming; // default false (disabled for 32 or more users)
+    bool skipErrors; // default true
+    bool waitUsers; // default false
 
     static DBRoomSettings defaultSettings() {
-        return DBRoomSettings("", 0, false, true, false);
+        return DBRoomSettings("", 0, false, true, false, true, false);
     }
 }
 
@@ -172,6 +174,12 @@ DBRoomSettings parseRoomSettings(Json settings) {
                 break;
             case "hifiTiming":
                 room.hifiTiming = value.get!bool;
+                break;
+            case "skipErrors":
+                room.skipErrors = value.get!bool;
+                break;
+            case "waitUsers":
+                room.waitUsers = value.get!bool;
                 break;
             default: break;
         }

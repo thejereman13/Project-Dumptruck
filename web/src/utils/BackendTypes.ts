@@ -24,6 +24,8 @@ export interface RoomSettings {
     guestControls: boolean;
     publicVisibility: boolean;
     hifiTiming: boolean;
+    skipErrors: boolean;
+    waitUsers: boolean;
 }
 
 export interface RoomInfo {

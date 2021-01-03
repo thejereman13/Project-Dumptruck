@@ -82,9 +82,20 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
         newSettings.settings.hifiTiming = !newSettings.settings.hifiTiming;
         setRoomSettings(newSettings);
     };
+    const updateError = (): void => {
+        if (roomSettings === null) return;
+        const newSettings = { ...roomSettings };
+        newSettings.settings.skipErrors = !newSettings.settings.skipErrors;
+        setRoomSettings(newSettings);
+    };
+    // const updateWait = (): void => {
+    //     if (roomSettings === null) return;
+    //     const newSettings = { ...roomSettings };
+    //     newSettings.settings.waitUsers = !newSettings.settings.waitUsers;
+    //     setRoomSettings(newSettings);
+    // };
 
     const submitSettings = (): void => {
-        console.log("updating Settings");
         if (roomSettings !== null) {
             roomSettings.settings.name = roomSettings.settings.name.trim();
             if (roomSettings.settings.name.length > 0) {
@@ -126,6 +137,16 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
                         defaultChecked={roomSettings.settings.hifiTiming}
                         onChange={updateHifi}
                     />
+                    <Checkbox
+                        label="Skip Errored Videos"
+                        defaultChecked={roomSettings.settings.skipErrors}
+                        onChange={updateError}
+                    />
+                    {/* <Checkbox
+                        label="Wait for Video Load"
+                        defaultChecked={roomSettings.settings.waitUsers}
+                        onChange={updateWait}
+                    /> */}
                     <br />
                     <div class="mui--text-title">Room Admins:</div>
                     {roomAdmins.map(admin => (
