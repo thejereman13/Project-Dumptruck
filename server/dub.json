@@ -36,7 +36,6 @@
 		}
 	],
 	"dependencies": {
-		"mysql-native": ">=2.3.0",
 		"tinyredis": "~>2.2.1",
 		"vibe-d": "~>0.9.2",
 		"vibe-d:tls": ">=0.0.0"
