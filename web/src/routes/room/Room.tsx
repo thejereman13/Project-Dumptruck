@@ -61,7 +61,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         if (youtubePlayer.current) {
             youtubePlayer.current.synchronizeYoutube(videoTime.current, playing.current);
             const Cvol = getVolumeCookie();
-            console.log(Cvol);
             if (Cvol < 0) {
                 setPlayerVolume(youtubePlayer.current.getVolume());
             } else {
@@ -161,6 +160,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const updateVolume = useCallback((vol: number): void => {
         if (youtubePlayer.current) {
+            console.log("New Vol: ", vol);
             setPlayerVolume(youtubePlayer.current.setVolume(vol));
             setVolumeCookie(vol);
         }
@@ -249,7 +249,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                                 currentUser={userID}
                                 currentUsers={currentUsers}
                                 removeVideo={removeVideo}
-                                removeAll={removeAllVideos}
                                 openEdit={openEditModal}
                                 allowRemoval={isAdmin}
                             />
@@ -285,6 +284,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     userName={currentUsers.find(u => u.clientID === editedQueue)?.name ?? ""}
                     self={editedQueue === userID}
                     removeVideo={removeVideo}
+                    removeAll={removeAllVideos}
                     closeCallback={editClosed}
                     updatePlaylist={(user, newPlaylist): void =>
                         reorderQueue(

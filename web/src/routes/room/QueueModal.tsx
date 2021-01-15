@@ -14,7 +14,8 @@ import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
 import * as style from "./style.css";
 import { Tabs, Tab } from "../../components/Tabs";
-import { VideoDisplayCard, PlaylistCard, VideoCardInfo, LikedVideosCard } from "../../components/VideoCard";
+import { VideoDisplayCard, VideoCardInfo } from "../../components/VideoCard";
+import { LikedVideosCard, PlaylistCard } from "../../components/PlaylistCard";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { useAbortController } from "../../components/AbortController";
 import { memo } from "preact/compat";
@@ -25,18 +26,20 @@ export interface QueueModalProps {
     submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
     onClose: () => void;
+    playingPreview: (playing: boolean) => void;
     parentController: Ref<AbortController>;
 }
 
 export const QueueModal = memo(
     function QueueModal(props: QueueModalProps): JSX.Element {
-        const { currentAPI, submitNewVideo, submitAllVideos, parentController, onClose } = props;
-        const [searchField, setSearchField] = useState("");
+        const { currentAPI, submitNewVideo, submitAllVideos, parentController, onClose, playingPreview } = props;
+        const [searchField, setSearchField] = useState<string>("");
         const [queueTab, setQueueTab] = useState(getQueueCookie());
         const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
         const [searchPlaylist, setSearchPlaylist] = useState<PlaylistInfo | null>(null);
         const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
         const [likedPreview, setLikedPreview] = useState<VideoInfo | null>(null);
+        const [playlistSearch, setPlaylistSearch] = useState<string>("");
 
         const controller = useAbortController();
 
@@ -110,6 +113,11 @@ export const QueueModal = memo(
             debouncedSearch(val);
         };
 
+        const updatePlaylistSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
+            const val = e.currentTarget.value;
+            setPlaylistSearch(val);
+        };
+
         const submitVideoFromList = (videoID: VideoCardInfo | VideoInfo): void => {
             if (videoID.duration === undefined)
                 RequestVideo(videoID.id, parentController, info => {
@@ -145,10 +153,25 @@ export const QueueModal = memo(
             setQueueCookie(tab);
         };
 
+        const filteredPlaylists =
+            playlistSearch.length > 0
+                ? userPlaylists.filter(p => p.title.toUpperCase().includes(playlistSearch.toUpperCase()))
+                : userPlaylists;
+
         return (
             <div class={style.ModalBox} onClick={(e): void => e.stopPropagation()}>
-                <div>
+                <div className={style.QueueHeader}>
                     <Tabs tabNames={["Search", "Playlists"]} index={queueTab} onIndex={updateTab} />
+                    {queueTab === 1 && (
+                        <div className={style.PlaylistSearch}>
+                            <Input
+                                floatingLabel
+                                label="Filter Playlists"
+                                value={playlistSearch}
+                                onChange={updatePlaylistSearch}
+                            />
+                        </div>
+                    )}
                 </div>
                 <div class={style.sidePanelTabBody}>
                     <Tab index={0} tabIndex={queueTab}>
@@ -170,6 +193,7 @@ export const QueueModal = memo(
                                         onVideoClick={submitVideoFromList}
                                         onPlaylistClick={submitPlaylist}
                                         parentController={parentController}
+                                        playingPreview={playingPreview}
                                     />
                                 )}
                                 {searchResults.map(list => {
@@ -181,6 +205,7 @@ export const QueueModal = memo(
                                                 submitVideoFromList(list);
                                                 onClose();
                                             }}
+                                            playingPreview={playingPreview}
                                         />
                                     );
                                 })}
@@ -189,7 +214,7 @@ export const QueueModal = memo(
                     </Tab>
                     <Tab index={1} tabIndex={queueTab}>
                         <div class={style.scrollBox}>
-                            {likedPreview !== null && (
+                            {likedPreview !== null && filteredPlaylists === userPlaylists && (
                                 <LikedVideosCard
                                     info={{
                                         id: "",
@@ -204,7 +229,7 @@ export const QueueModal = memo(
                                     parentController={parentController}
                                 />
                             )}
-                            {userPlaylists.map(list => {
+                            {filteredPlaylists.map(list => {
                                 return (
                                     <PlaylistCard
                                         key={list.id}
@@ -212,6 +237,7 @@ export const QueueModal = memo(
                                         onVideoClick={submitVideoFromList}
                                         onPlaylistClick={submitPlaylist}
                                         parentController={parentController}
+                                        playingPreview={playingPreview}
                                     />
                                 );
                             })}

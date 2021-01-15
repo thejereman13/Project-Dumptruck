@@ -21,6 +21,7 @@ declare namespace StyleCssNamespace {
         VideoDuration: string;
         VideoIcon: string;
         VideoInfo: string;
+        VideoPreview: string;
         VolumeBox: string;
         VolumeSlider: string;
         active: string;

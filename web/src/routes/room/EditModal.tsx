@@ -38,13 +38,14 @@ export interface EditModalProps {
     self: boolean;
     userName: string;
     removeVideo: (videoID: string) => void;
+    removeAll: (id: string) => void;
     closeCallback: Ref<() => void>;
     updatePlaylist: (userID: string, playlist: Video[]) => void;
 }
 
 export const EditModal = memo(
     function EditModal(props: EditModalProps): JSX.Element {
-        const { playlist, self, userName, userID, removeVideo, updatePlaylist, closeCallback } = props;
+        const { playlist, self, userName, userID, removeVideo, removeAll, updatePlaylist, closeCallback } = props;
 
         const [internalPlaylist, setInternalPlaylist] = useState<Video[]>(playlist);
         useEffect(() => {
@@ -63,9 +64,24 @@ export const EditModal = memo(
             debouncedFlush();
         };
 
+        const clearAll = (): void => {
+            removeAll(userID);
+            document.location.href = "#";
+            closeCallback.current();
+        };
+
         return (
             <div class={style.ModalBox}>
-                <div class="mui--text-headline">{self ? "Editing Queue" : `Editing Queue for ${userName}`}</div>
+                <div class="mui--text-headline">
+                    {self ? "Editing Queue" : `Editing Queue for ${userName}`}
+                    <Button
+                        className={["mui-btn", "mui-btn--flat", style.removeAllButton].join(" ")}
+                        variant="flat"
+                        onClick={clearAll}
+                    >
+                        Remove All
+                    </Button>
+                </div>
                 <List
                     values={internalPlaylist}
                     onChange={({ oldIndex, newIndex }): void => {

@@ -206,6 +206,14 @@
     display: flex;
     flex-flow: row;
 }
+.QueueHeader {
+    display: flex;
+    justify-content: space-between;
+}
+.PlaylistSearch {
+    padding-right: 2rem;
+}
+
 .QueueVideos {
     margin-left: 4rem;
     height: 0;
@@ -231,6 +239,7 @@
     padding: 0 1rem;
     width: 100%;
     margin: 0 !important;
+    letter-spacing: 0.03em;
 }
 .VideoDuration {
     font-weight: 500;
@@ -238,6 +247,12 @@
 
 .EditCard:hover > div {
     background: var(--dp16-surface);
+}
+
+.removeAllButton {
+    float: right;
+    color: var(--text-secondary) !important;
+    font-size: 1.5rem;
 }
 
 .settingTrimField {

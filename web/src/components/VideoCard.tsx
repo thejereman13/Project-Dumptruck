@@ -1,15 +1,12 @@
 import { h, JSX } from "preact";
 import * as style from "./style.css";
-import { useState, useEffect, Ref, useRef } from "preact/hooks";
-import { useGAPIContext, RequestVideosFromPlaylist, RequestLikedVideos } from "../utils/GAPI";
+import { useState, useEffect, useRef } from "preact/hooks";
 import Button from "preact-mui/lib/button";
-import { VideoInfo, PlaylistInfo, durationToString } from "../utils/YoutubeTypes";
+import { VideoInfo, durationToString } from "../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../utils/RestCalls";
 import { Tooltip } from "../components/Popup";
 import { useAbortController } from "./AbortController";
-import { RegisterLoadingNotification } from "./Notification";
 import { memo } from "preact/compat";
-import { DotLoader } from "./LoadingAnimations";
 
 export interface VideoCardInfo {
     id: string;
@@ -23,13 +20,48 @@ export interface VideoDisplayCardProps {
     info: VideoCardInfo;
     onClick?: (id: string) => void;
     actionComponent?: JSX.Element;
+    playingPreview?: (playing: boolean) => void;
 }
 
 export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
-    const { info, onClick, actionComponent } = props;
+    const { info, onClick, actionComponent, playingPreview } = props;
+
+    const [videoPreview, setVideoPreview] = useState<boolean>(false);
+    const previewRef = useRef<boolean>(false);
+    const updatePreview = useRef<((playing: boolean) => void) | undefined>(undefined);
+    previewRef.current = videoPreview;
+    updatePreview.current = playingPreview;
+
     const cardClick = (): void => {
         onClick?.(info.id);
     };
+
+    const openPreview = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+        event.stopPropagation();
+        setVideoPreview(!videoPreview);
+        updatePreview.current?.(!videoPreview);
+    };
+
+    useEffect(() => {
+        return (): void => {
+            if (previewRef.current) {
+                updatePreview.current?.(false);
+            }
+        };
+    }, []);
+
+    const cardPreview =
+        actionComponent === undefined ? (
+            <Tooltip content="Preview Video">
+                <Button size="small" variant="fab" onClick={openPreview}>
+                    <i style={{ fontSize: "24px" }} class="material-icons">
+                        featured_video
+                    </i>
+                </Button>
+            </Tooltip>
+        ) : (
+            actionComponent
+        );
 
     const cardContent = (
         <div class={style.VideoCard}>
@@ -45,7 +77,7 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                     {info.channel?.length > 0 ? info.channel : ". . ."}
                 </div>
             </div>
-            {actionComponent !== undefined && <div class={style.VideoActionDiv}>{actionComponent}</div>}
+            <div class={style.VideoActionDiv}>{cardPreview}</div>
         </div>
     );
 
@@ -56,6 +88,17 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
             onClick={cardClick}
         >
             {cardContent}
+            {videoPreview && (
+                <div className={style.VideoPreview}>
+                    <iframe
+                        src={`https://www.youtube.com/embed/${info.id}?autoplay=1`}
+                        height="240"
+                        width="426"
+                        frameBorder={0}
+                        type="text/html"
+                    ></iframe>
+                </div>
+            )}
         </Button>
     ) : (
         <div>{cardContent}</div>
@@ -70,7 +113,7 @@ export interface VideoCardProps {
 }
 
 let infoStore: VideoCardInfo[] = [];
-const infoStoreLength = 128;
+const infoStoreLength = 512;
 
 function pushInfoStore(videoInfo: VideoCardInfo): VideoCardInfo {
     if (infoStore.includes(videoInfo)) return videoInfo;
@@ -123,318 +166,3 @@ export const VideoCard = memo(
         return same;
     }
 );
-
-export interface PlaylistCardProps {
-    info: PlaylistInfo;
-    onVideoClick?: (id: VideoCardInfo) => void;
-    onPlaylistClick?: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
-    parentController: Ref<AbortController>;
-}
-
-export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick, onPlaylistClick, parentController } = props;
-    const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
-    const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
-    const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
-
-    const GAPIContext = useGAPIContext();
-
-    const controller = useAbortController();
-
-    const expandVideos = (): void => setVideoExpanded(true);
-    const hideVideos = (): void => setVideoExpanded(false);
-
-    useEffect(() => {
-        if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {
-            setLoading(true);
-            RequestVideosFromPlaylist(info.id, controller, (infos: VideoInfo[] | undefined, final: boolean) => {
-                if (infos)
-                    setVideoInfo(
-                        infos.map(v => ({
-                            id: v.id,
-                            title: v.title,
-                            channel: v.channel,
-                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                            duration: v.duration
-                        }))
-                    );
-                setDurationsLoaded(final);
-                if (final) {
-                    setLoading(false);
-                }
-            });
-        }
-    }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
-
-    const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
-        if (!info.id) return;
-        if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
-            const finish = RegisterLoadingNotification("Requesting Playlist Information");
-            RequestVideosFromPlaylist(info.id, parentController, (infos: VideoInfo[] | undefined, final: boolean) => {
-                if (final) {
-                    finish();
-                    if (infos)
-                        callback?.(
-                            infos.map(v => ({
-                                id: v.id,
-                                title: v.title,
-                                channel: v.channel,
-                                thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                                duration: v.duration
-                            })),
-                            info
-                        );
-                }
-            });
-        } else {
-            callback?.(videoInfo, info);
-        }
-    };
-
-    const queueAll = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-        retrieveVideoInfo(onPlaylistClick);
-        event.stopPropagation();
-    };
-
-    const shuffleQueue = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-        retrieveVideoInfo((array: VideoCardInfo[]) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * i);
-                const temp = array[i];
-                array[i] = array[j];
-                array[j] = temp;
-            }
-            onPlaylistClick?.(array, info);
-        });
-        event.stopPropagation();
-    };
-
-    const cardContent = info && (
-        <div class={style.PlaylistCard}>
-            <div class={style.PlaylistCardInfo}>
-                {info.thumbnailMaxRes && info.thumbnailMaxRes.url && (
-                    <img class={style.PlaylistIcon} src={info.thumbnailMaxRes.url} />
-                )}
-                <div class={style.PlaylistInfo}>
-                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
-                    <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
-                </div>
-                {loading && <DotLoader />}
-                <div class={style.VideoActionDiv}>
-                    <Tooltip content="Queue All">
-                        <Button size="small" variant="fab" onClick={queueAll}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">
-                                play_arrow
-                            </i>
-                        </Button>
-                    </Tooltip>
-                    <Tooltip content="Shuffle and Queue All">
-                        <Button size="small" variant="fab" onClick={shuffleQueue}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">
-                                shuffle
-                            </i>
-                        </Button>
-                    </Tooltip>
-                </div>
-            </div>
-        </div>
-    );
-
-    const cardVideos = (
-        <div
-            class={[
-                style.PlaylistVideos,
-                videoExpanded && videoInfo.length > 0 ? style.PlaylistVideosExpanded : ""
-            ].join(" ")}
-        >
-            {videoExpanded &&
-                videoInfo.map(vid => (
-                    <VideoDisplayCard
-                        key={vid.id}
-                        info={vid}
-                        onClick={onVideoClick ? (): void => onVideoClick(vid) : undefined}
-                    />
-                ))}
-        </div>
-    );
-
-    return videoInfo ? (
-        <div>
-            <Button
-                className={[
-                    "mui-btn",
-                    "mui-btn--flat",
-                    style.VideoCardButton,
-                    videoExpanded ? style.PlaylistButtonActive : ""
-                ].join(" ")}
-                variant="flat"
-                onClick={videoExpanded ? hideVideos : expandVideos}
-            >
-                {cardContent}
-            </Button>
-            {cardVideos}
-        </div>
-    ) : (
-        <div />
-    );
-}
-
-export interface LikedVideosCardProps {
-    info: PlaylistInfo;
-    onVideoClick?: (id: VideoCardInfo) => void;
-    onPlaylistClick?: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
-    parentController: Ref<AbortController>;
-}
-
-export function LikedVideosCard(props: LikedVideosCardProps): JSX.Element {
-    const { info, onVideoClick, onPlaylistClick, parentController } = props;
-    const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
-    const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
-    const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
-
-    const GAPIContext = useGAPIContext();
-
-    const controller = useAbortController();
-
-    const expandVideos = (): void => setVideoExpanded(true);
-    const hideVideos = (): void => setVideoExpanded(false);
-
-    useEffect(() => {
-        setVideoInfo([]);
-    }, [info.id]);
-
-    useEffect(() => {
-        if (GAPIContext?.isAPILoaded() && videoExpanded && videoInfo.length === 0) {
-            setLoading(true);
-            RequestLikedVideos(controller, (infos: VideoInfo[] | undefined, final: boolean) => {
-                if (infos)
-                    setVideoInfo(
-                        infos.map(v => ({
-                            id: v.id,
-                            title: v.title,
-                            channel: v.channel,
-                            thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                            duration: v.duration
-                        }))
-                    );
-                setDurationsLoaded(final);
-                if (final) {
-                    setLoading(false);
-                }
-            });
-        }
-    }, [GAPIContext, controller, info.id, videoExpanded, videoInfo]);
-
-    const retrieveVideoInfo = (callback?: (vids: VideoCardInfo[], info: PlaylistInfo) => void): void => {
-        if (((!videoExpanded && videoInfo.length === 0) || !durationsLoaded) && GAPIContext?.isAPILoaded()) {
-            const finish = RegisterLoadingNotification("Requesting Video Information");
-            RequestLikedVideos(parentController, (infos: VideoInfo[] | undefined, final: boolean) => {
-                if (final) {
-                    finish();
-                    if (infos)
-                        callback?.(
-                            infos.map(v => ({
-                                id: v.id,
-                                title: v.title,
-                                channel: v.channel,
-                                thumbnailURL: v.thumbnailMaxRes?.url ?? "",
-                                duration: v.duration
-                            })),
-                            info
-                        );
-                }
-            });
-        } else {
-            callback?.(videoInfo, info);
-        }
-    };
-
-    const queueAll = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-        retrieveVideoInfo(onPlaylistClick);
-        event.stopPropagation();
-    };
-
-    const shuffleQueue = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-        retrieveVideoInfo((array: VideoCardInfo[]) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * i);
-                const temp = array[i];
-                array[i] = array[j];
-                array[j] = temp;
-            }
-            onPlaylistClick?.(array, info);
-        });
-        event.stopPropagation();
-    };
-
-    const cardContent = info && (
-        <div class={style.PlaylistCard}>
-            <div class={style.PlaylistCardInfo}>
-                {info.thumbnailMaxRes && info.thumbnailMaxRes.url && (
-                    <img class={style.PlaylistIcon} src={info.thumbnailMaxRes.url} />
-                )}
-                <div class={style.PlaylistInfo}>
-                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
-                    <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{info.channel}</div>
-                </div>
-                {loading && <DotLoader />}
-                <div class={style.VideoActionDiv}>
-                    <Tooltip content="Queue All">
-                        <Button size="small" variant="fab" onClick={queueAll}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">
-                                play_arrow
-                            </i>
-                        </Button>
-                    </Tooltip>
-                    <Tooltip content="Shuffle and Queue All">
-                        <Button size="small" variant="fab" onClick={shuffleQueue}>
-                            <i style={{ fontSize: "32px" }} class="material-icons">
-                                shuffle
-                            </i>
-                        </Button>
-                    </Tooltip>
-                </div>
-            </div>
-        </div>
-    );
-
-    const cardVideos = (
-        <div
-            class={[
-                style.PlaylistVideos,
-                videoExpanded && videoInfo.length > 0 ? style.PlaylistVideosExpanded : ""
-            ].join(" ")}
-        >
-            {videoExpanded &&
-                videoInfo.map(vid => (
-                    <VideoDisplayCard
-                        key={vid.id}
-                        info={vid}
-                        onClick={onVideoClick ? (): void => onVideoClick(vid) : undefined}
-                    />
-                ))}
-        </div>
-    );
-
-    return videoInfo ? (
-        <div>
-            <Button
-                className={[
-                    "mui-btn",
-                    "mui-btn--flat",
-                    style.VideoCardButton,
-                    videoExpanded ? style.PlaylistButtonActive : ""
-                ].join(" ")}
-                variant="flat"
-                onClick={videoExpanded ? hideVideos : expandVideos}
-            >
-                {cardContent}
-            </Button>
-            {cardVideos}
-        </div>
-    ) : (
-        <div />
-    );
-}

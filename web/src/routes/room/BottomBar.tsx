@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { VideoInfo } from "../../utils/YoutubeTypes";
 import { useGAPIContext } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
@@ -45,6 +45,8 @@ export const BottomBar = memo(
         } = props;
         const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
 
+        const oldVolume = useRef<number | null>(null);
+
         const currentAPI = useGAPIContext();
 
         const controller = useAbortController();
@@ -54,6 +56,21 @@ export const BottomBar = memo(
                 RequestVideoPreview(currentVideo.youtubeID, controller).then(setVideoInfo);
             }
         }, [currentVideo, controller]);
+
+        const playingPreview = useCallback(
+            (p: boolean) => {
+                if (p && oldVolume.current === null && playing) {
+                    oldVolume.current = playerVolume;
+                    const optionA = oldVolume.current / 4;
+                    const optionB = 5;
+                    setPlayerVolume(optionA < optionB ? optionA : optionB);
+                } else if (!p && oldVolume.current !== null) {
+                    setPlayerVolume(oldVolume.current);
+                    oldVolume.current = null;
+                }
+            },
+            [playerVolume, setPlayerVolume, playing]
+        );
 
         return (
             <div class={style.BottomBar}>
@@ -113,6 +130,7 @@ export const BottomBar = memo(
                 {allowQueuing && (
                     <Modal className={style.QueueContainer} idName="Queue">
                         <QueueModal
+                            playingPreview={playingPreview}
                             parentController={controller}
                             currentAPI={currentAPI}
                             submitNewVideo={submitNewVideo}

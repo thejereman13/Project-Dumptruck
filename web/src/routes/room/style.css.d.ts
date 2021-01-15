@@ -6,11 +6,13 @@ declare namespace StyleCssNamespace {
         EditCard: string;
         ModalBox: string;
         PageRoot: string;
+        PlaylistSearch: string;
         QueueActionDiv: string;
         QueueCard: string;
         QueueCardInfo: string;
         QueueContainer: string;
         QueueExpandedTitle: string;
+        QueueHeader: string;
         QueueIcon: string;
         QueueInfo: string;
         QueueVideos: string;
@@ -28,6 +30,7 @@ declare namespace StyleCssNamespace {
         centerTooltipChild: string;
         playButton: string;
         progress: string;
+        removeAllButton: string;
         scrollBox: string;
         searchDiv: string;
         searchPanel: string;
