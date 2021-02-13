@@ -1,4 +1,4 @@
-import { SiteUser, RoomInfo } from "./BackendTypes";
+import { SiteUser, RoomInfo, RoomVideo } from "./BackendTypes";
 import { VideoInfo, parseEmbeddedVideoJSON } from "./YoutubeTypes";
 import { Ref } from "preact/hooks";
 
@@ -52,6 +52,21 @@ export async function LogoutUser(): Promise<boolean> {
     return false;
 }
 
+export async function CreateNewRoom(): Promise<number | null> {
+    try {
+        const resp = await fetch("/api/room/0", {
+            method: "POST"
+        });
+        const j: number = await resp.json();
+        if (resp.ok && j > 0) {
+            return j;
+        }
+    } catch (e) {
+        console.warn(e);
+    }
+    return null;
+}
+
 export async function GetRoomInfo(roomID: string, controller: Ref<AbortController>): Promise<RoomInfo | null> {
     try {
         const resp = await fetch(`/api/room/${roomID}`, { signal: controller.current.signal });
@@ -63,6 +78,32 @@ export async function GetRoomInfo(roomID: string, controller: Ref<AbortControlle
         console.warn(e);
     }
     return null;
+}
+
+export async function GetRoomPlaying(roomID: string, controller: Ref<AbortController>): Promise<RoomVideo | null> {
+    try {
+        const resp = await fetch(`/api/playing/${roomID}`, { signal: controller.current.signal });
+        if (!resp.ok) return null;
+        const json: RoomVideo = await resp.json();
+        if (json && json.queuedBy !== "00000000-0000-0000-0000-000000000000" && json.youtubeID.length > 0) {
+            return json;
+        }
+    } catch (e) {
+        console.warn(e);
+    }
+    return null;
+}
+
+export async function GetActiveRooms(controller: Ref<AbortController>): Promise<number[]> {
+    try {
+        const resp = await fetch("/api/rooms", { signal: controller.current.signal });
+        if (!resp.ok) return [];
+        const json: number[] = await resp.json();
+        return json;
+    } catch (e) {
+        console.warn(e);
+    }
+    return [];
 }
 
 export async function RequestVideoPreview(

@@ -4,6 +4,7 @@ import vibe.vibe;
 import std.stdio;
 
 import DB = database;
+import room;
 
 //Constant data values
 
@@ -37,6 +38,51 @@ void readConfigFile() {
 }
 
 void getRoomSettings(HTTPServerRequest req, HTTPServerResponse res) {
+    const long id = req.params["id"].to!long;
+    const room = DB.peekRoomInformation(id);
+    if (!room.isNull)
+        res.writeJsonBody(serializeToJson(room.get()), 201, false);
+    else
+        res.writeJsonBody("{}", 404, false);
+}
+
+void getRoomPlaying(HTTPServerRequest req, HTTPServerResponse res) {
+    const long id = req.params["id"].to!long;
+    auto r = getRoom(id);
+    if (!r.isNull) {
+        res.writeJsonBody(serializeToJson(r.get().getPlaying()), 200, false);
+    } else {
+        res.writeJsonBody("{}", 404, false);
+    }
+}
+
+void getOpenRooms(HTTPServerRequest req, HTTPServerResponse res) {
+    const rooms = getActiveRooms();
+    res.writeJsonBody(serializeToJson(rooms), 200, false);
+}
+
+void createNewRoom(HTTPServerRequest req, HTTPServerResponse res) {
     long id = req.params["id"].to!long;
-    res.writeJsonBody(serializeToJson(DB.peekRoomInformation(id)), 201, false);
+    if (id < 0) {
+        res.writeJsonBody("{}", 400, false);
+        return;
+    }
+    if (id == 0) {
+        // if id is 0, generated a random (available) id
+        do {
+            id = getNextRoomID();
+        } while (!DB.peekRoomInformation(id).isNull);
+    }
+    const info = DB.peekRoomInformation(id);
+    if (id > 0 && (info.isNull || info.get.settings.name.length == 0)) {
+        // new room
+        DB.DBRoomSettings set = DB.DBRoomSettings.defaultSettings();
+        set.name = "Room " ~ id.to!string;
+        const jset = serializeToJson(set);
+        // setRoomSettings will parse out any invalid info, so we assign and serialize again just to be safe
+        set = DB.setRoomSettings(id, jset);
+        res.writeJsonBody(id, 201, false);
+    } else {
+        res.writeJsonBody("{}", 400, false);
+    }
 }

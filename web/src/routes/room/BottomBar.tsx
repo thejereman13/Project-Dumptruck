@@ -92,11 +92,11 @@ export const BottomBar = memo(
                         </div>
                     </Tooltip>
                 </div>
-                {showControls ? (
-                    <div class={style.bottomMiddleActions}>
-                        <Tooltip className={style.centerTooltipChild} content="Adjust Video Volume">
-                            <VolumeSlider disabled={!hasVideo} volume={playerVolume} setVolume={setPlayerVolume} />
-                        </Tooltip>
+                <div class={style.bottomMiddleActions}>
+                    <Tooltip className={style.centerTooltipChild} content="Adjust Video Volume">
+                        <VolumeSlider disabled={!hasVideo} volume={playerVolume} setVolume={setPlayerVolume} />
+                    </Tooltip>
+                    {showControls ? (
                         <Tooltip
                             className={style.centerTooltipChild}
                             content={`${playing ? "Pause" : "Resume"} Room Playback`}
@@ -107,6 +107,8 @@ export const BottomBar = memo(
                                 </i>
                             </Button>
                         </Tooltip>
+                    ) : null}
+                    {showControls ? (
                         <Tooltip className={style.centerTooltipChild} content="Skip Current Video">
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={skipVideo}>
                                 <i style={{ fontSize: "32px" }} class="material-icons">
@@ -114,11 +116,9 @@ export const BottomBar = memo(
                                 </i>
                             </Button>
                         </Tooltip>
-                    </div>
-                ) : (
-                    <div class={style.bottomMiddleActions} />
-                )}
-                {allowQueuing && (
+                    ) : null}
+                </div>
+                {allowQueuing ? (
                     <div class={style.bottomRightActions}>
                         <div class={style.centerTooltipChild}>
                             <Button id="openQueue" onClick={(): string => (window.location.href = "#Queue")}>
@@ -126,8 +126,8 @@ export const BottomBar = memo(
                             </Button>
                         </div>
                     </div>
-                )}
-                {allowQueuing && (
+                ) : null}
+                {allowQueuing ? (
                     <Modal className={style.QueueContainer} idName="Queue">
                         <QueueModal
                             playingPreview={playingPreview}
@@ -138,7 +138,7 @@ export const BottomBar = memo(
                             onClose={(): string => (window.location.href = "#")}
                         />
                     </Modal>
-                )}
+                ) : null}
             </div>
         );
     },

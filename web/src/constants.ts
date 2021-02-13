@@ -4,4 +4,4 @@ const _CLIENTID = CLIENTID;
 
 export { _CLIENTID as CLIENTID };
 
-export const APPVERSION = "0.2.4";
+export const APPVERSION = "0.3.0";

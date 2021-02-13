@@ -15,6 +15,9 @@ declare namespace StyleCssNamespace {
         PlaylistInfo: string;
         PlaylistVideos: string;
         PlaylistVideosExpanded: string;
+        RoomCard: string;
+        RoomCardPreview: string;
+        RoomCardTitle: string;
         VideoActionDiv: string;
         VideoCard: string;
         VideoCardButton: string;

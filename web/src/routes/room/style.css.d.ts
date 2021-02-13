@@ -5,6 +5,7 @@ declare namespace StyleCssNamespace {
         BottomBar: string;
         EditCard: string;
         ModalBox: string;
+        NonexistantRoom: string;
         PageRoot: string;
         PlaylistSearch: string;
         QueueActionDiv: string;

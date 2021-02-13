@@ -15,7 +15,12 @@ void handleWebsocketConnection(scope WebSocket socket) {
 	if (session) {
 		userID = session.get!UUID("clientID");
 	}
-	Room r = getOrCreateRoom(roomID, userID);
+	Room r = getOrCreateRoom(roomID);
+	while (!r.initialized) {}
+	if (!r.constructed) {
+		socket.close();
+		return;
+	}
 	const Json userInfo = r.addUser(userID);
 	const UUID id = userInfo["ID"].get!UUID;
 	socket.send(userInfo.toString());

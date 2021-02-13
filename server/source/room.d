@@ -9,6 +9,7 @@ import std.algorithm;
 import std.conv;
 import std.array;
 import std.exception;
+import std.typecons;
 
 import video;
 import user;
@@ -42,8 +43,9 @@ final class Room {
     private Timer clearUser;
 
     private UUID[] usersPendingRemoval;
-    private bool roomLoopRunning = false;
+    public bool roomLoopRunning = false;
     public bool constructed = false;
+    public bool initialized = false;
 
     private UserList roomUsers;
     public MessageQueue messageQueue;
@@ -51,7 +53,7 @@ final class Room {
     private Video currentVideo;
     private VideoPlaylist playlist;
 
-    this(long ID, UUID creatingUser) {
+    this(const long ID) {
         this.constructed = true;
         this.roomID = ID;
         this.roomUsers = new UserList(ID);
@@ -59,12 +61,21 @@ final class Room {
         this.playlist = new VideoPlaylist();
         runTask({
             logInfo("Spooling Up Room: " ~ ID.to!string);
-            auto dbInfo = DB.getRoomInformation(ID, creatingUser);
-            if (dbInfo.roomID > 0) {
-                readInRoomSettings(dbInfo.settings);
-                this.roomUsers.adminUsers = dbInfo.admins;
-                this.messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
+            const dbInfoNull = DB.peekRoomInformation(ID);
+            if (!dbInfoNull.isNull) {
+                const dbInfo = dbInfoNull.get();
+                if (dbInfo.roomID > 0) {
+                    readInRoomSettings(dbInfo.settings);
+                    this.roomUsers.adminUsers = dbInfo.admins.dup;
+                    this.messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
+                }
+            } else {
+                this.constructed = false;
             }
+            // Initialized indicates that the DB has been parsed and/or loaded
+            // If initialized is true and constructed is false, then there was an error loading
+            // and the room should be discarded.
+            this.initialized = true;
         });
         videoLoop = createTimer({
             videoSyncLoop();
@@ -280,11 +291,11 @@ final class Room {
             });
         }
 
-        // If the room was created by a guest user (before they finished logging in)
-        // assign admin access to the first person to join the room (probably the person still logging in)
+        // If the room no longer has admins, assign admin access to the first person to log in
+        // This prevents stale rooms from being left empty
         if (roomUsers.adminUsers.length == 0 && !clientID.empty) {
-            DB.setRoomAdmins(roomID, [clientID]);
             roomUsers.adminUsers = [clientID];
+            DB.setRoomAdmins(roomID, roomUsers.adminUsers);
         }
 
         Json j = Json.emptyObject;
@@ -325,12 +336,14 @@ final class Room {
     private void addAdmin(Json userID) {
         UUID target = UUID(userID.get!string);
         roomUsers.addAdmin(target);
+        DB.setRoomAdmins(roomID, roomUsers.adminUsers);
         messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
     }
     private void removeAdmin(Json userID, UUID id) {
         const UUID target = UUID(userID.get!string);
         if (target != id && this.roomUsers.adminUsers.length > 1) {
             roomUsers.removeAdmin(target);
+            DB.setRoomAdmins(roomID, roomUsers.adminUsers);
             messageQueue.postJson(MessageType.Room, getRoomJson(), [], "Room");
         } else {
             messageQueue.postMessage(MessageType.Error, "Can not Remove Admin", [id], "error");
@@ -424,13 +437,27 @@ final class Room {
                 break;
         }
     }
+
+    public Video getPlaying() {
+        return this.currentVideo;
+    }
 }
 
 private Room[long] roomList;
 
-Room getOrCreateRoom(long roomID, UUID user) {
+Room getOrCreateRoom(const long roomID) {
     if (roomID in roomList) return roomList[roomID];
-    return roomList[roomID] = new Room(roomID, user);
+    return roomList[roomID] = new Room(roomID);
+}
+
+Nullable!Room getRoom(const long roomID) {
+    Nullable!Room ret;
+    if (roomID in roomList) ret = roomList[roomID];
+    return ret;
+}
+
+long[] getActiveRooms() {
+    return roomList.keys.filter!((k) => roomList[k].roomLoopRunning).array;
 }
 
 void deleteRoom(long roomID) {
@@ -438,4 +465,10 @@ void deleteRoom(long roomID) {
     logInfo("Deallocating Room " ~ roomID.to!string);
     destroy(roomList[roomID]);
     roomList.remove(roomID);
+}
+
+long getNextRoomID() {
+    import rand = std.random;
+    const long max = 1 << 20; // 1048576
+    return rand.uniform(1, max);
 }

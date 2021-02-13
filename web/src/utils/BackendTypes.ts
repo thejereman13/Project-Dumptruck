@@ -13,6 +13,14 @@ export interface RoomUser {
     userCount: number;
 }
 
+export interface RoomVideo {
+    youtubeID: string;
+    playing: boolean;
+    duration: number;
+    timestamp: number;
+    queuedBy: string;
+}
+
 export interface YoutubeVideoInformation {
     videoID: string;
     duration: number;

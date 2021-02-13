@@ -11,7 +11,7 @@ import database;
 import authentication;
 import site_user;
 
-const WebServerVersion = "0.4.6";
+const WebServerVersion = "0.5.0";
 
 version(release)
 void main()
@@ -46,6 +46,9 @@ void main()
 	router.delete_("/api/user", &clearUserInfo);
 	router.get("/api/user/:id", &getPublicUserInfo);
 	router.get("/api/room/:id", &getRoomSettings);
+	router.post("/api/room/:id", &createNewRoom);
+	router.get("/api/rooms", &getOpenRooms);
+	router.get("/api/playing/:id", &getRoomPlaying);
 	router.get("*", serveStaticFiles(server_configuration["web_dir"].get!string, fileSettings));
 	router.get("/*", serveStaticFile(server_configuration["web_dir"].get!string ~ "/index.html", fileSettings));
 

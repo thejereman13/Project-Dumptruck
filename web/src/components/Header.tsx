@@ -4,9 +4,21 @@ import * as style from "./style.css";
 import { useGAPIContext } from "../utils/GAPI";
 import { Tooltip } from "./Popup";
 import { APPVERSION } from "../constants";
+import { CreateNewRoom } from "../utils/RestCalls";
+import { RegisterNotification } from "./Notification";
 
 export function Header(): JSX.Element {
     const currentAPI = useGAPIContext();
+
+    const createRoom = (): void => {
+        CreateNewRoom().then(res => {
+            if (res !== null) {
+                window.location.href = `/room/${res}`;
+            } else {
+                RegisterNotification("Failed to Create Room", "error");
+            }
+        });
+    };
 
     return (
         <header class={["mui--appbar-height", "mui--appbar-line-height", style.header].join(" ")}>
@@ -18,11 +30,7 @@ export function Header(): JSX.Element {
                 <Link class={style.headerNav} activeClassName={style.active} href="/">
                     Home
                 </Link>
-                <Link
-                    class={style.headerNav}
-                    activeClassName={style.active}
-                    href={`/room/${Math.round(Math.random() * 1000) + 1}`}
-                >
+                <Link class={style.headerNav} onClick={createRoom}>
                     Create Room
                 </Link>
                 {currentAPI?.getUser() ? (

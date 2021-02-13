@@ -33,6 +33,7 @@
     color: var(--theme-primary-dark) !important;
     will-change: background-color;
     font-size: 2rem;
+    cursor: pointer;
 }
 .headerNav:hover,
 .headerNav:active {
@@ -258,4 +259,36 @@
     right: 0;
     background-color: var(--theme-primary);
     border-radius: 0.5rem;
+}
+
+.RoomCard {
+    color: var(--text-secondary);
+    background-color: var(--dp16-surface);
+    height: unset;
+    width: 32rem;
+    padding: 2rem;
+    border-radius: 1.5rem;
+}
+.RoomCard * {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.RoomCardTitle {
+    margin: 0 1rem;
+    font-size: 2.5rem;
+}
+.RoomCardPreview {
+    margin-top: 2rem;
+}
+.RoomCardPreview img {
+    width: 100%;
+}
+.RoomCard h3 {
+    margin: 0;
+    text-align: left;
+}
+.RoomCard p {
+    margin: 0;
+    text-align: left;
 }

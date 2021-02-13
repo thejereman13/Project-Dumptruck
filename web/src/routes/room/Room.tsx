@@ -1,23 +1,20 @@
 import { h, JSX } from "preact";
 import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
-import Button from "preact-mui/lib/button";
 import { YouTubeVideo } from "../../components/YTPlayer";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomUser } from "../../utils/BackendTypes";
-import { UserList } from "./UserList";
-import { VideoQueue } from "./VideoQueue";
-import { Tabs, Tab } from "../../components/Tabs";
 import { BottomBar } from "./BottomBar";
 import { useGAPIContext } from "../../utils/GAPI";
 import { Modal } from "../../components/Modal";
 import { SettingModal } from "./SettingModal";
-import { Tooltip } from "../../components/Popup";
 import { RegisterNotification } from "../../components/Notification";
-import { CopyToClipboard } from "../../utils/Clipboard";
-import { EditModal } from "./EditModal";
 import { useRoomWebsockets } from "./RoomWebsockets";
 import { getVolumeCookie, setVolumeCookie } from "../../utils/Cookies";
+import { GetRoomInfo } from "../../utils/RestCalls";
+import { useAbortController } from "../../components/AbortController";
+import { RoomSidebar } from "./Sidebar";
+import { RoomTitleBar } from "./Titlebar";
 
 export interface RoomProps {
     roomID: string;
@@ -37,13 +34,19 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const videoTime = useRef(0);
     const playing = useRef(false);
 
-    const [sidebarTab, setSidebarTab] = useState(0);
-    const [editedQueue, setEditedQueue] = useState<string>("");
-
     const settingsClosed = useRef<() => void | null>(null);
-    const editClosed = useRef<() => void | null>(null);
 
     const youtubePlayer = useRef<YouTubeVideo>();
+
+    const [roomNonexistant, setRoomNonexistant] = useState<boolean>(false);
+    const controller = useAbortController();
+    useEffect(() => {
+        GetRoomInfo(roomID, controller).then(res => {
+            if (res === null) {
+                setRoomNonexistant(true);
+            }
+        });
+    }, [roomID, controller]);
 
     useEffect(() => {
         if (roomTitle.length > 0) document.title = "Krono: " + roomTitle;
@@ -166,107 +169,45 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     }, []);
 
-    const openEditModal = useCallback((id: string): void => {
-        window.location.href = "#EditQueue";
-        setEditedQueue(id);
-    }, []);
-
-    useEffect(() => {
-        if (window.location.href === "#EditQueue") {
-            if (editedQueue.length === 0 || currentUsers.findIndex(u => u.clientID === editedQueue) < 0)
-                window.location.href = "#";
-        }
-    }, [editedQueue, currentUsers]);
-
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
     const hasVideo = youtubePlayer.current?.playerMounted ?? false;
 
     return (
         <div class={style.PageRoot}>
-            <div class={style.splitPane}>
-                <div class={style.videoPanel}>
-                    <div>
-                        <div class={["mui--text-display1", style.centerTooltipChild].join(" ")}>
-                            {roomTitle}
-                            {roomTitle && (
-                                <Tooltip
-                                    className={[style.centerTooltipChild, style.settingButton].join(" ")}
-                                    content="Share Room URL"
-                                >
-                                    <Button
-                                        size="small"
-                                        variant="fab"
-                                        color="accent"
-                                        onClick={(): void => CopyToClipboard(document.URL, "Room URL")}
-                                    >
-                                        <i style={{ fontSize: "28px" }} class="material-icons">
-                                            share
-                                        </i>
-                                    </Button>
-                                </Tooltip>
-                            )}
-                            {isAdmin && (
-                                <Tooltip
-                                    className={[style.centerTooltipChild, style.settingButton].join(" ")}
-                                    content="Edit Room Settings"
-                                >
-                                    <Button
-                                        size="small"
-                                        variant="fab"
-                                        color="accent"
-                                        onClick={(): string => (window.location.href = "#RoomSettings")}
-                                    >
-                                        <i style={{ fontSize: "28px" }} class="material-icons">
-                                            settings
-                                        </i>
-                                    </Button>
-                                </Tooltip>
-                            )}
-                        </div>
+            {roomNonexistant ? (
+                <div class={style.NonexistantRoom}>
+                    <h1>Room Does not Exist</h1>
+                </div>
+            ) : (
+                <div class={style.splitPane}>
+                    <div class={style.videoPanel}>
+                        <RoomTitleBar isAdmin={isAdmin} roomTitle={roomTitle} />
+                        <YouTubeVideo
+                            ref={youtubePlayer}
+                            className={style.videoDiv}
+                            id={currentVideo?.youtubeID ?? ""}
+                            playerMount={playerMount}
+                            playerError={logError}
+                            playerReady={logReady}
+                        />
                     </div>
-                    <YouTubeVideo
-                        ref={youtubePlayer}
-                        className={style.videoDiv}
-                        id={currentVideo?.youtubeID ?? ""}
-                        playerMount={playerMount}
-                        playerError={logError}
-                        playerReady={logReady}
+                    <RoomSidebar
+                        currentUsers={currentUsers}
+                        videoPlaylist={videoPlaylist}
+                        userQueue={userQueue}
+                        addAdmin={addAdmin}
+                        adminUsers={adminUsers}
+                        isAdmin={isAdmin}
+                        removeAdmin={removeAdmin}
+                        removeAllVideos={removeAllVideos}
+                        removeVideo={removeVideo}
+                        reorderQueue={reorderQueue}
+                        userID={userID}
                     />
                 </div>
-                <div class={style.sidePanel}>
-                    <Tabs
-                        tabNames={["Video Queue", "Room Users"]}
-                        onIndex={setSidebarTab}
-                        index={sidebarTab}
-                        justified
-                    />
-                    <div class={style.sidePanelTabBody}>
-                        <Tab index={0} tabIndex={sidebarTab}>
-                            <VideoQueue
-                                videoPlaylist={videoPlaylist}
-                                userQueue={userQueue}
-                                currentUser={userID}
-                                currentUsers={currentUsers}
-                                removeVideo={removeVideo}
-                                openEdit={openEditModal}
-                                allowRemoval={isAdmin}
-                            />
-                        </Tab>
-                        <Tab index={1} tabIndex={sidebarTab}>
-                            <UserList
-                                currentUsers={currentUsers}
-                                adminList={adminUsers}
-                                isAdmin={isAdmin}
-                                userID={userID}
-                                addAdmin={addAdmin}
-                                removeAdmin={removeAdmin}
-                            />
-                        </Tab>
-                    </div>
-                </div>
-            </div>
-            {isAdmin && (
+            )}
+            {isAdmin ? (
                 <Modal className={style.SettingContainer} idName="RoomSettings" onClose={settingsClosed.current}>
                     <SettingModal
                         roomID={roomID}
@@ -276,37 +217,26 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         onClose={(): string => (window.location.href = "#")}
                     />
                 </Modal>
+            ) : (
+                <div />
             )}
-            <Modal className={style.QueueContainer} idName="EditQueue" onClose={editClosed.current}>
-                <EditModal
-                    userID={editedQueue}
-                    playlist={videoPlaylist[editedQueue] ?? []}
-                    userName={currentUsers.find(u => u.clientID === editedQueue)?.name ?? ""}
-                    self={editedQueue === userID}
-                    removeVideo={removeVideo}
-                    removeAll={removeAllVideos}
-                    closeCallback={editClosed}
-                    updatePlaylist={(user, newPlaylist): void =>
-                        reorderQueue(
-                            user,
-                            newPlaylist.map(v => ({ videoID: v.youtubeID, duration: v.duration }))
-                        )
-                    }
+            {roomNonexistant ? (
+                <div />
+            ) : (
+                <BottomBar
+                    hasVideo={hasVideo}
+                    playing={playing.current}
+                    currentVideo={currentVideo}
+                    togglePlay={(): void => togglePlay(playing.current)}
+                    skipVideo={skipVideo}
+                    submitNewVideo={submitNewVideo}
+                    submitAllVideos={submitAllVideos}
+                    showControls={guestControls || isAdmin}
+                    allowQueuing={apiLoaded}
+                    playerVolume={playerVolume}
+                    setPlayerVolume={updateVolume}
                 />
-            </Modal>
-            <BottomBar
-                hasVideo={hasVideo}
-                playing={playing.current}
-                currentVideo={currentVideo}
-                togglePlay={(): void => togglePlay(playing.current)}
-                skipVideo={skipVideo}
-                submitNewVideo={submitNewVideo}
-                submitAllVideos={submitAllVideos}
-                showControls={guestControls || isAdmin}
-                allowQueuing={apiLoaded}
-                playerVolume={playerVolume}
-                setPlayerVolume={updateVolume}
-            />
+            )}
         </div>
     );
 }

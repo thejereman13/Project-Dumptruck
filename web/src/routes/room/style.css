@@ -283,3 +283,9 @@
 .UserRowTitle {
     line-height: 44px;
 }
+
+.NonexistantRoom {
+    display: flex;
+    justify-content: center;
+    margin-top: 4rem;
+}

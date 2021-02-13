@@ -6,6 +6,7 @@ import std.stdio;
 import std.array;
 import std.conv;
 import std.algorithm;
+import std.typecons;
 import vibe.core.log;
 import vibe.vibe;
 import vibe.core.connectionpool;
@@ -100,27 +101,20 @@ DBRoomSettings parseRoomSettings(Json settings) {
     return room;
 }
 
-DBRoomInfo peekRoomInformation(long roomID) {
+Nullable!DBRoomInfo peekRoomInformation(long roomID) {
     Response r = redis.send("GET", "room:"~roomID.to!string);
-    DBRoomSettings roomSettings = parseRoomSettings(parseJsonString(r.value.length > 0 ? r.value : "{}"));
-    if (roomSettings.name.length > 0) {
-        r = redis.send("LRANGE", "roomAdmins:"~roomID.to!string, "0", "-1");
-        return DBRoomInfo(roomID, roomSettings, r.map!((Response s) => UUID(s.value)).array);
-    } else {
-        return DBRoomInfo(roomID, roomSettings);
+    Nullable!DBRoomInfo ret;
+    // r.value is empty if room doesn't exist
+    if (r.value.length > 0) {
+        DBRoomSettings roomSettings = parseRoomSettings(parseJsonString(r.value));
+        if (roomSettings.name.length > 0) {
+            r = redis.send("LRANGE", "roomAdmins:"~roomID.to!string, "0", "-1");
+            ret = DBRoomInfo(roomID, roomSettings, r.map!((Response s) => UUID(s.value)).array);
+        } else {
+            ret = DBRoomInfo(roomID, roomSettings);
+        }
     }
-}
-
-DBRoomInfo getRoomInformation(long roomID, UUID user) {
-    DBRoomInfo roomInfo = peekRoomInformation(roomID);
-    //  If the room has no admins, it's assumed to be a new one
-    if (roomInfo.admins.length == 0) {
-        DBRoomSettings roomSettings = DBRoomSettings("Room " ~ roomID.to!string, 0, false, true);
-        redis.send("SET", "room:"~roomID.to!string, serializeToJsonString(roomSettings));
-        return DBRoomInfo(roomID, roomSettings);
-    } else {
-        return roomInfo;
-    }
+    return ret;
 }
 
 DBRoomSettings setRoomSettings(long roomID, Json settings) {

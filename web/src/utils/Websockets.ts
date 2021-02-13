@@ -26,6 +26,7 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
 
     const onMessage = useCallback((ev: MessageEvent) => {
         const message = JSON.parse(ev.data) as WSMessage;
+        wsAttemptCounter.current = 0;
         messageCallback(message);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -54,7 +55,6 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             ws.current = new WebSocket(`${getBaseURL()}/api/ws?${roomID}`);
             ws.current.addEventListener("message", onMessage);
             ws.current.addEventListener("open", () => {
-                wsAttemptCounter.current = 0;
                 continuousPing();
             });
             ws.current.addEventListener("error", e => console.warn("WS Error: ", e));
