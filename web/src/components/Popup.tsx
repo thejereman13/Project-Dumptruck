@@ -21,6 +21,14 @@ export function Tooltip(props: PopupProps): JSX.Element {
     const [isVisible, setVisible] = useState<boolean>(false);
     const { styles, attributes } = usePopper(referenceElement, popperElement, {
         placement: "top",
+        modifiers: [
+            {
+                name: "offset",
+                options: {
+                    offset: [0, 4] // 0.25rem at default sizing, unfortunately must specify a pixel value
+                }
+            }
+        ],
         ...options
     });
     const controller = useAbortController();

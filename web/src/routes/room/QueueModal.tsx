@@ -173,7 +173,7 @@ export const QueueModal = memo(
                         </div>
                     )}
                 </div>
-                <div class={style.sidePanelTabBody}>
+                <div class={style.QueueTabBody}>
                     <Tab index={0} tabIndex={queueTab}>
                         <div class={style.searchPanel}>
                             <div class={style.searchDiv}>

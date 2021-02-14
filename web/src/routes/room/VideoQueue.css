@@ -1,0 +1,52 @@
+.QueueVideos {
+    margin-left: 2rem;
+    height: 0;
+    overflow-y: auto;
+    transition: height 0.25s ease;
+    background-color: var(--dp4-surface);
+}
+.QueueVideosExpanded {
+    max-height: 20rem;
+    height: unset;
+}
+.QueueActionDiv {
+    margin-left: auto;
+}
+.QueueExpandedTitle {
+    margin: 0.5rem 0.5rem 0 0.5rem;
+    padding-left: 1rem;
+    border-bottom: 2px solid var(--theme-primary-dark);
+}
+.VideoCardButton {
+    display: flex;
+    height: unset;
+    padding: 0;
+    width: 100%;
+    margin: 0 !important;
+    letter-spacing: 0.03em;
+}
+.VideoDuration {
+    font-weight: 500;
+}
+
+.QueueCard {
+    display: flex;
+    flex-flow: column;
+    padding: 1rem;
+    width: 100%;
+}
+.QueueCard .QueueIcon {
+    height: 5rem;
+}
+.QueueCard .QueueInfo {
+    height: 5rem;
+    flex-direction: column;
+    padding-left: 1rem;
+    text-align: start;
+    display: flex;
+    overflow: hidden;
+}
+.QueueCardInfo {
+    display: flex;
+    flex-flow: row;
+}

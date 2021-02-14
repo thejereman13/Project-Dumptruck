@@ -1,6 +1,6 @@
 import { JSX, h } from "preact";
 import { Link } from "preact-router/match";
-import * as style from "./style.css";
+import * as style from "./Header.css";
 import { useGAPIContext } from "../utils/GAPI";
 import { Tooltip } from "./Popup";
 import { APPVERSION } from "../constants";

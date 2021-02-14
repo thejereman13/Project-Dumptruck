@@ -1,5 +1,5 @@
 .PageRoot {
-    padding-top: 56px;
+    padding-top: var(--navbar-height);
     min-height: 100%;
     width: 100%;
     max-height: 100%;
@@ -7,10 +7,15 @@
     flex-flow: column;
 }
 
-@media (min-width: 480px) {
-    .PageRoot {
-        padding-top: 64px;
-    }
+.textEllipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.centerTooltipChild {
+    display: inline-flex !important;
+    align-items: center;
 }
 
 .progress {
@@ -72,64 +77,6 @@
     }
 }
 
-.textEllipsis {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.BottomBar {
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row;
-    width: 100%;
-    background-color: var(--dp2-surface);
-    height: 7rem;
-}
-
-.bottomVideoInfo {
-    display: flex;
-    flex-direction: row;
-    padding: 0.5rem;
-    padding-right: 12rem;
-    width: 50%;
-    max-width: 50%;
-}
-.bottomVideoInfoFull {
-    width: 100%;
-    max-width: 100%;
-}
-
-.bottomVideoIcon {
-    max-height: 6rem;
-    padding-right: 2rem;
-}
-
-.bottomMiddleActions {
-    width: 24rem;
-    position: absolute;
-    left: 50%;
-    right: 50%;
-    height: 7rem;
-    transform: translate3d(-50%, 0, 0);
-    display: flex;
-    justify-content: space-evenly;
-}
-
-.bottomRightActions {
-    display: flex;
-    align-content: center;
-    justify-content: flex-end;
-    padding-left: 12rem;
-    width: 50%;
-    max-width: 50%;
-}
-
-.centerTooltipChild {
-    display: inline-flex !important;
-    align-items: center;
-}
-
 .settingButton {
     margin-left: 2rem;
 }
@@ -185,74 +132,28 @@
     width: 100%;
 }
 
-.QueueCard {
-    display: flex;
-    flex-flow: column;
-    padding: 1rem;
-    width: 100%;
-}
-.QueueCard .QueueIcon {
-    height: 8rem;
-}
-.QueueCard .QueueInfo {
-    height: 8rem;
-    flex-direction: column;
-    padding-left: 1rem;
-    text-align: start;
-    display: flex;
-    overflow: hidden;
-}
-.QueueCardInfo {
-    display: flex;
-    flex-flow: row;
-}
-.QueueHeader {
-    display: flex;
-    justify-content: space-between;
-}
 .PlaylistSearch {
     padding-right: 2rem;
-}
-
-.QueueVideos {
-    margin-left: 4rem;
-    height: 0;
-    overflow-y: auto;
-    transition: height 0.25s ease;
-    background-color: var(--dp4-surface);
-}
-.QueueVideosExpanded {
-    max-height: 36rem;
-    height: unset;
-}
-.QueueActionDiv {
-    margin-left: auto;
-}
-.QueueExpandedTitle {
-    margin: 0.5rem 2rem 0 2rem;
-    padding-left: 1rem;
-    border-bottom: 1px solid;
-}
-.VideoCardButton {
-    display: flex;
-    height: unset;
-    padding: 0 1rem;
-    width: 100%;
-    margin: 0 !important;
-    letter-spacing: 0.03em;
-}
-.VideoDuration {
-    font-weight: 500;
 }
 
 .EditCard:hover > div {
     background: var(--dp16-surface);
 }
 
+.QueueHeader {
+    display: flex;
+    justify-content: space-between;
+}
+.QueueTabBody {
+    display: flex;
+    overflow-y: hidden;
+}
+
 .removeAllButton {
     float: right;
-    color: var(--text-secondary) !important;
-    font-size: 1.5rem;
+    color: var(--theme-secondary-light) !important;
+    font-size: 1rem;
+    margin: 0.5rem 1rem;
 }
 
 .settingTrimField {
@@ -288,4 +189,8 @@
     display: flex;
     justify-content: center;
     margin-top: 4rem;
+}
+
+.RoomTitleBar {
+    margin-bottom: 0.5rem;
 }

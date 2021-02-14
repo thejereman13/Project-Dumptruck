@@ -1,0 +1,36 @@
+.RoomCard {
+    color: var(--text-secondary);
+    background-color: var(--dp4-surface);
+    height: unset;
+    width: 24rem;
+    padding: 1rem;
+    border-radius: 1rem;
+}
+.RoomCard:hover {
+    background-color: var(--dp24-surface) !important;
+}
+.RoomCard * {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.RoomCardTitle {
+    margin: 0;
+    font-size: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--theme-primary-dark);
+}
+.RoomCardPreview {
+    margin-top: 1rem;
+}
+.RoomCardPreview img {
+    width: 100%;
+}
+.RoomCard h3 {
+    margin: 0.5rem 0 0 0;
+    text-align: left;
+}
+.RoomCard p {
+    margin: 0;
+    text-align: left;
+}

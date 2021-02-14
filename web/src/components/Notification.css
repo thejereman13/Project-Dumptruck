@@ -1,0 +1,28 @@
+.NotificationBackground {
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    display: flex;
+    max-width: 24rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 1rem;
+    top: 5rem;
+    z-index: 1024;
+}
+.NotificationText {
+    display: flex;
+    align-items: center;
+}
+.notificationHide {
+    opacity: 0;
+}
+.notificationError {
+    background-color: var(--theme-error);
+}
+.notificationInfo {
+    background-color: var(--theme-primary);
+}
+.notificationLoading {
+    background-color: var(--theme-primary);
+}

@@ -4,10 +4,6 @@ declare namespace StyleCssNamespace {
         DropdownBackdrop: string;
         DropdownContainer: string;
         DropdownOption: string;
-        ModalCancel: string;
-        ModalOverlay: string;
-        NotificationBackground: string;
-        NotificationText: string;
         PlaylistButtonActive: string;
         PlaylistCard: string;
         PlaylistCardInfo: string;
@@ -15,9 +11,6 @@ declare namespace StyleCssNamespace {
         PlaylistInfo: string;
         PlaylistVideos: string;
         PlaylistVideosExpanded: string;
-        RoomCard: string;
-        RoomCardPreview: string;
-        RoomCardTitle: string;
         VideoActionDiv: string;
         VideoCard: string;
         VideoCardButton: string;
@@ -27,16 +20,7 @@ declare namespace StyleCssNamespace {
         VideoPreview: string;
         VolumeBox: string;
         VolumeSlider: string;
-        active: string;
-        header: string;
-        headerNav: string;
-        headerRight: string;
-        headerUserIcon: string;
-        headerWatch: string;
-        notificationError: string;
-        notificationHide: string;
-        notificationInfo: string;
-        notificationLoading: string;
+        centerTooltipChild: string;
         popupTooltip: string;
         textEllipsis: string;
     }

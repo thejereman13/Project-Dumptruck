@@ -1,7 +1,7 @@
 import { h, JSX } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { BlockLoader } from "./LoadingAnimations";
-import * as style from "./style.css";
+import * as style from "./Notification.css";
 
 type notificationType = "info" | "error" | "loading";
 

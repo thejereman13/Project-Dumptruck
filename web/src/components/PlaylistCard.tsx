@@ -33,9 +33,9 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
     const hideVideos = (): void => setVideoExpanded(false);
 
     // Close the card when the location changes (modal closes)
-    useEffect(() => {
-        setVideoExpanded(false);
-    }, [window.location.href]); // eslint-disable-line react-hooks/exhaustive-deps
+    // useEffect(() => {
+    //     setVideoExpanded(false);
+    // }, [window.location.href]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (GAPIContext?.isAPILoaded() && info.id && videoExpanded && videoInfo.length === 0) {

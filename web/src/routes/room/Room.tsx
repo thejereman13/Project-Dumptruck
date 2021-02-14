@@ -163,7 +163,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const updateVolume = useCallback((vol: number): void => {
         if (youtubePlayer.current) {
-            console.log("New Vol: ", vol);
             setPlayerVolume(youtubePlayer.current.setVolume(vol));
             setVolumeCookie(vol);
         }

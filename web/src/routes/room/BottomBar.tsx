@@ -4,7 +4,8 @@ import { VideoInfo } from "../../utils/YoutubeTypes";
 import { useGAPIContext } from "../../utils/GAPI";
 import Button from "preact-mui/lib/button";
 import { Modal } from "../../components/Modal";
-import * as style from "./style.css";
+import * as style from "./BottomBar.css";
+import * as commonStyle from "./style.css";
 import { YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { QueueModal } from "./QueueModal";
 import { Video } from "../../utils/WebsocketTypes";
@@ -86,19 +87,19 @@ export const BottomBar = memo(
                     ) : (
                         <div class={style.bottomVideoIcon} />
                     )}
-                    <Tooltip className={style.textEllipsis} content={videoInfo?.title ?? ""} delay={800}>
-                        <div class={["mui--text-title", style.textEllipsis].join(" ")}>
+                    <Tooltip className={commonStyle.textEllipsis} content={videoInfo?.title ?? ""} delay={800}>
+                        <div class={["mui--text-title", commonStyle.textEllipsis].join(" ")}>
                             {videoInfo?.title ?? "Nothing Currently Playing"}
                         </div>
                     </Tooltip>
                 </div>
                 <div class={style.bottomMiddleActions}>
-                    <Tooltip className={style.centerTooltipChild} content="Adjust Video Volume">
+                    <Tooltip className={commonStyle.centerTooltipChild} content="Adjust Video Volume">
                         <VolumeSlider disabled={!hasVideo} volume={playerVolume} setVolume={setPlayerVolume} />
                     </Tooltip>
                     {showControls ? (
                         <Tooltip
-                            className={style.centerTooltipChild}
+                            className={commonStyle.centerTooltipChild}
                             content={`${playing ? "Pause" : "Resume"} Room Playback`}
                         >
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={togglePlay}>
@@ -109,7 +110,7 @@ export const BottomBar = memo(
                         </Tooltip>
                     ) : null}
                     {showControls ? (
-                        <Tooltip className={style.centerTooltipChild} content="Skip Current Video">
+                        <Tooltip className={commonStyle.centerTooltipChild} content="Skip Current Video">
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={skipVideo}>
                                 <i style={{ fontSize: "32px" }} class="material-icons">
                                     skip_next
@@ -120,7 +121,7 @@ export const BottomBar = memo(
                 </div>
                 {allowQueuing ? (
                     <div class={style.bottomRightActions}>
-                        <div class={style.centerTooltipChild}>
+                        <div class={commonStyle.centerTooltipChild}>
                             <Button id="openQueue" onClick={(): string => (window.location.href = "#Queue")}>
                                 Queue Video
                             </Button>

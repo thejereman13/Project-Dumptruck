@@ -1,6 +1,6 @@
 import { h, JSX } from "preact";
 import { useEffect } from "preact/hooks";
-import * as style from "./style.css";
+import * as style from "./Modal.css";
 
 export interface ModalProps {
     idName: string;

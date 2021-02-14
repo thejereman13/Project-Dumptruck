@@ -2,32 +2,18 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         AdminName: string;
-        BottomBar: string;
         EditCard: string;
         ModalBox: string;
         NonexistantRoom: string;
         PageRoot: string;
         PlaylistSearch: string;
-        QueueActionDiv: string;
-        QueueCard: string;
-        QueueCardInfo: string;
         QueueContainer: string;
-        QueueExpandedTitle: string;
         QueueHeader: string;
-        QueueIcon: string;
-        QueueInfo: string;
-        QueueVideos: string;
-        QueueVideosExpanded: string;
+        QueueTabBody: string;
+        RoomTitleBar: string;
         SettingContainer: string;
         UserRow: string;
         UserRowTitle: string;
-        VideoCardButton: string;
-        VideoDuration: string;
-        bottomMiddleActions: string;
-        bottomRightActions: string;
-        bottomVideoIcon: string;
-        bottomVideoInfo: string;
-        bottomVideoInfoFull: string;
         centerTooltipChild: string;
         playButton: string;
         progress: string;

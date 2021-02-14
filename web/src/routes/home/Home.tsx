@@ -1,5 +1,4 @@
 import { h, JSX } from "preact";
-import Button from "preact-mui/lib/button";
 import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { route } from "preact-router";

@@ -5,7 +5,7 @@ import { GetRoomPlaying, RequestVideoPreview } from "../utils/RestCalls";
 import { VideoInfo } from "../utils/YoutubeTypes";
 import { useAbortController } from "./AbortController";
 
-import * as style from "./style.css";
+import * as style from "./RoomCard.css";
 
 export interface RoomCardProps {
     onClick: () => void;
@@ -34,10 +34,7 @@ export function RoomCard(props: RoomCardProps): JSX.Element {
                 <h2 className={style.RoomCardTitle}>{name}</h2>
                 {playingPreview !== null ? (
                     <div className={style.RoomCardPreview}>
-                        <img
-                            class={style.VideoIcon}
-                            src={playingPreview.thumbnailMaxRes.url.replace("hqdefault", "mqdefault")}
-                        />
+                        <img src={playingPreview.thumbnailMaxRes.url.replace("hqdefault", "mqdefault")} />
                         <h3>Current Playing: </h3>
                         <p>{playingPreview.title}</p>
                     </div>

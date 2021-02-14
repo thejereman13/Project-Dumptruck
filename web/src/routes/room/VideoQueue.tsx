@@ -3,7 +3,8 @@ import { PlaylistByUser, Video } from "../../utils/WebsocketTypes";
 import { RoomUser } from "../../utils/BackendTypes";
 import Button from "preact-mui/lib/button";
 import { VideoCard, VideoCardInfo } from "../../components/VideoCard";
-import * as style from "./style.css";
+import * as style from "./VideoQueue.css";
+import * as commonStyle from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../utils/RestCalls";
 import { durationToString, VideoInfo } from "../../utils/YoutubeTypes";
@@ -60,8 +61,10 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
             <div class={style.QueueCardInfo}>
                 {videoInfo.thumbnailURL && <img class={style.QueueIcon} src={videoInfo.thumbnailURL} />}
                 <div class={style.QueueInfo}>
-                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{videoInfo.title}</div>
-                    <div class={["mui--text-body1", style.textEllipsis].join(" ")}>{`Queued By ${user.name}`}</div>
+                    <div class={["mui--text-subhead", commonStyle.textEllipsis].join(" ")}>{videoInfo.title}</div>
+                    <div
+                        class={["mui--text-body1", commonStyle.textEllipsis].join(" ")}
+                    >{`Queued By ${user.name}`}</div>
                     <div class={["mui--text-body1", style.VideoDuration].join(" ")}>
                         {durationToString(videoInfo.duration)}
                     </div>
@@ -153,7 +156,7 @@ export const VideoQueue = memo(
         const { userQueue, videoPlaylist, currentUsers, currentUser, removeVideo, openEdit, allowRemoval } = props;
 
         return (
-            <div class={style.scrollBox}>
+            <div class={commonStyle.scrollBox}>
                 {userQueue.map(clientID => {
                     const playlist = videoPlaylist[clientID];
                     const playlistUser = currentUsers.find(u => u.clientID == clientID);

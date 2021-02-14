@@ -13,7 +13,7 @@ export interface RoomTitleBarProps {
 export function RoomTitleBar(props: RoomTitleBarProps): JSX.Element {
     const { isAdmin, roomTitle } = props;
     return (
-        <div class={["mui--text-display1", style.centerTooltipChild].join(" ")}>
+        <div class={["mui--text-display1", style.centerTooltipChild, style.RoomTitleBar].join(" ")}>
             {roomTitle}
             {roomTitle && (
                 <Tooltip className={[style.centerTooltipChild, style.settingButton].join(" ")} content="Share Room URL">
