@@ -1,13 +1,24 @@
 .RoomCard {
     color: var(--text-secondary);
     background-color: var(--dp4-surface);
-    height: unset;
-    width: 24rem;
+    height: 20rem;
+    width: 16rem;
     padding: 1rem;
     border-radius: 1rem;
+    font-size: 0.75rem;
 }
 .RoomCard:hover {
     background-color: var(--dp24-surface) !important;
+}
+.RoomCard > div {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+}
+.RoomCard span {
+    color: var(--text-secondary-disabled);
+    line-height: 1rem;
+    margin-top: 0.5rem;
 }
 .RoomCard * {
     white-space: nowrap;
@@ -16,9 +27,10 @@
 }
 .RoomCardTitle {
     margin: 0;
-    font-size: 2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--theme-primary-dark);
+    font-size: 1.5rem;
+    padding-bottom: 0.25rem;
+    color: var(--theme-primary-dark);
+    border-bottom: 2px solid var(--theme-secondary-dark);
 }
 .RoomCardPreview {
     margin-top: 1rem;

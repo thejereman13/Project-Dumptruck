@@ -89,7 +89,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
 
     useGoogleLogin({
         clientId: CLIENTID,
-        scope: "https://www.googleapis.com/auth/youtube",
+        scope: "https://www.googleapis.com/auth/youtube.readonly",
         onSuccess: onSuccess,
         onFailure: () => onFailure(),
         isSignedIn: true,

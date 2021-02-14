@@ -11,7 +11,7 @@ import database;
 import authentication;
 import site_user;
 
-const WebServerVersion = "0.5.0";
+const WebServerVersion = "0.5.1";
 
 version(release)
 void main()

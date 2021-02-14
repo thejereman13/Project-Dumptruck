@@ -21,6 +21,11 @@ export interface RoomVideo {
     queuedBy: string;
 }
 
+export interface PublicRoomPreview {
+    currentVideo?: RoomVideo;
+    userCount: number;
+}
+
 export interface YoutubeVideoInformation {
     videoID: string;
     duration: number;

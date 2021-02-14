@@ -83,6 +83,12 @@ html {
     text-transform: none;
 }
 
+h3 {
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+}
+
 #app {
     height: 100%;
     overflow: hidden;
@@ -97,6 +103,7 @@ html {
     background-color: var(--theme-primary);
     color: var(--text-primary);
     text-transform: none;
+    transition: background-color 0.3s ease;
 }
 .mui-btn.mui-btn--flat:focus:not(:hover) {
     outline: none;
@@ -113,14 +120,14 @@ html {
     background-color: var(--dp24-surface);
 }
 .mui-btn:hover {
-    background-color: #ddd;
+    background-color: var(--theme-secondary-light);
 }
 
 .mui-btn--fab {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    background-color: var(--theme-primary-light);
+    background-color: var(--theme-primary);
 }
 
 .mui-btn--fab.mui-btn--tiny {
@@ -148,7 +155,7 @@ a {
 }
 
 .mui-tabs__bar > li.mui--is-active {
-    border-color: var(--theme-secondary);
+    border-color: var(--theme-secondary-dark);
 }
 
 .mui-textfield--float-label > label {

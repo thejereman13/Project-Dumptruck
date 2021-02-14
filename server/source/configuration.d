@@ -5,6 +5,7 @@ import std.stdio;
 
 import DB = database;
 import room;
+import video;
 
 //Constant data values
 
@@ -46,11 +47,19 @@ void getRoomSettings(HTTPServerRequest req, HTTPServerResponse res) {
         res.writeJsonBody("{}", 404, false);
 }
 
+struct PublicRoomPreview {
+    Video currentVideo;
+    ulong userCount;
+}
+
 void getRoomPlaying(HTTPServerRequest req, HTTPServerResponse res) {
     const long id = req.params["id"].to!long;
     auto r = getRoom(id);
     if (!r.isNull) {
-        res.writeJsonBody(serializeToJson(r.get().getPlaying()), 200, false);
+        PublicRoomPreview rm;
+        rm.currentVideo = r.get().getPlaying();
+        rm.userCount = r.get().getUserCount();
+        res.writeJsonBody(serializeToJson(rm), 200, false);
     } else {
         res.writeJsonBody("{}", 404, false);
     }

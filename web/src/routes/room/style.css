@@ -131,6 +131,9 @@
     overflow-x: hidden;
     width: 100%;
 }
+.scrollBox h2 {
+    margin-top: 0;
+}
 
 .PlaylistSearch {
     padding-right: 2rem;

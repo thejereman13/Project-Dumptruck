@@ -45,6 +45,19 @@
     max-width: 50%;
 }
 
+.bottomQueueButton {
+    height: 3rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    display: inline-flex;
+    background-color: var(--theme-primary-dark);
+}
+.bottomQueueButton p {
+    line-height: 2rem;
+    padding: 0 0.5rem;
+    font-size: 1rem;
+}
+
 .QueueContainer {
     max-height: 100%;
     width: 50%;

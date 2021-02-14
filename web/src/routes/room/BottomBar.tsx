@@ -121,11 +121,17 @@ export const BottomBar = memo(
                 </div>
                 {allowQueuing ? (
                     <div class={style.bottomRightActions}>
-                        <div class={commonStyle.centerTooltipChild}>
-                            <Button id="openQueue" onClick={(): string => (window.location.href = "#Queue")}>
-                                Queue Video
-                            </Button>
-                        </div>
+                        <Button
+                            className={["mui-btn", style.bottomQueueButton].join(" ")}
+                            id="openQueue"
+                            size="small"
+                            onClick={(): string => (window.location.href = "#Queue")}
+                        >
+                            <i style={{ fontSize: "32px" }} class="material-icons">
+                                queue
+                            </i>
+                            <p>Queue Video</p>
+                        </Button>
                     </div>
                 ) : null}
                 {allowQueuing ? (

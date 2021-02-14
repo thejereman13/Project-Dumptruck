@@ -1,4 +1,4 @@
-import { SiteUser, RoomInfo, RoomVideo } from "./BackendTypes";
+import { SiteUser, RoomInfo, PublicRoomPreview } from "./BackendTypes";
 import { VideoInfo, parseEmbeddedVideoJSON } from "./YoutubeTypes";
 import { Ref } from "preact/hooks";
 
@@ -80,12 +80,21 @@ export async function GetRoomInfo(roomID: string, controller: Ref<AbortControlle
     return null;
 }
 
-export async function GetRoomPlaying(roomID: string, controller: Ref<AbortController>): Promise<RoomVideo | null> {
+export async function GetRoomPlaying(
+    roomID: string,
+    controller: Ref<AbortController>
+): Promise<PublicRoomPreview | null> {
     try {
         const resp = await fetch(`/api/playing/${roomID}`, { signal: controller.current.signal });
         if (!resp.ok) return null;
-        const json: RoomVideo = await resp.json();
-        if (json && json.queuedBy !== "00000000-0000-0000-0000-000000000000" && json.youtubeID.length > 0) {
+        const json: PublicRoomPreview = await resp.json();
+        if (json && json.currentVideo) {
+            if (
+                json.currentVideo.queuedBy === "00000000-0000-0000-0000-000000000000" ||
+                json.currentVideo.youtubeID.length === 0
+            ) {
+                json.currentVideo = undefined;
+            }
             return json;
         }
     } catch (e) {

@@ -37,6 +37,7 @@ final class Room {
     private bool hifiTiming;
     private bool skipErrors;
     private bool waitUsers;
+    public bool publicVisibility;
 
     private Task roomLoop;
     private Timer videoLoop;
@@ -98,6 +99,7 @@ final class Room {
         this.hifiTiming = settings.hifiTiming;
         this.skipErrors = settings.skipErrors;
         this.waitUsers = settings.waitUsers;
+        this.publicVisibility = settings.publicVisibility;
     }
 
     private Json getRoomJson() {
@@ -441,6 +443,9 @@ final class Room {
     public Video getPlaying() {
         return this.currentVideo;
     }
+    public ulong getUserCount() {
+        return this.roomUsers.getUserList().length;
+    }
 }
 
 private Room[long] roomList;
@@ -457,7 +462,7 @@ Nullable!Room getRoom(const long roomID) {
 }
 
 long[] getActiveRooms() {
-    return roomList.keys.filter!((k) => roomList[k].roomLoopRunning).array;
+    return roomList.keys.filter!((k) => roomList[k].roomLoopRunning && roomList[k].publicVisibility).array;
 }
 
 void deleteRoom(long roomID) {

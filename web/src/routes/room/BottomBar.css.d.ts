@@ -4,6 +4,7 @@ declare namespace BottomBarCssNamespace {
         BottomBar: string;
         QueueContainer: string;
         bottomMiddleActions: string;
+        bottomQueueButton: string;
         bottomRightActions: string;
         bottomVideoIcon: string;
         bottomVideoInfo: string;

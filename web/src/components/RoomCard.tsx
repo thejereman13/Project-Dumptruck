@@ -17,13 +17,16 @@ export function RoomCard(props: RoomCardProps): JSX.Element {
     const { name, onClick, roomID } = props;
 
     const [playingPreview, setPlayingPreview] = useState<VideoInfo | null>(null);
+    const [userCount, setUserCount] = useState<number>(0);
 
     const controller = useAbortController();
 
     useEffect(() => {
         GetRoomPlaying(roomID.toString(), controller).then(res => {
             if (res !== null) {
-                RequestVideoPreview(res.youtubeID, controller).then(setPlayingPreview);
+                if (res.currentVideo)
+                    RequestVideoPreview(res.currentVideo.youtubeID, controller).then(setPlayingPreview);
+                setUserCount(res.userCount);
             }
         });
     }, [roomID, controller]);
@@ -32,6 +35,11 @@ export function RoomCard(props: RoomCardProps): JSX.Element {
         <Button className={["mui-btn", style.RoomCard].join(" ")} variant="flat" onClick={onClick}>
             <div>
                 <h2 className={style.RoomCardTitle}>{name}</h2>
+                {userCount > 0 ? (
+                    <span>{userCount > 1 ? `${userCount} Users` : "1 User"} in Room</span>
+                ) : (
+                    <span>Room is Empty</span>
+                )}
                 {playingPreview !== null ? (
                     <div className={style.RoomCardPreview}>
                         <img src={playingPreview.thumbnailMaxRes.url.replace("hqdefault", "mqdefault")} />
