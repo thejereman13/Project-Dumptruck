@@ -1,9 +1,11 @@
 .home {
-	padding: 56px 20px;
-	min-height: 100%;
-	width: 100%;
+    padding: 0 20px;
+    padding-top: var(--navbar-height);
+    height: 100%;
+    overflow-y: auto;
+    width: 100%;
 }
 
 .roomRow {
-	display: block;
+    display: block;
 }
