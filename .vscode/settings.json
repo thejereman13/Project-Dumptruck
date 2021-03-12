@@ -1,8 +1,10 @@
 {
 		"eslint.workingDirectories": [
-			"./web"
+			"./web",
+			"./nodeServer"
 		],
 		"dscanner.ignoredKeys": [
 			"dscanner.style.undocumented_declaration"
-		]
+		],
+		"git.ignoreLimitWarning": true
 }

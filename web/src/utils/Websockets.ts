@@ -17,7 +17,6 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
     const wsAttemptCounter = useRef<number>(0);
 
     const closeWSSession = useCallback((ev: BeforeUnloadEvent | null): undefined => {
-        console.log("c");
         ws.current?.close();
         ws.current = null;
         if (ev) delete ev["returnValue"];
@@ -52,7 +51,7 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             }
             if (!websocketMounted) return;
 
-            ws.current = new WebSocket(`${getBaseURL()}/api/ws?${roomID}`);
+            ws.current = new WebSocket(`${getBaseURL()}/api/ws?room=${roomID}`);
             ws.current.addEventListener("message", onMessage);
             ws.current.addEventListener("open", () => {
                 continuousPing();

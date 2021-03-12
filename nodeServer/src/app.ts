@@ -1,0 +1,58 @@
+import express from "express";
+import expressWS from "express-ws";
+import session from "express-session";
+import connectRedis from "connect-redis";
+import Redis from "ioredis";
+import fs from "fs";
+import https from "https";
+import { v4 as randomUUID } from "uuid";
+
+import { readConfigFile, server_configuration, configItems, createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying } from "./configuration";
+import { getUserLogin, userLogin, userLogout } from "./authentication";
+import { clearUserInfo, getPublicUserInfo, getUserInfo } from "./site_user";
+import { handleWebsocketConnection } from "./sockets";
+
+const redisStore = connectRedis(session);
+const redisClient = new Redis();
+
+const eApp = express();
+
+const pKey = fs.readFileSync("./key.pem");
+const certKey = fs.readFileSync("./cert.pem");
+const server = https.createServer({
+	key: pKey,
+	cert: certKey,
+}, eApp);
+
+const app = expressWS(eApp, server).app;
+
+app.use(express.json());
+app.use(session({
+	secret: randomUUID(),
+	resave: false,
+	saveUninitialized: false,
+	cookie: { secure: true },
+	store: new redisStore({ client: redisClient })
+}));
+
+const WebServerVersion = "0.5.1";
+
+readConfigFile();
+
+app.ws("/api/ws", handleWebsocketConnection);
+app.post("/api/login", userLogin);
+app.get("/api/login", getUserLogin);
+app.post("/api/logout", userLogout);
+// router.get("/api/video/:id", &videoInfoRequest);
+app.get("/api/user", getUserInfo);
+app.delete("/api/user", clearUserInfo);
+app.get("/api/user/:id", getPublicUserInfo);
+app.get("/api/room/:id", getRoomSettings);
+app.post("/api/room/:id", createNewRoom);
+app.get("/api/rooms", getOpenRooms);
+app.get("/api/playing/:id", getRoomPlaying);
+
+
+console.info("Starting Web Server: " + WebServerVersion + " on port ", server_configuration[configItems.Port]);
+server.listen(Number(server_configuration[configItems.Port]));
+// app.listen(Number(server_configuration[configItems.Port]));

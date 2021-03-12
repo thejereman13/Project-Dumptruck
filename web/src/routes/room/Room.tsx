@@ -52,12 +52,14 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         if (roomTitle.length > 0) document.title = "Krono: " + roomTitle;
     }, [roomTitle]);
 
-    const setVideoInformation = useCallback((video: Video) => {
+    const setVideoInformation = useCallback((video: Video | null) => {
         console.log("New Video", video);
-        videoTime.current = video.timeStamp;
         setCurrentVideo(video);
-        playing.current = video.playing;
         setStateIncrement(val => val + 1);
+        if (video) {
+            videoTime.current = video.timeStamp;
+            playing.current = video.playing;
+        }
     }, []);
 
     const playerMount = useCallback((): void => {
@@ -104,7 +106,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     }
                     break;
                 case MessageType.Video:
-                    if (msg.Video) setVideoInformation(msg.Video);
+                    setVideoInformation(msg.Video ?? null);
                     break;
                 case MessageType.Play:
                     playing.current = true;
