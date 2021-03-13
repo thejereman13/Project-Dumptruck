@@ -21,26 +21,15 @@ export class VideoPlaylist {
     private lastUser = 0; //index of the last userQueue element queued
 
     public getPlaylist(): Record<string, Video[]> {
-        const retPlaylist: Record<string, Video[]> = {};
-        // TODO: maybe a shallow copy is fine
-        Object.keys(this.playlist).forEach((id) => {
-            retPlaylist[id] = [...this.playlist[id]];
-        });
-        return retPlaylist;
+        return this.playlist;
     }
     public getUserQueue(): string[] {
         if (this.userQueue.length === 0) return [];
 
         const nextIndex = (this.lastUser + 1) % this.userQueue.length;
-        const tempQueue = [...this.userQueue];
-        // bringToFront(tempQueue[0 .. nextIndex], tempQueue[nextIndex .. $]);
-        // TODO: double check this logic
-        tempQueue.concat(tempQueue.splice(0, nextIndex));
+        let tempQueue = [...this.userQueue];
+        tempQueue = tempQueue.concat(tempQueue.splice(0, nextIndex));
         return tempQueue.filter((u) => u in this.playlist);
-    }
-
-    public hasNextVideo(): boolean {
-        return this.peekNextVideo() != Number.MAX_SAFE_INTEGER;
     }
 
     private peekNextVideo(): number {
@@ -58,12 +47,12 @@ export class VideoPlaylist {
                 return nextIndex;
             }
         }
-        return Number.MAX_SAFE_INTEGER;
+        return -1;
     }
 
-    public getNextVideo(): Video {
+    public getNextVideo(): Video | null {
         const nextIndex = this.peekNextVideo();
-        if (nextIndex != Number.MAX_SAFE_INTEGER) {
+        if (nextIndex >= 0) {
             const next = this.playlist[this.userQueue[nextIndex]][0];
             if (this.playlist[this.userQueue[nextIndex]].length > 1) {
                 // slice off the top of the user's playlist
@@ -74,15 +63,11 @@ export class VideoPlaylist {
             }
             // update the last user to this one
             this.lastUser = nextIndex;
+
+            next.timeStamp = -1;
             return next;
         }
-        return {
-            duration: 0,
-            playing: false,
-            queuedBy: "",
-            timeStamp: 0,
-            youtubeID: ""
-        };
+        return null;
     }
 
     public addVideoToQueue(userID: string, videoInfo: YoutubeVideoInformation): boolean {
@@ -147,7 +132,7 @@ export function validateVideoInfo(info: Record<string, any>): YoutubeVideoInform
         console.error(e, "Failed to Parse Video Info");
     }
     return ret;
-} 
+}
 
 const reg = /^(-|\+)?P(?:([-+]?[0-9,.]*)Y)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)W)?(?:([-+]?[0-9,.]*)D)?(?:T(?:([-+]?[0-9,.]*)H)?(?:([-+]?[0-9,.]*)M)?(?:([-+]?[0-9,.]*)S)?)?$/;
 

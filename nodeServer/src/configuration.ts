@@ -6,7 +6,7 @@ import { getActiveRooms, getNextRoomID, getRoom } from "./room";
 //Constant data values
 
 //Server JSON configurations (constant per runtime)
-export const server_configuration: Record<configItems, any> = {
+export const server_configuration: Record<ConfigItems, any> = {
     database_name: "DB",
     database_password: "",
     database_username: "",
@@ -17,7 +17,7 @@ export const server_configuration: Record<configItems, any> = {
     youtube_api_key: ""
 };
 
-export enum configItems {
+export enum ConfigItems {
     Port = "web_port",              //TCP port to use for website
     Dir = "web_dir",                //root directory for serving the website
     Cert = "ssl_cert",              //SSL certificate chain file name
@@ -35,10 +35,10 @@ export function readConfigFile(): void {
         throw "No Configuration File Present: server_configuration.json";
     const conf = fs.readFileSync(configFileName, "utf-8");
     const obj = JSON.parse(conf);
-    Object.values(configItems).forEach((value) => {
+    Object.values(ConfigItems).forEach((value) => {
         if (!(value in obj))
             throw "Configuration Item '" + value + "' is missing from the server_configuration.json file";
-        server_configuration[value as configItems] = obj[value];
+        server_configuration[value as ConfigItems] = obj[value];
     });
 }
 
@@ -75,7 +75,7 @@ export function getOpenRooms(_: Request, res: Response): void {
     res.status(200).send(JSON.stringify(rooms));
 }
 
-export async function createNewRoom(req: Request,res: Response): Promise<void> {
+export async function createNewRoom(req: Request, res: Response): Promise<void> {
     let id = Number(req.params["id"]);
     if (id === Number.NaN) {
         res.status(400).send("{}");

@@ -33,59 +33,82 @@ export enum MessageType {
 
 export class MessageQueue {
 
-    private clientSockets: Record<string, WebSocket[]> = {};
+    private clientSockets: Map<string, WebSocket[]> = new Map();
 
     private emitMessage(ms: Message) {
+        // const s = JSON.stringify(ms.message);
+        // Could switch to using one buffer for all WS connections
+        // May or may not be more efficient
+        const data = Buffer.from(JSON.stringify(ms.message));
+        // eslint-disable-next-line
+        // @ts-ignore
+        const list = WebSocket.Sender.frame(data, {
+            readOnly: false,
+            mask: false,
+            rsv1: false,
+            opcode: 1,
+            fin: true
+        });
         if (ms.targets.length > 0) {
             ms.targets.forEach((t) => {
-                const wss = this.clientSockets[t];
+                const wss = this.clientSockets.get(t);
                 if (wss) wss.forEach((ws) => {
                     if (ws.readyState === ws.OPEN)
-                        ws.send(JSON.stringify(ms.message));
+                        // ws.send(s);
+                        // eslint-disable-next-line
+                        // @ts-ignore
+                        list.forEach((buf) => ws._socket.write(buf));
                 });
             });
         } else {
-            Object.values(this.clientSockets).forEach((wss) => {
+            for (const wss of this.clientSockets.values()) {
                 wss.forEach((ws) => {
                     if (ws.readyState === ws.OPEN)
-                        ws.send(JSON.stringify(ms.message));
+                        // ws.send(s);
+                        // eslint-disable-next-line
+                        // @ts-ignore
+                        list.forEach((buf) => ws._socket.write(buf));
                 });
-            });
+            }
         }
     }
 
     public addClientSocket(clientID: string, ws: WebSocket): void {
-        if (this.clientSockets[clientID]) {
-            if (!this.clientSockets[clientID].includes(ws))
-                this.clientSockets[clientID].push(ws);
+        if (this.clientSockets.has(clientID)) {
+            const lst = this.clientSockets.get(clientID);
+            if (lst && !lst.includes(ws))
+                lst.push(ws);
         } else {
-            this.clientSockets[clientID] = [ws];
+            this.clientSockets.set(clientID, [ws]);
         }
     }
 
     public removeClientSocket(clientID: string, ws: WebSocket): void {
-        if (this.clientSockets[clientID]) {
-            const i = this.clientSockets[clientID].indexOf(ws);
-            if (i >= 0) this.clientSockets[clientID].splice(i, 1);
-            if (this.clientSockets[clientID].length === 0) {
-                delete this.clientSockets[clientID];
+        if (this.clientSockets.has(clientID)) {
+            const lst = this.clientSockets.get(clientID);
+            if (lst) {
+                const i = lst.indexOf(ws) ?? -1;
+                if (i >= 0) lst.splice(i, 1);
+                if (lst.length === 0) {
+                    this.clientSockets.delete(clientID);
+                }
             }
         }
     }
 
     public destroy(): void {
-        Object.values(this.clientSockets).forEach((wss) => {
+        for (const wss of this.clientSockets.values()) {
             wss.forEach((ws) => ws.close());
-        });
-        this.clientSockets = {};
+        }
+        this.clientSockets.clear();
     }
 
     /* Posting Messages to clients */
 
-    public postMessage(type: MessageType, msg: any = "", targetUsers: string[] = [], key = "data"): void {
+    public postMessage(type: MessageType, msg: any = "", targetUsers: string[] = [], key = "d"): void {
         const j: Record<string, any> = {};
-        j["type"] = type;
-        if (msg && key.length > 0) j[key] = msg;
+        j["t"] = type;
+        if (key.length > 0) j[key] = msg;
         this.emitMessage({
             message: j,
             targets: targetUsers

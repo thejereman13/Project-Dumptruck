@@ -4,7 +4,6 @@ import { getSiteUser, addRecentRoomToUser } from "./site_user";
 export interface User {
     clientID: string;
     name: string;
-    role: number;
     userCount: number;
 }
 
@@ -14,7 +13,7 @@ export class UserList {
     private roomUsersReady: Record<string, boolean> = {};
     private roomUsersErrored: Record<string, boolean> = {};
     private roomID = 0;
-    
+
     public adminUsers: string[] = [];
 
     public userCount = 0;
@@ -37,10 +36,8 @@ export class UserList {
             this.roomUsers[id] = {
                 clientID: id,
                 name,
-                role: 1,
                 userCount: user ? 1 : 0
             };
-            //  Defaulting each user's role to 1
         this.roomUserStatus[id] = true;
         if (clientID) {
             addRecentRoomToUser(clientID, this.roomID);

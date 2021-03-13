@@ -57,14 +57,12 @@ export async function userLogin(req: Request, res: Response): Promise<void> {
 
 //Returns the username of the current session if logged in
 export function getUserLogin(req: Request, res: Response): void {
-    const currentUser: { User: string | null, Role: string} = {
+    const currentUser: { User: string | null } = {
         User: null,
-        Role: "",
     };
-    
+
     if (req.session) {
         currentUser.User = req.session["username"];
-        currentUser.Role = req.session["role"];
     }
     res.status(200).send(currentUser);
 }

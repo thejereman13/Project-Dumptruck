@@ -32,7 +32,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
             if (ws)
                 ws.send(
                     JSON.stringify({
-                        type: playing ? MessageType.Pause : MessageType.Play
+                        t: playing ? MessageType.Pause : MessageType.Play
                     })
                 );
             else {
@@ -42,13 +42,13 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
         [ws]
     );
     const skipVideo = useCallback((): void => {
-        if (ws) ws.send(JSON.stringify({ type: MessageType.Skip }));
+        if (ws) ws.send(JSON.stringify({ t: MessageType.Skip }));
     }, [ws]);
 
     const submitNewVideo = useCallback(
         (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueAdd, data: newVideo }));
+                ws.send(JSON.stringify({ t: MessageType.QueueAdd, d: newVideo }));
                 RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
             } else {
                 WSErrorMessage();
@@ -59,7 +59,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const submitAllVideos = useCallback(
         (newVideos: YoutubeVideoInformation[], playlistTitle: string): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueMultiple, data: newVideos }));
+                ws.send(JSON.stringify({ t: MessageType.QueueMultiple, d: newVideos }));
                 RegisterNotification(
                     `Queued All Videos from ${playlistTitle.length > 0 ? playlistTitle : "Playlist"}`,
                     "info"
@@ -73,7 +73,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const removeVideo = useCallback(
         (id: string): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueRemove, data: id }));
+                ws.send(JSON.stringify({ t: MessageType.QueueRemove, d: id }));
             } else {
                 WSErrorMessage();
             }
@@ -83,7 +83,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const removeAllVideos = useCallback(
         (userID: string): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueClear, data: userID }));
+                ws.send(JSON.stringify({ t: MessageType.QueueClear, d: userID }));
             } else {
                 WSErrorMessage();
             }
@@ -93,7 +93,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const updateSettings = useCallback(
         (settings: RoomSettings): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.RoomSettings, data: settings }));
+                ws.send(JSON.stringify({ t: MessageType.RoomSettings, d: settings }));
             } else {
                 WSErrorMessage();
             }
@@ -103,7 +103,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const removeAdmin = useCallback(
         (id: string): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.AdminRemove, data: id }));
+                ws.send(JSON.stringify({ t: MessageType.AdminRemove, d: id }));
             } else {
                 WSErrorMessage();
             }
@@ -113,7 +113,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const addAdmin = useCallback(
         (id: string): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.AdminAdd, data: id }));
+                ws.send(JSON.stringify({ t: MessageType.AdminAdd, d: id }));
             } else {
                 WSErrorMessage();
             }
@@ -124,7 +124,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     const reorderQueue = useCallback(
         (id: string, videos: YoutubeVideoInformation[]): void => {
             if (ws) {
-                ws.send(JSON.stringify({ type: MessageType.QueueReorder, data: videos, target: id }));
+                ws.send(JSON.stringify({ t: MessageType.QueueReorder, d: videos, target: id }));
             } else {
                 WSErrorMessage();
             }
@@ -133,10 +133,10 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     );
 
     const logError = useCallback((): void => {
-        if (ws) ws.send(JSON.stringify({ type: MessageType.UserError }));
+        if (ws) ws.send(JSON.stringify({ t: MessageType.UserError }));
     }, [ws]);
     const logReady = useCallback((): void => {
-        if (ws) ws.send(JSON.stringify({ type: MessageType.UserReady }));
+        if (ws) ws.send(JSON.stringify({ t: MessageType.UserReady }));
     }, [ws]);
 
     return {

@@ -4,14 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'npm run lint && ts-node' src/app.ts",
+    "start": "nodemon --watch 'src/**/*.ts' --exec 'npm run lint && node --inspect -r ts-node/register' src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "build": "tsc",
+    "production": "NODE_ENV=production node ./build/app.js",
+    "profile": "NODE_ENV=production node --inspect --prof ./build/app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "connect-redis": "^5.1.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "express-ws": "^4.0.0",
+    "google-auth-library": "^7.0.2",
+    "ioredis": "^4.23.0",
+    "nanotimer": "^0.3.15",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
     "@types/connect-redis": "0.0.16",
     "@types/express": "^4.17.11",
     "@types/express-session": "^1.17.3",
@@ -22,17 +35,9 @@
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.17.0",
     "@typescript-eslint/parser": "^4.17.0",
-    "connect-redis": "^5.1.0",
     "eslint": "^7.21.0",
-    "express": "^4.17.1",
-    "express-session": "^1.17.1",
-    "express-ws": "^4.0.0",
-    "google-auth-library": "^7.0.2",
-    "ioredis": "^4.23.0",
-    "nanotimer": "^0.3.15",
     "nodemon": "^2.0.7",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3",
-    "uuid": "^8.3.2"
+    "typescript": "^4.2.3"
   }
 }

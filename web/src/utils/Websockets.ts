@@ -37,7 +37,7 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             if (ws.current?.readyState === ws.current?.OPEN)
                 ws.current?.send(
                     JSON.stringify({
-                        type: "ping"
+                        t: "ping"
                     })
                 );
             ping = setTimeout(() => continuousPing(), 4000);

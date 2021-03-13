@@ -55,6 +55,8 @@ export const BottomBar = memo(
         useEffect(() => {
             if (currentVideo !== null) {
                 RequestVideoPreview(currentVideo.youtubeID, controller).then(setVideoInfo);
+            } else {
+                setVideoInfo(null);
             }
         }, [currentVideo, controller]);
 

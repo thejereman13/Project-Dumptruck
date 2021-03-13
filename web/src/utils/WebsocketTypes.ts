@@ -49,8 +49,8 @@ export interface RoomInfo {
 }
 
 export interface WSMessage {
-    type: MessageType;
-    data?: any;
+    t: MessageType;
+    d?: any;
     error?: string;
     ID?: string;
     Room?: RoomInfo;

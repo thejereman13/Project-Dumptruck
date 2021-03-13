@@ -9,7 +9,6 @@ export interface SiteUser {
 export interface RoomUser {
     clientID: string; //Technically a UUID
     name: string;
-    role: number;
     userCount: number;
 }
 

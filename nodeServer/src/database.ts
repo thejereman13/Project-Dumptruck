@@ -51,7 +51,7 @@ export interface DBRoomSettings {
 
 export function defaultDBSettings(): DBRoomSettings {
     return {
-        name: "", 
+        name: "",
         trim: 0,
         guestControls: false,
         publicVisibility: true,
@@ -133,7 +133,7 @@ export async function setRoomSettings(roomID: number, settings: Record<string, a
 export async function setRoomAdmins(roomID: number, admins: string[]): Promise<void> {
     const r = await redis.lrange("roomAdmins:" + roomID, 0, -1);
     if (r.length > 0)
-        for(const k in r) {
+        for (const k in r) {
             // remove room from a user's list of adminable rooms
             await redis.lrem("userAdmins:" + k, 0, roomID);
         }

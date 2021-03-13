@@ -42,7 +42,7 @@ class Room {
         this.messageQueue = new MessageQueue();
     }
 
-    public async init () {
+    public async init() {
         const dbInfo = await peekRoomInformation(this.roomID);
         if (dbInfo) {
             if (dbInfo.roomID > 0) {
@@ -63,7 +63,7 @@ class Room {
         this.initialized = true;
     }
 
-    public destroy () {
+    public destroy() {
         this.clearUser.clearTimeout();
         this.videoLoop.clearInterval();
         this.messageQueue.destroy();
@@ -96,7 +96,7 @@ class Room {
     private async roomLoopOperation() {
         if (!this.constructed) return;
         this.roomLoopRunning = true;
-        while(this.roomUsers.userCount > 0) {
+        while (this.roomUsers.userCount > 0) {
             const removed = this.roomUsers.updateUserStatus();
             removed.forEach((id) => {
                 this.playlist.removeUser(id);
@@ -111,24 +111,28 @@ class Room {
             () => {
                 if (this.constructed && (!this.roomLoopRunning || this.roomUsers.userCount == 0)) {
                     this.videoLoop.clearInterval();
+                    this.videoLoopActive = false;
                     if (this.roomDeletionDelay) clearTimeout(this.roomDeletionDelay);
                     deleteRoom(this.roomID);
                 }
             }, 30000);
     }
 
-    
+
     private counter = 0;
+    private videoLoopActive = false;
     private videoSyncLoop() {
         if (!this.constructed) return;
-        if (this.roomUsers.userCount <= 0 && this.usersPendingRemoval.length <= 0 && !this.currentVideo?.playing)  {
+        if (this.roomUsers.userCount <= 0 && this.usersPendingRemoval.length <= 0 && !this.currentVideo?.playing) {
             this.videoLoop.clearInterval();
+            this.videoLoopActive = false;
             this.currentVideo = null;
             this.counter = 0;
             return;
         }
+        this.videoLoopActive = true;
         if (this.currentVideo?.playing) {
-            if (this.currentVideo.timeStamp < 4) // Ensure syncing at the beginning of the video
+            if (this.currentVideo.timeStamp < 6) // Ensure syncing at the beginning of the video
                 this.counter = 0;
             if (this.currentVideo.timeStamp <= (this.currentVideo.duration + this.settings.trim)) {
                 this.currentVideo.timeStamp++;
@@ -156,21 +160,27 @@ class Room {
     /* Video Queue */
 
     private queueNextVideo() {
-        if (this.playlist.hasNextVideo()) {
-            this.currentVideo = this.playlist.getNextVideo();
+        this.currentVideo = this.playlist.getNextVideo();
+        if (this.currentVideo) {
             // if not waiting on users, start playing the video immediately
             this.currentVideo.playing = !this.settings.waitUsers;
             this.messageQueue.postMessage(MessageType.Video, this.currentVideo, [], "Video");
             this.roomUsers.clearTempUserLists();
-            this.videoLoop.clearInterval();
-            this.videoLoop.clearTimeout();
             if (!this.settings.waitUsers) {
-                this.videoLoop.setInterval(() => this.videoSyncLoop(), "", "1s");
+                if (!this.videoLoopActive) {
+                    this.videoLoop.setInterval(() => this.videoSyncLoop(), "", "1s");
+                    this.videoSyncLoop();
+                }
+            } else {
+                this.videoLoopActive = false;
+                this.videoLoop.clearInterval();
+                this.videoLoop.clearTimeout();
             }
         } else {
-            this.currentVideo = null;
             this.messageQueue.postMessage(MessageType.Video, this.currentVideo, [], "Video");
+            this.videoLoopActive = false;
             this.videoLoop.clearInterval();
+            this.videoLoop.clearTimeout();
         }
         this.postPlaylist();
     }
@@ -236,7 +246,7 @@ class Room {
 
     /* Room Users */
 
-    public async addUser(clientID: string): Promise<{ type: MessageType, ID: string, Room: RoomInfo } | null> {
+    public async addUser(clientID: string): Promise<{ t: MessageType, ID: string, Room: RoomInfo } | null> {
         if (!this.constructed) return null;
         const id = await this.roomUsers.addUser(clientID);
         // Start running the room if it's not yet up
@@ -252,7 +262,7 @@ class Room {
         }
         this.postUserList();
         return {
-            type: MessageType.Init,
+            t: MessageType.Init,
             ID: id,
             Room: this.getRoomInfo(),
         };
@@ -265,12 +275,11 @@ class Room {
             // Multiple back-to-back leaves may continuously bump this callback further and further back,
             // but that shouldn't be a huge issue. Doing independent timers would likely cause more problems
             // than it's worth.
+            // TODO: users refreshing may cause multiple occurances in pendingRemoval
+            // this doesn't actually cause problems with playlists or user count though
             this.usersPendingRemoval.push(id);
             this.clearUser.clearTimeout();
             this.clearUser.setTimeout(() => this.removeUsersFromQueue(), "", "8s");
-        }
-        if (this.roomUsers.userCount == 0 && this.roomLoopRunning) {
-            this.currentVideo = null;
         }
     }
     public activeUser(id: string): boolean {
@@ -308,7 +317,9 @@ class Room {
         if (this.currentVideo && this.settings.waitUsers && this.roomUsers.setUserReady(id) >= 0.9) {
             this.currentVideo.playing = true;
             this.messageQueue.postMessage(MessageType.Play);
+            this.videoLoopActive = true;
             this.videoLoop.setInterval(() => this.videoSyncLoop(), "", "1s");
+            this.videoSyncLoop();
         }
     }
 
@@ -324,7 +335,7 @@ class Room {
     public receivedMessage(id: string, message: string) {
         if (!this.constructed || !id) return;
         const j = JSON.parse(message);
-        switch (j["type"]) {
+        switch (j["t"]) {
             case MessageType.Ping:
                 this.roomUsers.setUserActive(id);
                 break;
@@ -342,27 +353,27 @@ class Room {
                 }
                 break;
             case MessageType.QueueAdd:
-                this.queueVideo(j["data"], id);
+                this.queueVideo(j["d"], id);
                 break;
             case MessageType.QueueRemove:
-                this.unqueueVideo(j["data"], id);
+                this.unqueueVideo(j["d"], id);
                 break;
             case MessageType.QueueMultiple:
-                this.queueAllVideo(j["data"], id);
+                this.queueAllVideo(j["d"], id);
                 break;
             case MessageType.QueueClear:
                 this.clearQueue(j, id);
                 break;
             case MessageType.QueueReorder:
-                this.updateQueue(j["data"], id, j["target"]);
+                this.updateQueue(j["d"], id, j["target"]);
                 break;
             case MessageType.AdminAdd:
                 if (this.authorizedUser(id))
-                    this.addAdmin(j["data"]);
+                    this.addAdmin(j["d"]);
                 break;
             case MessageType.AdminRemove:
                 if (this.authorizedUser(id))
-                    this.removeAdmin(j["data"], id);
+                    this.removeAdmin(j["d"], id);
                 break;
             case MessageType.UserError:
                 this.logUserError(id);
@@ -377,7 +388,7 @@ class Room {
                 break;
             case MessageType.RoomSettings:
                 if (this.authorizedUser(id))
-                    this.setRoomSettings(j["data"]);
+                    this.setRoomSettings(j["d"]);
                 break;
             default:
                 console.warn("Invalid Message Type %s", message);

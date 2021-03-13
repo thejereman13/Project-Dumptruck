@@ -84,7 +84,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const newMessage = useCallback(
         (msg: WSMessage) => {
-            switch (msg.type) {
+            switch (msg.t) {
                 case MessageType.Init:
                     setUserID(msg.ID ?? "");
                     if (msg.Room) {
@@ -115,16 +115,16 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     playing.current = false;
                     break;
                 case MessageType.Sync:
-                    videoTime.current = Number(msg.data);
+                    videoTime.current = Number(msg.d);
                     break;
                 case MessageType.UserList:
-                    setCurrentUsers(msg.data);
+                    setCurrentUsers(msg.d);
                     break;
                 case MessageType.QueueOrder:
-                    setVideoPlaylist(msg.data);
+                    setVideoPlaylist(msg.d);
                     break;
                 case MessageType.UserOrder:
-                    setUserQueue(msg.data);
+                    setUserQueue(msg.d);
                     break;
                 case MessageType.Error:
                     RegisterNotification(msg.error ?? "Room Error", "error");
