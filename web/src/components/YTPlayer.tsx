@@ -5,7 +5,7 @@ export interface YouTubeVideoProps {
     className: string;
     id: string;
     playerMount: () => void;
-    playerError: () => void;
+    playerError: (id: string) => void;
     playerReady: () => void;
 }
 
@@ -136,7 +136,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                     onError: (e): void => {
                         console.warn("Youtube Error:", e);
                         RegisterNotification("Youtube Player Encountered Error", "error");
-                        playerError();
+                        playerError(id);
                     }
                     // onStateChange: (e): void => this.onPlayerStateChange(e.data)
                 },

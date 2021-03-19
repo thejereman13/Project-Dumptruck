@@ -164,8 +164,8 @@ class Room {
         if (this.currentVideo) {
             // if not waiting on users, start playing the video immediately
             this.currentVideo.playing = !this.settings.waitUsers;
-            this.messageQueue.postMessage(MessageType.Video, this.currentVideo, [], "Video");
             this.roomUsers.clearTempUserLists();
+            this.messageQueue.postMessage(MessageType.Video, this.currentVideo, [], "Video");
             if (!this.settings.waitUsers) {
                 if (!this.videoLoopActive) {
                     this.videoLoop.setInterval(() => this.videoSyncLoop(), "", "1s");
@@ -306,9 +306,9 @@ class Room {
         }
     }
 
-    private logUserError(id: string) {
+    private logUserError(videoID: string, id: string) {
         // skip the current video if more than half of the users have encountered an error
-        if (this.settings.skipErrors && this.roomUsers.setUserErrored(id) >= 0.5) {
+        if (this.settings.skipErrors && this.currentVideo && this.currentVideo.youtubeID === videoID && this.roomUsers.setUserErrored(id) >= 0.5) {
             this.queueNextVideo();
         }
     }
@@ -376,7 +376,7 @@ class Room {
                     this.removeAdmin(j["d"], id);
                 break;
             case MessageType.UserError:
-                this.logUserError(id);
+                this.logUserError(j["d"], id);
                 break;
             case MessageType.UserReady:
                 this.logUserReady(id);
