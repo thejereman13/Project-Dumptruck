@@ -88,12 +88,15 @@ export async function GetRoomPlaying(
         const resp = await fetch(`/api/playing/${roomID}`, { signal: controller.current.signal });
         if (!resp.ok) return null;
         const json: PublicRoomPreview = await resp.json();
-        if (json && json.currentVideo) {
+        if (json) {
             if (
-                json.currentVideo.queuedBy === "00000000-0000-0000-0000-000000000000" ||
-                json.currentVideo.youtubeID.length === 0
+                json.currentVideo &&
+                (json.currentVideo.queuedBy === "00000000-0000-0000-0000-000000000000" ||
+                    json.currentVideo.youtubeID.length === 0)
             ) {
                 json.currentVideo = undefined;
+            } else {
+                json.currentVideo = json.currentVideo ?? undefined;
             }
             return json;
         }

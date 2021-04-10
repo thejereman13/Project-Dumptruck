@@ -1,36 +1,27 @@
 import { h, JSX } from "preact";
-import { Ref, useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import Checkbox from "preact-mui/lib/checkbox";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
-import { RoomSettings, RoomInfo, SiteUser } from "../../utils/BackendTypes";
+import { RoomInfo, SiteUser } from "../../utils/BackendTypes";
 import * as style from "./style.css";
-import { GetRoomInfo, GetAnyUser } from "../../utils/RestCalls";
+import { GetAnyUser } from "../../utils/RestCalls";
 import { useAbortController } from "../../components/AbortController";
-import { RegisterNotification } from "../../components/Notification";
 import { Tooltip } from "../../components/Popup";
 
 export interface SettingModalProps {
     roomID: string;
-    updateSettings: (settings: RoomSettings) => void;
+    roomSettings: RoomInfo | null;
+    setRoomSettings: (settings: RoomInfo) => void;
     removeAdmin: (id: string) => void;
-    onClose: () => void;
-    closeCallback: Ref<() => void>;
+    submitSettings: () => void;
 }
 
 export function SettingModal(props: SettingModalProps): JSX.Element {
-    const { roomID, updateSettings, onClose, removeAdmin, closeCallback } = props;
-    const [roomSettings, setRoomSettings] = useState<RoomInfo | null>(null);
+    const { removeAdmin, roomSettings, setRoomSettings, submitSettings } = props;
     const [roomAdmins, setRoomAdmins] = useState<SiteUser[]>([]);
 
     const controller = useAbortController();
-
-    useEffect(() => {
-        GetRoomInfo(roomID, controller).then(settings => {
-            if (!controller.current.signal.aborted) setRoomSettings(settings);
-            if (settings === null) RegisterNotification("Failed to Retrieve Room Settings", "error");
-        });
-    }, [roomID, controller]);
 
     useEffect(() => {
         //  Might need better checking if roomAdmins will be updated without the length changing
@@ -94,17 +85,6 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
     //     newSettings.settings.waitUsers = !newSettings.settings.waitUsers;
     //     setRoomSettings(newSettings);
     // };
-
-    const submitSettings = (): void => {
-        if (roomSettings !== null) {
-            roomSettings.settings.name = roomSettings.settings.name.trim();
-            if (roomSettings.settings.name.length > 0) {
-                updateSettings(roomSettings.settings);
-            }
-            onClose();
-        }
-    };
-    if (closeCallback) closeCallback.current = submitSettings;
 
     return (
         <div class={style.ModalBox} onClick={(e): void => e.stopPropagation()}>

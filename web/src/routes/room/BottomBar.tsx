@@ -75,6 +75,11 @@ export const BottomBar = memo(
             [playerVolume, setPlayerVolume, playing]
         );
 
+        const closeQueue = (): void => {
+            window.location.href = "#";
+            playingPreview(false);
+        };
+
         return (
             <div class={style.BottomBar}>
                 <div
@@ -105,7 +110,7 @@ export const BottomBar = memo(
                             content={`${playing ? "Pause" : "Resume"} Room Playback`}
                         >
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={togglePlay}>
-                                <i style={{ fontSize: "32px" }} class="material-icons">
+                                <i style={{ fontSize: "2rem" }} class="material-icons">
                                     {playing ? "pause" : "play_arrow"}
                                 </i>
                             </Button>
@@ -114,7 +119,7 @@ export const BottomBar = memo(
                     {showControls ? (
                         <Tooltip className={commonStyle.centerTooltipChild} content="Skip Current Video">
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={skipVideo}>
-                                <i style={{ fontSize: "32px" }} class="material-icons">
+                                <i style={{ fontSize: "2rem" }} class="material-icons">
                                     skip_next
                                 </i>
                             </Button>
@@ -129,7 +134,7 @@ export const BottomBar = memo(
                             size="small"
                             onClick={(): string => (window.location.href = "#Queue")}
                         >
-                            <i style={{ fontSize: "32px" }} class="material-icons">
+                            <i style={{ fontSize: "2rem" }} class="material-icons">
                                 queue
                             </i>
                             <p>Queue Video</p>
@@ -144,7 +149,7 @@ export const BottomBar = memo(
                             currentAPI={currentAPI}
                             submitNewVideo={submitNewVideo}
                             submitAllVideos={submitAllVideos}
-                            onClose={(): string => (window.location.href = "#")}
+                            onClose={closeQueue}
                         />
                     </Modal>
                 ) : null}

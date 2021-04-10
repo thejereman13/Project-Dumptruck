@@ -108,7 +108,7 @@ export function VolumeSlider(props: VolumeSliderProps): JSX.Element {
     return (
         <div ref={setReferenceRef}>
             <Button disabled={disabled} size="small" variant="fab" onClick={openMenu}>
-                <i style={{ fontSize: "32px" }} class="material-icons">
+                <i style={{ fontSize: "2rem" }} class="material-icons">
                     volume_up
                 </i>
             </Button>

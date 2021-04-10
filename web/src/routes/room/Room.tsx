@@ -3,7 +3,7 @@ import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import { YouTubeVideo } from "../../components/YTPlayer";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
-import { RoomUser } from "../../utils/BackendTypes";
+import { RoomInfo, RoomUser } from "../../utils/BackendTypes";
 import { BottomBar } from "./BottomBar";
 import { useGAPIContext } from "../../utils/GAPI";
 import { Modal } from "../../components/Modal";
@@ -30,11 +30,10 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [guestControls, setGuestControls] = useState(false);
     const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
     const [playerVolume, setPlayerVolume] = useState<number>(0);
+    const [roomSettings, setRoomSettings] = useState<RoomInfo | null>(null);
     const [, setStateIncrement] = useState(0);
     const videoTime = useRef(0);
     const playing = useRef(false);
-
-    const settingsClosed = useRef<() => void | null>(null);
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
@@ -47,6 +46,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             }
         });
     }, [roomID, controller]);
+
+    useEffect(() => {
+        GetRoomInfo(roomID, controller).then(settings => {
+            if (!controller.current.signal.aborted) setRoomSettings(settings);
+            if (settings === null) RegisterNotification("Failed to Retrieve Room Settings", "error");
+        });
+    }, [roomID, adminUsers, controller]);
 
     useEffect(() => {
         if (roomTitle.length > 0) document.title = "Krono: " + roomTitle;
@@ -170,6 +176,16 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     }, []);
 
+    const updateRoomSettings = (): void => {
+        if (roomSettings !== null) {
+            roomSettings.settings.name = roomSettings.settings.name.trim();
+            if (roomSettings.settings.name.length > 0) {
+                updateSettings(roomSettings.settings);
+            }
+            window.location.href = "#";
+        }
+    };
+
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
     const hasVideo = youtubePlayer.current?.playerMounted ?? false;
@@ -209,13 +225,13 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 </div>
             )}
             {isAdmin ? (
-                <Modal className={style.SettingContainer} idName="RoomSettings" onClose={settingsClosed.current}>
+                <Modal className={style.SettingContainer} idName="RoomSettings" onClose={updateRoomSettings}>
                     <SettingModal
                         roomID={roomID}
-                        updateSettings={updateSettings}
+                        roomSettings={roomSettings}
+                        setRoomSettings={setRoomSettings}
                         removeAdmin={removeAdmin}
-                        closeCallback={settingsClosed}
-                        onClose={(): string => (window.location.href = "#")}
+                        submitSettings={updateRoomSettings}
                     />
                 </Modal>
             ) : (
