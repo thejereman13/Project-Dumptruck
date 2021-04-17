@@ -61,7 +61,7 @@ export function useGoogleLoginAPI(): GAPIInfo {
                     token: response.tokenId,
                     clientId: response.googleId
                 })
-            }).then(async userResp => {
+            }).then(async (userResp) => {
                 const j: SiteUser = await userResp.json();
                 if (j !== undefined && j.id !== undefined && j.id.length > 0)
                     setSiteUser({
@@ -129,7 +129,7 @@ export function RequestAllPlaylists(
                     pageToken
                 }
             })
-            .then(resp => {
+            .then((resp) => {
                 if (controller.current.signal.aborted) return;
                 returnArr = [...returnArr, ...resp.result.items.map(parsePlaylistJSON)];
                 if (resp.result.nextPageToken) {
@@ -164,7 +164,7 @@ export function RequestLikedVideos(
                     pageToken
                 }
             })
-            .then(resp => {
+            .then((resp) => {
                 if (controller.current.signal.aborted) return;
                 returnArr = [...returnArr, ...resp.result.items.map(parseVideoJSON)];
                 if (!peek && resp.result.nextPageToken) {
@@ -203,11 +203,11 @@ export function RequestVideosFromPlaylist(
                 path: "https://www.googleapis.com/youtube/v3/videos",
                 params: {
                     part: "snippet,contentDetails",
-                    id: returnArr.map(v => v.id).slice(startIndex, startIndex + elementCount), // max 50 at a time
+                    id: returnArr.map((v) => v.id).slice(startIndex, startIndex + elementCount), // max 50 at a time
                     maxResults: 50
                 }
             })
-            .then(resp => {
+            .then((resp) => {
                 if (!controller.current.signal.aborted) {
                     if (resp.result.items.length === elementCount) {
                         resp.result.items.forEach((result: any, index: number) => {
@@ -252,7 +252,7 @@ export function RequestVideosFromPlaylist(
                     pageToken
                 }
             })
-            .then(resp => {
+            .then((resp) => {
                 if (controller.current.signal.aborted) return;
                 returnArr = [...returnArr, ...resp.result.items.map(parsePlaylistItemJSON)];
                 if (resp.result.nextPageToken) {
@@ -284,7 +284,7 @@ export function RequestVideo(
                 id: videoID
             }
         })
-        .then(resp => {
+        .then((resp) => {
             if (resp.result.items.length === 1 && !controller.current.signal.aborted)
                 responseCallback(parseVideoJSON(resp.result.items[0]));
         })
@@ -306,7 +306,7 @@ export function RequestPlaylist(
                 id: playlistID
             }
         })
-        .then(resp => {
+        .then((resp) => {
             if (resp.result.items.length === 1 && !controller.current.signal.aborted)
                 responseCallback(parsePlaylistJSON(resp.result.items[0]));
         })
@@ -332,7 +332,7 @@ export function SearchVideo(
                 videoEmbeddable: true
             }
         })
-        .then(resp => {
+        .then((resp) => {
             if (!controller.current.signal.aborted) responseCallback(resp.result.items.map(parseSearchVideoJSON));
         })
         .catch(() => {

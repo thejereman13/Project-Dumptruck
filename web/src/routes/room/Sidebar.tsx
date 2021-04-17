@@ -3,8 +3,8 @@ import * as style from "./style.css";
 import { Modal } from "../../components/Modal";
 import { Tab, Tabs } from "../../components/Tabs";
 import { EditModal } from "./EditModal";
-import { UserList } from "./UserList";
-import { VideoQueue } from "./VideoQueue";
+import { UserList } from "./panels/UserPanel";
+import { VideoQueue } from "./panels/VideoPanel";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { RoomUser, YoutubeVideoInformation } from "../../utils/BackendTypes";
 import { PlaylistByUser } from "../../utils/WebsocketTypes";
@@ -48,7 +48,7 @@ export function RoomSidebar(props: RoomSidebarProps): JSX.Element {
 
     useEffect(() => {
         if (window.location.href === "#EditQueue") {
-            if (editedQueue.length === 0 || currentUsers.findIndex(u => u.clientID === editedQueue) < 0)
+            if (editedQueue.length === 0 || currentUsers.findIndex((u) => u.clientID === editedQueue) < 0)
                 window.location.href = "#";
         }
     }, [editedQueue, currentUsers]);
@@ -83,7 +83,7 @@ export function RoomSidebar(props: RoomSidebarProps): JSX.Element {
                 <EditModal
                     userID={editedQueue}
                     playlist={videoPlaylist[editedQueue] ?? []}
-                    userName={currentUsers.find(u => u.clientID === editedQueue)?.name ?? ""}
+                    userName={currentUsers.find((u) => u.clientID === editedQueue)?.name ?? ""}
                     self={editedQueue === userID}
                     removeVideo={removeVideo}
                     removeAll={removeAllVideos}
@@ -91,7 +91,7 @@ export function RoomSidebar(props: RoomSidebarProps): JSX.Element {
                     updatePlaylist={(user, newPlaylist): void =>
                         reorderQueue(
                             user,
-                            newPlaylist.map(v => ({ videoID: v.youtubeID, duration: v.duration }))
+                            newPlaylist.map((v) => ({ videoID: v.youtubeID, duration: v.duration }))
                         )
                     }
                 />

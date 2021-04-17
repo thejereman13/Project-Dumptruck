@@ -29,6 +29,15 @@
     font-weight: 500;
 }
 
+.PlaylistCardButton {
+    display: flex;
+    height: unset;
+    padding: 0;
+    width: 100%;
+    margin: 0 !important;
+    flex-flow: column;
+}
+
 .QueueCard {
     display: flex;
     flex-flow: column;

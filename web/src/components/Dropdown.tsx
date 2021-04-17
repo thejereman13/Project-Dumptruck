@@ -4,7 +4,7 @@ import * as style from "./style.css";
 import { usePopper } from "react-popper";
 import { useState, useCallback } from "preact/hooks";
 import { createPortal } from "preact/compat";
-import { useAbortController } from "./AbortController";
+import { useAbortController } from "../utils/AbortController";
 
 export interface DropdownOptionProps {
     className?: string;

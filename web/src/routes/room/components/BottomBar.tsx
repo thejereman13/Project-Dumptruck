@@ -1,19 +1,17 @@
-import { h, JSX } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
-import { VideoInfo } from "../../utils/YoutubeTypes";
-import { useGAPIContext } from "../../utils/GAPI";
+import { h } from "preact";
+import { useEffect, useState } from "preact/hooks";
+import { VideoInfo } from "../../../utils/YoutubeTypes";
 import Button from "preact-mui/lib/button";
-import { Modal } from "../../components/Modal";
 import * as style from "./BottomBar.css";
-import * as commonStyle from "./style.css";
-import { YoutubeVideoInformation } from "../../utils/BackendTypes";
-import { QueueModal } from "./QueueModal";
-import { Video } from "../../utils/WebsocketTypes";
-import { RequestVideoPreview } from "../../utils/RestCalls";
-import { Tooltip } from "../../components/Popup";
-import { useAbortController } from "../../components/AbortController";
+import * as commonStyle from "../style.css";
+import { Video } from "../../../utils/WebsocketTypes";
+import { RequestVideoPreview } from "../../../utils/RestCalls";
+import { Tooltip } from "../../../components/Popup";
+import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
-import { VolumeSlider } from "../../components/VolumeSlider";
+import { VolumeSlider } from "../../../components/VolumeSlider";
+
+import { MdPause, MdPlayArrow, MdSkipNext } from "react-icons/md";
 
 export interface BottomBarProps {
     currentVideo: Video | null;
@@ -23,8 +21,6 @@ export interface BottomBarProps {
     hasVideo: boolean;
     showControls: boolean;
     allowQueuing: boolean;
-    submitNewVideo: (videoID: YoutubeVideoInformation, videoTitle: string) => void;
-    submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
     playerVolume: number;
     setPlayerVolume: (value: number) => void;
 }
@@ -39,16 +35,10 @@ export const BottomBar = memo(
             playing,
             playerVolume,
             setPlayerVolume,
-            submitNewVideo,
-            submitAllVideos,
             allowQueuing,
             showControls
         } = props;
         const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
-
-        const oldVolume = useRef<number | null>(null);
-
-        const currentAPI = useGAPIContext();
 
         const controller = useAbortController();
 
@@ -59,26 +49,6 @@ export const BottomBar = memo(
                 setVideoInfo(null);
             }
         }, [currentVideo, controller]);
-
-        const playingPreview = useCallback(
-            (p: boolean) => {
-                if (p && oldVolume.current === null && playing) {
-                    oldVolume.current = playerVolume;
-                    const optionA = oldVolume.current / 4;
-                    const optionB = 5;
-                    setPlayerVolume(optionA < optionB ? optionA : optionB);
-                } else if (!p && oldVolume.current !== null) {
-                    setPlayerVolume(oldVolume.current);
-                    oldVolume.current = null;
-                }
-            },
-            [playerVolume, setPlayerVolume, playing]
-        );
-
-        const closeQueue = (): void => {
-            window.location.href = "#";
-            playingPreview(false);
-        };
 
         return (
             <div class={style.BottomBar}>
@@ -110,49 +80,18 @@ export const BottomBar = memo(
                             content={`${playing ? "Pause" : "Resume"} Room Playback`}
                         >
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={togglePlay}>
-                                <i style={{ fontSize: "2rem" }} class="material-icons">
-                                    {playing ? "pause" : "play_arrow"}
-                                </i>
+                                {playing ? <MdPause size="2rem" /> : <MdPlayArrow size="2rem" />}
                             </Button>
                         </Tooltip>
                     ) : null}
                     {showControls ? (
                         <Tooltip className={commonStyle.centerTooltipChild} content="Skip Current Video">
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={skipVideo}>
-                                <i style={{ fontSize: "2rem" }} class="material-icons">
-                                    skip_next
-                                </i>
+                                <MdSkipNext size="2rem" />
                             </Button>
                         </Tooltip>
                     ) : null}
                 </div>
-                {allowQueuing ? (
-                    <div class={style.bottomRightActions}>
-                        <Button
-                            className={["mui-btn", style.bottomQueueButton].join(" ")}
-                            id="openQueue"
-                            size="small"
-                            onClick={(): string => (window.location.href = "#Queue")}
-                        >
-                            <i style={{ fontSize: "2rem" }} class="material-icons">
-                                queue
-                            </i>
-                            <p>Queue Video</p>
-                        </Button>
-                    </div>
-                ) : null}
-                {allowQueuing ? (
-                    <Modal className={style.QueueContainer} idName="Queue">
-                        <QueueModal
-                            playingPreview={playingPreview}
-                            parentController={controller}
-                            currentAPI={currentAPI}
-                            submitNewVideo={submitNewVideo}
-                            submitAllVideos={submitAllVideos}
-                            onClose={closeQueue}
-                        />
-                    </Modal>
-                ) : null}
             </div>
         );
     },
@@ -165,8 +104,6 @@ export const BottomBar = memo(
             prev.showControls === next.showControls &&
             prev.playerVolume === next.playerVolume &&
             prev.skipVideo === next.skipVideo &&
-            prev.submitAllVideos === next.submitAllVideos &&
-            prev.submitNewVideo === next.submitNewVideo &&
             prev.togglePlay === next.togglePlay &&
             prev.setPlayerVolume === next.setPlayerVolume;
         return same;

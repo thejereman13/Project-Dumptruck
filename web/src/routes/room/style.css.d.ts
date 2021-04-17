@@ -6,12 +6,8 @@ declare namespace StyleCssNamespace {
         ModalBox: string;
         NonexistantRoom: string;
         PageRoot: string;
-        PlaylistSearch: string;
         QueueContainer: string;
-        QueueHeader: string;
-        QueueTabBody: string;
         RoomTitleBar: string;
-        SettingContainer: string;
         UserRow: string;
         UserRowTitle: string;
         centerTooltipChild: string;
@@ -19,12 +15,7 @@ declare namespace StyleCssNamespace {
         progress: string;
         removeAllButton: string;
         scrollBox: string;
-        searchDiv: string;
-        searchPanel: string;
         settingButton: string;
-        settingRemoveIcon: string;
-        settingTrimField: string;
-        settingTrimLabel: string;
         sidePanel: string;
         sidePanelTabBody: string;
         splitPane: string;

@@ -3,21 +3,22 @@ import { useEffect, useState } from "preact/hooks";
 import Checkbox from "preact-mui/lib/checkbox";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
-import { RoomInfo, SiteUser } from "../../utils/BackendTypes";
-import * as style from "./style.css";
-import { GetAnyUser } from "../../utils/RestCalls";
-import { useAbortController } from "../../components/AbortController";
-import { Tooltip } from "../../components/Popup";
+import { RoomInfo, SiteUser } from "../../../utils/BackendTypes";
+import * as style from "./SettingsPanel.css";
+import { GetAnyUser } from "../../../utils/RestCalls";
+import { useAbortController } from "../../../utils/AbortController";
+import { Tooltip } from "../../../components/Popup";
 
-export interface SettingModalProps {
-    roomID: string;
+import { IoMdTrash } from "react-icons/io";
+
+export interface SettingsPanelProps {
     roomSettings: RoomInfo | null;
     setRoomSettings: (settings: RoomInfo) => void;
     removeAdmin: (id: string) => void;
     submitSettings: () => void;
 }
 
-export function SettingModal(props: SettingModalProps): JSX.Element {
+export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
     const { removeAdmin, roomSettings, setRoomSettings, submitSettings } = props;
     const [roomAdmins, setRoomAdmins] = useState<SiteUser[]>([]);
 
@@ -26,8 +27,8 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
     useEffect(() => {
         //  Might need better checking if roomAdmins will be updated without the length changing
         if (roomSettings && roomSettings.admins.length !== roomAdmins.length) {
-            Promise.all(roomSettings.admins.map(async a => await GetAnyUser(a, controller))).then(results => {
-                if (!results.some(r => r === null))
+            Promise.all(roomSettings.admins.map(async (a) => await GetAnyUser(a, controller))).then((results) => {
+                if (!results.some((r) => r === null))
                     setRoomAdmins(
                         results.reduce((arr: SiteUser[], current: SiteUser | null) => {
                             if (current) arr.push(current);
@@ -87,7 +88,7 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
     // };
 
     return (
-        <div class={style.ModalBox} onClick={(e): void => e.stopPropagation()}>
+        <div class={style.settingContainer} onClick={(e): void => e.stopPropagation()}>
             {roomSettings && (
                 <div>
                     <div>
@@ -129,8 +130,8 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
                     /> */}
                     <br />
                     <div class="mui--text-title">Room Admins:</div>
-                    {roomAdmins.map(admin => (
-                        <div key={admin.id} class={style.UserRow}>
+                    {roomAdmins.map((admin) => (
+                        <div key={admin.id} class={style.settingUserRow}>
                             <div class="mui--text-subhead">{admin.name}</div>
                             <Tooltip className={style.centerTooltipChild} content="Remove Admin">
                                 <Button
@@ -139,7 +140,7 @@ export function SettingModal(props: SettingModalProps): JSX.Element {
                                     variant="fab"
                                     color="accent"
                                 >
-                                    <i class={["material-icons", style.settingRemoveIcon].join(" ")}>delete</i>
+                                    <IoMdTrash className={style.settingRemoveIcon} />
                                 </Button>
                             </Tooltip>
                         </div>

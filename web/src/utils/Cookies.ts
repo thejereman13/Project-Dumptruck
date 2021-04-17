@@ -26,11 +26,11 @@ export function getVolumeCookie(): number {
     return -1;
 }
 
-export function setQueueCookie(tab: number): void {
-    setCookie("queueTab", tab);
+export function setSidebarCookie(tab: number): void {
+    setCookie("sidebarTab", tab);
 }
-export function getQueueCookie(): number {
-    const val = getCookie("queueTab");
+export function getSidebarCookie(): number {
+    const val = getCookie("sidebarTab");
     if (val !== null) return Number.parseInt(val);
     return 0;
 }

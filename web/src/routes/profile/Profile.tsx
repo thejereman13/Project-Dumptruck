@@ -4,7 +4,7 @@ import { SiteUser } from "../../utils/BackendTypes";
 import { GetCurrentUser, ClearUserInfo, LogoutUser } from "../../utils/RestCalls";
 import { route } from "preact-router";
 import * as style from "./style.css";
-import { useAbortController } from "../../components/AbortController";
+import { useAbortController } from "../../utils/AbortController";
 import { GoogleLogout } from "react-google-login";
 import { CLIENTID } from "../../constants";
 import { useGAPIContext } from "../../utils/GAPI";
@@ -18,7 +18,7 @@ export function Profile(): JSX.Element {
     const gapi = useGAPIContext();
 
     useEffect(() => {
-        GetCurrentUser(controller).then(usr => {
+        GetCurrentUser(controller).then((usr) => {
             if (usr !== null && usr.id !== undefined) setUser(usr);
             else route("/login");
         });

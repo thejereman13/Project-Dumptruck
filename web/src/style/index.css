@@ -20,8 +20,6 @@
     --dp24-surface: #373737;
 
     --navbar-height: 4rem;
-
-    color: var(--text-secondary);
     font-family: "Roboto";
 }
 
@@ -105,6 +103,7 @@ h3 {
     color: var(--text-primary);
     text-transform: none;
     transition: background-color 0.3s ease;
+    color: var(--text-secondary);
 }
 .mui-btn.mui-btn--flat:focus:not(:hover) {
     outline: none;
@@ -115,6 +114,7 @@ h3 {
     outline: none;
     box-shadow: none;
     background-color: var(--theme-primary-light);
+    color: var(--text-secondary);
 }
 
 .mui-btn.mui-btn--flat:hover {
@@ -132,9 +132,15 @@ h3 {
 }
 
 .mui-btn--fab.mui-btn--tiny {
-    width: 32px;
-    height: 32px;
-    line-height: 32px;
+    width: 2rem;
+    height: 2rem;
+    line-height: 2rem;
+}
+.mui-btn--fab.mui-btn--small {
+    padding: 0;
+}
+.mui-btn--fab:hover {
+    color: var(--text-secondary);
 }
 
 .mui-btn--accent {
@@ -160,6 +166,7 @@ a {
 }
 
 .mui-textfield--float-label > label {
+    padding-left: 0.5rem;
     color: var(--text-secondary-medium);
 }
 
@@ -184,6 +191,7 @@ a {
 .mui-textfield > input,
 .mui-textfield > textarea {
     color: var(--text-secondary);
+    border-bottom: 1px solid var(--theme-primary-dark);
 }
 
 .mui-textfield > input:focus,

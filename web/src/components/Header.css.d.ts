@@ -5,6 +5,7 @@ declare namespace HeaderCssNamespace {
         header: string;
         headerNav: string;
         headerRight: string;
+        headerRoom: string;
         headerUserIcon: string;
         headerWatch: string;
     }

@@ -1,6 +1,6 @@
 import { h } from "preact";
 import { mount } from "enzyme";
-import { VideoDisplayCard, VideoCardInfo } from "../../components/VideoCard";
+import { VideoDisplayCard, VideoCardInfo } from "../../components/displayCards/VideoCard";
 
 describe("Video Card", () => {
     it("Renders Correctly", () => {

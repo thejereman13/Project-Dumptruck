@@ -1,9 +1,9 @@
 import { h, JSX } from "preact";
 import Button from "preact-mui/lib/button";
 import { useEffect, useState } from "preact/hooks";
-import { GetRoomPlaying, RequestVideoPreview } from "../utils/RestCalls";
-import { VideoInfo } from "../utils/YoutubeTypes";
-import { useAbortController } from "./AbortController";
+import { GetRoomPlaying, RequestVideoPreview } from "../../../utils/RestCalls";
+import { VideoInfo } from "../../../utils/YoutubeTypes";
+import { useAbortController } from "../../../utils/AbortController";
 
 import * as style from "./RoomCard.css";
 
@@ -22,7 +22,7 @@ export function RoomCard(props: RoomCardProps): JSX.Element {
     const controller = useAbortController();
 
     useEffect(() => {
-        GetRoomPlaying(roomID.toString(), controller).then(res => {
+        GetRoomPlaying(roomID.toString(), controller).then((res) => {
             if (res !== null) {
                 if (res.currentVideo)
                     RequestVideoPreview(res.currentVideo.youtubeID, controller).then(setPlayingPreview);

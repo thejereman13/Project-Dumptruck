@@ -2,11 +2,13 @@ import { h, JSX } from "preact";
 import * as style from "./style.css";
 import { useState, useEffect } from "preact/hooks";
 import { route } from "preact-router";
-import { GetActiveRooms, GetCurrentUser, GetRoomInfo } from "../../utils/RestCalls";
+import { CreateNewRoom, GetActiveRooms, GetCurrentUser, GetRoomInfo } from "../../utils/RestCalls";
 import { RoomInfo, SiteUser } from "../../utils/BackendTypes";
-import { useAbortController } from "../../components/AbortController";
+import { useAbortController } from "../../utils/AbortController";
 import { useGAPIContext } from "../../utils/GAPI";
-import { RoomCard } from "../../components/RoomCard";
+import { RoomCard } from "./components/RoomCard";
+import { RegisterNotification } from "../../components/Notification";
+import Button from "preact-mui/lib/button";
 
 export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);
@@ -18,11 +20,11 @@ export function Home(): JSX.Element {
 
     useEffect(() => {
         if (gapi?.getUser() !== null)
-            GetCurrentUser(controller).then(usr => {
+            GetCurrentUser(controller).then((usr) => {
                 if (!controller.current.signal.aborted) setCurrentUser(usr);
             });
-        GetActiveRooms(controller).then(res => {
-            Promise.all(res.map(async a => await GetRoomInfo(a.toString(), controller))).then(results => {
+        GetActiveRooms(controller).then((res) => {
+            Promise.all(res.map(async (a) => await GetRoomInfo(a.toString(), controller))).then((results) => {
                 if (!controller.current.signal.aborted)
                     setPublicRooms(
                         results.reduce((arr: RoomInfo[], current: RoomInfo | null) => {
@@ -36,8 +38,8 @@ export function Home(): JSX.Element {
 
     useEffect(() => {
         if (currentUser !== null) {
-            Promise.all(currentUser.recentRooms.map(async a => await GetRoomInfo(a.toString(), controller))).then(
-                results => {
+            Promise.all(currentUser.recentRooms.map(async (a) => await GetRoomInfo(a.toString(), controller))).then(
+                (results) => {
                     if (!controller.current.signal.aborted)
                         setRoomInfo(
                             results.reduce((arr: RoomInfo[], current: RoomInfo | null) => {
@@ -50,11 +52,11 @@ export function Home(): JSX.Element {
         }
     }, [controller, currentUser]);
 
-    const adminRooms = currentUser !== null ? roomInfo.filter(r => r.admins.includes(currentUser.id)).reverse() : [];
+    const adminRooms = currentUser !== null ? roomInfo.filter((r) => r.admins.includes(currentUser.id)).reverse() : [];
     const userRooms =
         currentUser !== null
             ? currentUser.recentRooms
-                  .map(id => roomInfo.find(r => r.roomID == id && !r.admins.includes(currentUser.id)))
+                  .map((id) => roomInfo.find((r) => r.roomID == id && !r.admins.includes(currentUser.id)))
                   .reduce((arr: RoomInfo[], current: RoomInfo | undefined) => {
                       if (current) arr.push(current);
                       return arr;
@@ -62,11 +64,21 @@ export function Home(): JSX.Element {
                   .reverse()
             : [];
     const filteredPublicRooms = publicRooms.filter(
-        r =>
+        (r) =>
             r.settings.publicVisibility &&
-            !adminRooms.some(a => a.roomID === r.roomID) &&
-            !userRooms.some(u => u.roomID === r.roomID)
+            !adminRooms.some((a) => a.roomID === r.roomID) &&
+            !userRooms.some((u) => u.roomID === r.roomID)
     );
+
+    const createRoom = (): void => {
+        CreateNewRoom().then((res) => {
+            if (res !== null) {
+                window.location.href = `/room/${res}`;
+            } else {
+                RegisterNotification("Failed to Create Room", "error");
+            }
+        });
+    };
 
     return (
         <div class={style.home}>
@@ -76,7 +88,7 @@ export function Home(): JSX.Element {
                     {adminRooms.length > 0 ? (
                         <div>
                             <h2>Your Rooms</h2>
-                            {adminRooms.map(room => (
+                            {adminRooms.map((room) => (
                                 <RoomCard
                                     key={room.roomID}
                                     roomID={room.roomID}
@@ -91,7 +103,7 @@ export function Home(): JSX.Element {
                     {userRooms.length > 0 ? (
                         <div>
                             <h2>Recent Rooms</h2>
-                            {userRooms.map(room => (
+                            {userRooms.map((room) => (
                                 <RoomCard
                                     key={room.roomID}
                                     roomID={room.roomID}
@@ -108,7 +120,7 @@ export function Home(): JSX.Element {
             {filteredPublicRooms.length > 0 ? (
                 <div>
                     <h2>Public Rooms</h2>
-                    {publicRooms.map(room => (
+                    {publicRooms.map((room) => (
                         <RoomCard
                             key={room.roomID}
                             roomID={room.roomID}
@@ -120,6 +132,7 @@ export function Home(): JSX.Element {
                     ))}
                 </div>
             ) : null}
+            <Button onClick={createRoom}>Create New Room</Button>
         </div>
     );
 }

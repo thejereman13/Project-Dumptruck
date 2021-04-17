@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from "preact/hooks";
 import { createPortal } from "preact/compat";
 import { usePopper } from "react-popper";
 import * as style from "./style.css";
-import { useAbortController } from "./AbortController";
+import { useAbortController } from "../utils/AbortController";
 
 export interface PopupProps {
     content: JSX.Element | string;
@@ -11,10 +11,11 @@ export interface PopupProps {
     delay?: number;
     options?: Parameters<typeof usePopper>[2];
     className?: string;
+    onClick?: (event: JSX.TargetedMouseEvent<HTMLDivElement>) => void;
 }
 
 export function Tooltip(props: PopupProps): JSX.Element {
-    const { content, children, options, className, delay } = props;
+    const { content, children, options, className, delay, onClick } = props;
     const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null);
     const [popperElement, setPopperElement] = useState<HTMLDivElement | null>(null);
     const [hoverActive, setHoverActive] = useState<boolean>(false);
@@ -94,7 +95,7 @@ export function Tooltip(props: PopupProps): JSX.Element {
         );
 
     return (
-        <div className={className}>
+        <div className={className} onClick={onClick}>
             {portal}
             {render}
         </div>

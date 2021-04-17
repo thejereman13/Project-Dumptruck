@@ -59,7 +59,7 @@ function getTypeClass(note: NotificationObject): string {
 export function RenderAllNotifications(): JSX.Element {
     const [, setIncrement] = useState(0);
     useEffect(() => {
-        updateRender = (): void => setIncrement(val => val + 1);
+        updateRender = (): void => setIncrement((val) => val + 1);
         return (): void => {
             updateRender = null;
         };

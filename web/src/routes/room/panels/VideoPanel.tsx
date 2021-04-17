@@ -1,16 +1,19 @@
 import { h, JSX } from "preact";
-import { PlaylistByUser, Video } from "../../utils/WebsocketTypes";
-import { RoomUser } from "../../utils/BackendTypes";
+import { PlaylistByUser, Video } from "../../../utils/WebsocketTypes";
+import { RoomUser } from "../../../utils/BackendTypes";
 import Button from "preact-mui/lib/button";
-import { VideoCard, VideoCardInfo } from "../../components/VideoCard";
-import * as style from "./VideoQueue.css";
-import * as commonStyle from "./style.css";
+import { VideoCard, VideoCardInfo } from "../../../components/displayCards/VideoCard";
+import * as style from "./VideoPanel.css";
+import * as commonStyle from "../style.css";
 import { useState, useEffect } from "preact/hooks";
-import { RequestVideoPreview } from "../../utils/RestCalls";
-import { durationToString, VideoInfo } from "../../utils/YoutubeTypes";
-import { Tooltip } from "../../components/Popup";
-import { useAbortController } from "../../components/AbortController";
+import { RequestVideoPreview } from "../../../utils/RestCalls";
+import { durationToString, VideoInfo } from "../../../utils/YoutubeTypes";
+import { Tooltip } from "../../../components/Popup";
+import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
+
+import { IoMdTrash } from "react-icons/io";
+import { MdFilterList } from "react-icons/md";
 
 export interface UserQueueCardProps {
     allowRemoval: boolean;
@@ -73,9 +76,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <div class={style.QueueActionDiv}>
                         <Tooltip content="Edit Video Queue">
                             <Button onClick={editQueue} size="small" variant="fab">
-                                <i style={{ fontSize: "32px" }} class="material-icons">
-                                    sort
-                                </i>
+                                <MdFilterList size="2rem" />
                             </Button>
                         </Tooltip>
                     </div>
@@ -98,7 +99,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
             )}
             {videoExpanded &&
                 playlist &&
-                playlist.map(vid => (
+                playlist.map((vid) => (
                     <VideoCard
                         key={vid.youtubeID}
                         videoID={vid.youtubeID}
@@ -107,9 +108,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                             allowRemoval ? (
                                 <Tooltip content="Remove From Queue">
                                     <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
-                                        <i style={{ fontSize: "24px" }} class="material-icons">
-                                            delete
-                                        </i>
+                                        <IoMdTrash size="1.5rem" />
                                     </Button>
                                 </Tooltip>
                             ) : (
@@ -157,9 +156,9 @@ export const VideoQueue = memo(
 
         return (
             <div class={commonStyle.scrollBox}>
-                {userQueue.map(clientID => {
+                {userQueue.map((clientID) => {
                     const playlist = videoPlaylist[clientID];
-                    const playlistUser = currentUsers.find(u => u.clientID == clientID);
+                    const playlistUser = currentUsers.find((u) => u.clientID == clientID);
                     if (playlistUser === undefined) return <div />;
                     return (
                         <UserQueueCard

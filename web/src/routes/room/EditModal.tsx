@@ -2,7 +2,7 @@ import { h, JSX } from "preact";
 import Button from "preact-mui/lib/button";
 import { memo, Ref, useEffect, useState } from "preact/compat";
 import { Tooltip } from "../../components/Popup";
-import { VideoCard } from "../../components/VideoCard";
+import { VideoCard } from "../../components/displayCards/VideoCard";
 import { Video } from "../../utils/WebsocketTypes";
 import { arrayMove, List } from "react-movable";
 import * as style from "./style.css";

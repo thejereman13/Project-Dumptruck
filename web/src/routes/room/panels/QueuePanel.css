@@ -1,0 +1,33 @@
+.queueContainer {
+    padding-top: 0.5rem;
+    display: flex;
+    overflow: hidden;
+    width: 100%;
+}
+
+.queueTabBody {
+    display: flex;
+    flex-flow: column;
+    overflow-y: hidden;
+    width: 100%;
+}
+
+.searchDiv {
+    width: 100%;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+}
+.searchDiv > div {
+    flex: auto;
+}
+
+.scrollBox {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+}
+.scrollBox h2 {
+    margin-top: 0;
+}

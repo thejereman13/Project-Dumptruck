@@ -9,109 +9,11 @@
     align-items: center;
 }
 
-.VideoCard {
-    display: flex;
-    padding: 0.5rem;
-    height: 5rem;
-    width: 100%;
-    position: relative;
-}
-.VideoCard:hover > .VideoDuration {
-    display: block;
-}
-.VideoCardButton:hover .VideoDuration {
-    display: block;
-}
-.VideoCard > .VideoIcon {
-    height: 100%;
-    display: inline-flex;
-}
-.VideoCard > .VideoInfo {
-    height: 100%;
-    display: inline-flex;
-    flex-direction: column;
-    padding-left: 1rem;
-    text-align: start;
-    overflow: hidden;
-}
-.VideoCardButton {
-    display: flex;
-    height: unset;
-    padding: 0 1rem;
-    width: 100%;
-    margin: 0 !important;
-    flex-flow: column;
-}
-.VideoCard > .VideoDuration {
-    font-weight: 500;
-    position: absolute;
-    background: var(--dp2-surface);
-    padding: 0 0.4rem;
-    border-radius: 0 0 0.5rem 0;
-    display: none;
-}
-
-.VideoPreview {
-    z-index: 128;
-    padding-left: 2rem;
-}
-
-.PlaylistButtonActive {
-    position: sticky;
-    top: 0;
-    z-index: 128;
-    background-color: var(--dp2-surface) !important;
-}
-.PlaylistButtonActive:hover {
-    background-color: var(--dp24-surface) !important;
-}
-.PlaylistCard {
-    display: flex;
-    flex-flow: column;
-    padding: 1rem;
-    width: 100%;
-}
-.PlaylistCard .PlaylistIcon {
-    height: 100%;
-}
-.PlaylistCard .PlaylistInfo {
-    height: 100%;
-    flex-direction: column;
-    padding-left: 1rem;
-    text-align: start;
-    overflow: hidden;
-}
-.PlaylistCardInfo {
-    display: flex;
-    flex-flow: row;
-    height: 4rem;
-}
-.PlaylistVideos {
-    margin-left: 2rem;
-    margin-right: 2rem;
-    height: 0;
-    overflow-y: auto;
-    transition: height 0.25s ease;
-    background-color: var(--dp8-surface);
-}
-.PlaylistVideosExpanded {
-    height: unset;
-}
-.VideoActionDiv {
-    margin-left: auto;
-}
-.VideoActionDiv div {
-    display: inline-block;
-}
-.VideoActionDiv button {
-    margin: 0.5rem;
-}
-
 .popupTooltip {
     background-color: var(--dp16-surface);
     border-radius: 0.25rem;
     padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     opacity: 0;
     transition: opacity 0.3s ease;
     z-index: 1024;

@@ -1,0 +1,88 @@
+.textEllipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.videoCard {
+    display: flex;
+    padding: 0.5rem;
+    height: 5rem;
+    width: 100%;
+    position: relative;
+}
+.videoCard:hover .videoDuration {
+    display: block;
+}
+
+.videoCardButton:hover .videoDuration {
+    display: block;
+}
+
+.videoIcon {
+    height: 100%;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+.videoIconPreview {
+    opacity: 0;
+    position: absolute;
+    color: var(--text-secondary);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 8;
+}
+.videoIconPreview svg {
+    filter: drop-shadow(4px 4px 0.5rem black);
+}
+.videoIcon:hover .videoIconPreview {
+    opacity: 1;
+}
+.videoIcon > img {
+    height: 100%;
+}
+
+.videoCard > .videoInfo {
+    height: 100%;
+    display: inline-flex;
+    flex-direction: column;
+    padding-left: 1rem;
+    text-align: start;
+    overflow: hidden;
+}
+
+.videoCardButton {
+    display: flex;
+    height: unset;
+    padding: 0 1rem;
+    width: 100%;
+    margin: 0 !important;
+    flex-flow: column;
+}
+
+.videoCard .videoDuration {
+    font-weight: 500;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--dp2-surface);
+    padding: 0 0.4rem;
+    border-radius: 0 0 0.5rem 0;
+    display: none;
+    z-index: 2;
+}
+
+.videoPreview {
+    z-index: 64;
+    padding-left: 2rem;
+    height: 0;
+    transition: height 0.5s;
+}
+
+.videoPreviewOpen {
+    height: 256px;
+}

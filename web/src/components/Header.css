@@ -12,7 +12,7 @@
 .header h1 {
     float: left;
     margin: 0;
-    padding: 0 15px;
+    padding: 0 1rem;
     font-size: 2rem;
     font-weight: 400;
     line-height: var(--navbar-height);
@@ -59,4 +59,11 @@
     margin-left: 1rem;
     vertical-align: top;
     padding: 0.25rem 0;
+}
+
+.headerRoom {
+    padding: 0 3rem;
+    color: var(--theme-primary) !important;
+    font-size: 1.75rem;
+    font-weight: 500;
 }

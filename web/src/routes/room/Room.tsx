@@ -4,24 +4,21 @@ import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import { YouTubeVideo } from "../../components/YTPlayer";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomInfo, RoomUser } from "../../utils/BackendTypes";
-import { BottomBar } from "./BottomBar";
+import { BottomBar } from "./components/BottomBar";
 import { useGAPIContext } from "../../utils/GAPI";
-import { Modal } from "../../components/Modal";
-import { SettingModal } from "./SettingModal";
 import { RegisterNotification } from "../../components/Notification";
 import { useRoomWebsockets } from "./RoomWebsockets";
 import { getVolumeCookie, setVolumeCookie } from "../../utils/Cookies";
 import { GetRoomInfo } from "../../utils/RestCalls";
-import { useAbortController } from "../../components/AbortController";
-import { RoomSidebar } from "./Sidebar";
-import { RoomTitleBar } from "./Titlebar";
+import { useAbortController } from "../../utils/AbortController";
+import { NotifyChannel } from "../../utils/EventSubscriber";
+import { SidePanel } from "./SidePanel";
 
 export interface RoomProps {
     roomID: string;
 }
 
 export function Room({ roomID }: RoomProps): JSX.Element {
-    const [roomTitle, setRoomTitle] = useState("");
     const [userID, setUserID] = useState("");
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
     const [adminUsers, setAdminUsers] = useState<string[]>([]);
@@ -40,28 +37,27 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [roomNonexistant, setRoomNonexistant] = useState<boolean>(false);
     const controller = useAbortController();
     useEffect(() => {
-        GetRoomInfo(roomID, controller).then(res => {
+        GetRoomInfo(roomID, controller).then((res) => {
             if (res === null) {
                 setRoomNonexistant(true);
             }
         });
+        return (): void => {
+            NotifyChannel("roomName", "");
+        };
     }, [roomID, controller]);
 
     useEffect(() => {
-        GetRoomInfo(roomID, controller).then(settings => {
+        GetRoomInfo(roomID, controller).then((settings) => {
             if (!controller.current.signal.aborted) setRoomSettings(settings);
             if (settings === null) RegisterNotification("Failed to Retrieve Room Settings", "error");
         });
     }, [roomID, adminUsers, controller]);
 
-    useEffect(() => {
-        if (roomTitle.length > 0) document.title = "Krono: " + roomTitle;
-    }, [roomTitle]);
-
     const setVideoInformation = useCallback((video: Video | null) => {
         console.log("New Video", video);
         setCurrentVideo(video);
-        setStateIncrement(val => val + 1);
+        setStateIncrement((val) => val + 1);
         if (video) {
             videoTime.current = video.timeStamp;
             playing.current = video.playing;
@@ -94,7 +90,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                 case MessageType.Init:
                     setUserID(msg.ID ?? "");
                     if (msg.Room) {
-                        setRoomTitle(msg.Room.roomName);
+                        NotifyChannel("roomName", msg.Room.roomName);
                         setCurrentUsers(msg.Room.userList);
                         setAdminUsers(msg.Room.adminList);
                         setVideoInformation(msg.Room.video);
@@ -106,7 +102,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     break;
                 case MessageType.Room:
                     if (msg.Room) {
-                        setRoomTitle(msg.Room.roomName);
+                        NotifyChannel("roomName", msg.Room.roomName);
                         setGuestControls(msg.Room.guestControls);
                         setAdminUsers(msg.Room.adminList);
                     }
@@ -139,31 +135,17 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     console.warn("Invalid Websocket Type Received");
                     return;
             }
-            setStateIncrement(val => (val + 1) % 65536);
+            setStateIncrement((val) => (val + 1) % 65536);
         },
         [setVideoInformation]
     );
     const currentAPI = useGAPIContext();
     const apiUser = currentAPI?.getUser() ?? null;
-    const {
-        ws,
-        addAdmin,
-        removeAdmin,
-        removeAllVideos,
-        removeVideo,
-        skipVideo,
-        submitAllVideos,
-        submitNewVideo,
-        togglePlay,
-        updateSettings,
-        reorderQueue,
-        logError,
-        logReady
-    } = useRoomWebsockets(roomID, newMessage);
+    const wsCallbacks = useRoomWebsockets(roomID, newMessage);
 
     useEffect(() => {
         if (apiUser && apiUser.id !== userID) {
-            ws?.close();
+            wsCallbacks.ws?.close();
             setUserID(apiUser.id);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,15 +158,15 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     }, []);
 
-    const updateRoomSettings = (): void => {
-        if (roomSettings !== null) {
-            roomSettings.settings.name = roomSettings.settings.name.trim();
-            if (roomSettings.settings.name.length > 0) {
-                updateSettings(roomSettings.settings);
-            }
-            window.location.href = "#";
-        }
-    };
+    // const updateRoomSettings = (): void => {
+    //     if (roomSettings !== null) {
+    //         roomSettings.settings.name = roomSettings.settings.name.trim();
+    //         if (roomSettings.settings.name.length > 0) {
+    //             updateSettings(roomSettings.settings);
+    //         }
+    //         window.location.href = "#";
+    //     }
+    // };
 
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
@@ -199,43 +181,31 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             ) : (
                 <div class={style.splitPane}>
                     <div class={style.videoPanel}>
-                        <RoomTitleBar isAdmin={isAdmin} roomTitle={roomTitle} />
                         <YouTubeVideo
                             ref={youtubePlayer}
                             className={style.videoDiv}
                             id={currentVideo?.youtubeID ?? ""}
                             playerMount={playerMount}
-                            playerError={logError}
-                            playerReady={logReady}
+                            playerError={wsCallbacks.logError}
+                            playerReady={wsCallbacks.logReady}
                         />
                     </div>
-                    <RoomSidebar
-                        currentUsers={currentUsers}
-                        videoPlaylist={videoPlaylist}
-                        userQueue={userQueue}
-                        addAdmin={addAdmin}
+                    <SidePanel
+                        playing={playing.current}
+                        playerVolume={playerVolume}
+                        setPlayerVolume={updateVolume}
+                        adminPermissions={isAdmin}
                         adminUsers={adminUsers}
-                        isAdmin={isAdmin}
-                        removeAdmin={removeAdmin}
-                        removeAllVideos={removeAllVideos}
-                        removeVideo={removeVideo}
-                        reorderQueue={reorderQueue}
-                        userID={userID}
-                    />
-                </div>
-            )}
-            {isAdmin ? (
-                <Modal className={style.SettingContainer} idName="RoomSettings" onClose={updateRoomSettings}>
-                    <SettingModal
-                        roomID={roomID}
+                        currentUsers={currentUsers}
                         roomSettings={roomSettings}
                         setRoomSettings={setRoomSettings}
-                        removeAdmin={removeAdmin}
-                        submitSettings={updateRoomSettings}
+                        userID={userID}
+                        userQueue={userQueue}
+                        videoPlaylist={videoPlaylist}
+                        wsCallbacks={wsCallbacks}
+                        allowQueuing={apiLoaded}
                     />
-                </Modal>
-            ) : (
-                <div />
+                </div>
             )}
             {roomNonexistant ? (
                 <div />
@@ -244,10 +214,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     hasVideo={hasVideo}
                     playing={playing.current}
                     currentVideo={currentVideo}
-                    togglePlay={(): void => togglePlay(playing.current)}
-                    skipVideo={skipVideo}
-                    submitNewVideo={submitNewVideo}
-                    submitAllVideos={submitAllVideos}
+                    togglePlay={(): void => wsCallbacks.togglePlay(playing.current)}
+                    skipVideo={wsCallbacks.skipVideo}
                     showControls={guestControls || isAdmin}
                     allowQueuing={apiLoaded}
                     playerVolume={playerVolume}

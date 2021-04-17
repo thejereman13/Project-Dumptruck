@@ -1,0 +1,69 @@
+.sidebarContainer {
+    width: 4rem;
+    background-color: var(--dp4-surface);
+    padding-top: 0.5rem;
+    transition: width 0.2s;
+    overflow: hidden;
+    display: flex;
+    flex-flow: column;
+}
+.sidebarContainerExpanded {
+    width: 64rem;
+    max-width: 64rem;
+}
+
+.sidebarTabs {
+    display: flex;
+    flex-flow: wrap;
+}
+.sidebarTabsExpanded {
+    padding: 0 0.5rem;
+    border-bottom: 2px solid var(--theme-secondary-dark);
+    padding-bottom: 0.25rem;
+}
+
+.sidebarTabIcon {
+    color: var(--theme-secondary);
+    padding: 0.75rem;
+    margin: 0.25rem 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.sidebarTabIcon:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--theme-secondary-light);
+}
+.sidebarTabIconDiv {
+    display: flex;
+}
+
+.sidebarTabSelected {
+    color: var(--theme-primary-dark);
+}
+.sidebarTabSelected:hover {
+    color: var(--theme-primary-dark);
+}
+
+.sidebarTabsExpanded .sidebarTabIcon {
+    margin: 0 0.5rem;
+    display: flex;
+    height: 100%;
+}
+
+.sidebarTabClose {
+    margin-left: auto;
+}
+
+.sidebarBody {
+    display: flex;
+    overflow: hidden;
+}
+
+.sidebarTabBody {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}

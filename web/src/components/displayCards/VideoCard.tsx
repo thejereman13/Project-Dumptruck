@@ -1,12 +1,16 @@
 import { h, JSX } from "preact";
-import * as style from "./style.css";
 import { useState, useEffect, useRef } from "preact/hooks";
 import Button from "preact-mui/lib/button";
-import { VideoInfo, durationToString } from "../utils/YoutubeTypes";
-import { RequestVideoPreview } from "../utils/RestCalls";
-import { Tooltip } from "../components/Popup";
-import { useAbortController } from "./AbortController";
+import { VideoInfo, durationToString } from "../../utils/YoutubeTypes";
+import { RequestVideoPreview } from "../../utils/RestCalls";
+import { Tooltip } from "../Popup";
+import { useAbortController } from "../../utils/AbortController";
 import { memo } from "preact/compat";
+
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+
+import * as style from "./VideoCard.css";
+import * as commonStyle from "./DisplayCard.css";
 
 export interface VideoCardInfo {
     id: string;
@@ -34,9 +38,11 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
 
     const cardClick = (): void => {
         onClick?.(info.id);
+        setVideoPreview(false);
+        updatePreview.current?.(false);
     };
 
-    const openPreview = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+    const openPreview = (event: JSX.TargetedMouseEvent<HTMLDivElement> | React.MouseEvent): void => {
         event.stopPropagation();
         setVideoPreview(!videoPreview);
         updatePreview.current?.(!videoPreview);
@@ -50,26 +56,25 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
         };
     }, []);
 
-    const cardPreview =
-        actionComponent === undefined ? (
-            <Tooltip content="Preview Video">
-                <Button size="small" variant="fab" onClick={openPreview}>
-                    <i style={{ fontSize: "24px" }} class="material-icons">
-                        featured_video
-                    </i>
-                </Button>
-            </Tooltip>
-        ) : (
-            actionComponent
-        );
-
     const cardContent = (
-        <div class={style.VideoCard}>
+        <div class={style.videoCard}>
             {info.thumbnailURL && (
-                <img class={style.VideoIcon} src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
+                <div class={style.videoIcon}>
+                    <Tooltip
+                        content="Preview Video"
+                        className={style.videoIconPreview}
+                        onClick={openPreview}
+                        delay={800}
+                    >
+                        {videoPreview ? <IoMdEyeOff size="3rem" /> : <IoMdEye size="3rem" />}
+                    </Tooltip>
+                    <img src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
+                    <div class={["mui--text-body1", style.videoDuration].join(" ")}>
+                        {durationToString(info.duration)}
+                    </div>
+                </div>
             )}
-            <div class={["mui--text-body1", style.VideoDuration].join(" ")}>{durationToString(info.duration)}</div>
-            <div class={style.VideoInfo}>
+            <div class={style.videoInfo}>
                 <Tooltip content={info.title} delay={800}>
                     <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
                 </Tooltip>
@@ -77,19 +82,19 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                     {info.channel?.length > 0 ? info.channel : ". . ."}
                 </div>
             </div>
-            <div class={style.VideoActionDiv}>{cardPreview}</div>
+            <div class={commonStyle.videoActionDiv}>{actionComponent}</div>
         </div>
     );
 
     return onClick ? (
         <Button
-            className={["mui-btn", "mui-btn--flat", style.VideoCardButton].join(" ")}
+            className={["mui-btn", "mui-btn--flat", style.videoCardButton].join(" ")}
             variant="flat"
             onClick={cardClick}
         >
             {cardContent}
-            {videoPreview && (
-                <div className={style.VideoPreview}>
+            <div className={[style.videoPreview, videoPreview ? style.videoPreviewOpen : ""].join(" ")}>
+                {videoPreview ? (
                     <iframe
                         src={`https://www.youtube.com/embed/${info.id}?autoplay=1`}
                         height="240"
@@ -97,8 +102,8 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                         frameBorder={0}
                         type="text/html"
                     ></iframe>
-                </div>
-            )}
+                ) : null}
+            </div>
         </Button>
     ) : (
         <div>{cardContent}</div>
@@ -132,7 +137,7 @@ export const VideoCard = memo(
 
         useEffect(() => {
             if (videoID) {
-                const ind = infoStore.findIndex(inf => inf.id === videoID);
+                const ind = infoStore.findIndex((inf) => inf.id === videoID);
                 if (ind >= 0) {
                     setVideoInfo(infoStore[ind]);
                 } else {
@@ -154,7 +159,7 @@ export const VideoCard = memo(
             }
         }, [videoID, duration, controller]);
 
-        const workingInfo = infoStore.find(inf => inf.id === videoID) ?? videoInfo;
+        const workingInfo = infoStore.find((inf) => inf.id === videoID) ?? videoInfo;
         return workingInfo ? (
             <VideoDisplayCard info={workingInfo} onClick={onClick} actionComponent={actionComponent} />
         ) : (

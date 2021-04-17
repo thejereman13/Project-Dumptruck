@@ -3,8 +3,8 @@ import Button from "preact-mui/lib/button";
 import { createPortal } from "preact/compat";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
-import { useAbortController } from "./AbortController";
-
+import { useAbortController } from "../utils/AbortController";
+import { MdVolumeUp } from "react-icons/md";
 import * as style from "./style.css";
 
 export interface VolumeSliderProps {
@@ -108,9 +108,7 @@ export function VolumeSlider(props: VolumeSliderProps): JSX.Element {
     return (
         <div ref={setReferenceRef}>
             <Button disabled={disabled} size="small" variant="fab" onClick={openMenu}>
-                <i style={{ fontSize: "2rem" }} class="material-icons">
-                    volume_up
-                </i>
+                <MdVolumeUp size="2rem" />
             </Button>
             {portal}
             {clickOff}

@@ -56,7 +56,7 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             ws.current.addEventListener("open", () => {
                 continuousPing();
             });
-            ws.current.addEventListener("error", e => console.warn("WS Error: ", e));
+            ws.current.addEventListener("error", (e) => console.warn("WS Error: ", e));
             ws.current.addEventListener("close", () => {
                 clearTimeout(ping);
                 createWebSocket();

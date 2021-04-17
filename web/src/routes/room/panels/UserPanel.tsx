@@ -1,9 +1,9 @@
 import { h, JSX } from "preact";
 import Button from "preact-mui/lib/button";
-import { Dropdown } from "../../components/Dropdown";
-import { RoomUser } from "../../utils/BackendTypes";
+import { Dropdown } from "../../../components/Dropdown";
+import { RoomUser } from "../../../utils/BackendTypes";
 
-import * as style from "./style.css";
+import * as style from "../style.css";
 
 export interface UserListProps {
     currentUsers: RoomUser[];
@@ -20,7 +20,7 @@ export function UserList(props: UserListProps): JSX.Element {
     return (
         <div class={style.scrollBox}>
             <h2>Current Users:</h2>
-            {currentUsers.map(usr => {
+            {currentUsers.map((usr) => {
                 const hasAdmin = adminList.includes(usr.clientID);
                 const isSelf = usr.clientID === userID;
                 return (

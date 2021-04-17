@@ -38,7 +38,6 @@
     display: flex;
     flex-flow: column;
     padding: 1rem;
-    margin-bottom: 3rem;
     flex: auto;
 }
 
@@ -91,16 +90,6 @@
     position: relative;
 }
 
-.SettingContainer {
-    max-height: 100%;
-    width: 25%;
-    min-width: 32rem;
-    margin: 8rem 8rem;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-}
-
 .ModalBox {
     background-color: var(--dp4-surface);
     border-radius: 1rem;
@@ -111,21 +100,6 @@
     max-width: 100%;
 }
 
-.searchDiv {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-}
-.searchDiv > div {
-    flex: auto;
-}
-.searchPanel {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    overflow-y: hidden;
-}
 .scrollBox {
     overflow-y: auto;
     overflow-x: hidden;
@@ -135,21 +109,8 @@
     margin-top: 0;
 }
 
-.PlaylistSearch {
-    padding-right: 2rem;
-}
-
 .EditCard:hover > div {
     background: var(--dp16-surface);
-}
-
-.QueueHeader {
-    display: flex;
-    justify-content: space-between;
-}
-.QueueTabBody {
-    display: flex;
-    overflow-y: hidden;
 }
 
 .removeAllButton {
@@ -157,23 +118,6 @@
     color: var(--theme-secondary-light) !important;
     font-size: 1rem;
     margin: 0.5rem 1rem;
-}
-
-.settingTrimField {
-    display: inline-flex;
-}
-.settingTrimField > div {
-    padding: 0;
-    margin-bottom: 0;
-    width: 8rem;
-}
-.settingTrimLabel {
-    display: inline-flex;
-    margin-right: 1rem;
-}
-.settingRemoveIcon {
-    font-size: 24px;
-    color: var(--theme-secondary);
 }
 
 .AdminName {

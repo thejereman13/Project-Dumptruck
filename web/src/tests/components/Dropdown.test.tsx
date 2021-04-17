@@ -9,7 +9,7 @@ describe("Dropdown Menu", () => {
         const wrapper = mount(
             <Dropdown
                 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-                base={open => (
+                base={(open) => (
                     <Button onClick={open} id="btn1">
                         Base Element
                     </Button>

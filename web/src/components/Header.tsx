@@ -4,21 +4,20 @@ import * as style from "./Header.css";
 import { useGAPIContext } from "../utils/GAPI";
 import { Tooltip } from "./Popup";
 import { APPVERSION } from "../constants";
-import { CreateNewRoom } from "../utils/RestCalls";
-import { RegisterNotification } from "./Notification";
+import { useEffect, useState } from "preact/hooks";
+import { useCallbackHook } from "../utils/EventSubscriber";
 
 export function Header(): JSX.Element {
+    const [roomName, setRoomName] = useState("");
     const currentAPI = useGAPIContext();
+    const user = currentAPI?.getUser();
 
-    const createRoom = (): void => {
-        CreateNewRoom().then(res => {
-            if (res !== null) {
-                window.location.href = `/room/${res}`;
-            } else {
-                RegisterNotification("Failed to Create Room", "error");
-            }
-        });
-    };
+    useCallbackHook("roomName", setRoomName);
+
+    useEffect(() => {
+        if (roomName.length > 0) document.title = "Krono: " + roomName;
+        else document.title = "Krono";
+    }, [roomName]);
 
     return (
         <header class={["mui--appbar-height", "mui--appbar-line-height", style.header].join(" ")}>
@@ -30,17 +29,17 @@ export function Header(): JSX.Element {
                 <Link class={style.headerNav} activeClassName={style.active} href="/">
                     Home
                 </Link>
-                <Link class={style.headerNav} onClick={createRoom}>
-                    Create Room
-                </Link>
-                {currentAPI?.getUser() ? (
+                {roomName ? (
+                    <Link class={[style.headerRoom, style.headerNav, style.active].join(" ")}>{roomName}</Link>
+                ) : null}
+                {user ? (
                     <Link
                         class={[style.headerNav, style.headerRight].join(" ")}
                         activeClassName={style.active}
                         href="/profile"
                     >
                         Profile
-                        <img class={style.headerUserIcon} src={currentAPI.getUser()?.profileURL} />
+                        <img class={style.headerUserIcon} src={user.profileURL} />
                     </Link>
                 ) : (
                     <Link

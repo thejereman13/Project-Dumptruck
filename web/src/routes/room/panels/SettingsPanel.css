@@ -1,0 +1,35 @@
+.settingContainer {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.settingTrimField {
+    display: inline-flex;
+}
+
+.settingTrimField > div {
+    padding: 0;
+    margin-bottom: 0;
+    width: 8rem;
+}
+
+.settingTrimLabel {
+    display: inline-flex;
+    margin-right: 1rem;
+}
+
+.settingRemoveIcon {
+    font-size: 24px;
+    color: var(--theme-secondary);
+}
+
+.settingUserRow {
+    display: flex;
+    justify-content: space-between;
+}
+
+.centerTooltipChild {
+    display: inline-flex !important;
+    align-items: center;
+}
