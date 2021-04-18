@@ -15,7 +15,8 @@ export enum MessageType {
     Video = "video", // Server setting the active Client video
     Init = "init", // Server sending all initialization info
     Room = "room", // Server sending all room information
-    QueueAdd = "addQueue", // Client adding a video id to queue
+    QueueAddBack = "addQueueBack", // Client adding a video id to end of queue
+    QueueAddFront = "addQueueFront", // Client adding a video id to front of queue
     QueueMultiple = "allQueue", // Client adding multiple videos
     QueueRemove = "removeQueue", // Client removing a video id from queue
     QueueClear = "clearQueue", // Client removing all of a users' videos

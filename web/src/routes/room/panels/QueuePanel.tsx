@@ -18,14 +18,16 @@ import { memo } from "preact/compat";
 
 import * as style from "./QueuePanel.css";
 import * as commonStyle from "../style.css";
+import { VideoQueueMenu } from "../../../components/displayCards/QueueMenu";
 
 export interface QueueModalProps {
-    submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
+    submitNewVideoEnd: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
+    submitNewVideoFront: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
 }
 
 export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.Element {
-    const { submitNewVideo, submitAllVideos } = props;
+    const { submitNewVideoEnd, submitNewVideoFront, submitAllVideos } = props;
     const [searchField, setSearchField] = useState<string>("");
     const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
     const [searchPlaylist, setSearchPlaylist] = useState<PlaylistInfo | null>(null);
@@ -88,10 +90,10 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
         debouncedSearch(val);
     };
 
-    const submitVideoFromList = (videoID: VideoCardInfo | VideoInfo): void => {
-        if (videoID.duration === undefined)
+    const submitFrontFromList = (videoID: VideoCardInfo | VideoInfo): void => {
+        if (videoID.duration === undefined) {
             RequestVideo(videoID.id, controller, (info) => {
-                submitNewVideo(
+                submitNewVideoFront(
                     {
                         videoID: info.id,
                         duration: info.duration ?? 0
@@ -99,14 +101,36 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                     videoID.title
                 );
             });
-        else
-            submitNewVideo(
+        } else {
+            submitNewVideoFront(
                 {
                     videoID: videoID.id,
                     duration: videoID.duration ?? 0
                 },
                 videoID.title
             );
+        }
+    };
+    const submitEndFromList = (videoID: VideoCardInfo | VideoInfo): void => {
+        if (videoID.duration === undefined) {
+            RequestVideo(videoID.id, controller, (info) => {
+                submitNewVideoEnd(
+                    {
+                        videoID: info.id,
+                        duration: info.duration ?? 0
+                    },
+                    videoID.title
+                );
+            });
+        } else {
+            submitNewVideoEnd(
+                {
+                    videoID: videoID.id,
+                    duration: videoID.duration ?? 0
+                },
+                videoID.title
+            );
+        }
     };
     const submitPlaylist = (vids: VideoCardInfo[], info: PlaylistInfo): void => {
         submitAllVideos(
@@ -133,19 +157,21 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                     {searchPlaylist && (
                         <PlaylistCard
                             info={searchPlaylist}
-                            onVideoClick={submitVideoFromList}
+                            queueVideoEnd={submitEndFromList}
+                            queueVideoFront={submitFrontFromList}
                             submitPlaylist={submitPlaylist}
                         />
                     )}
                     {searchResults.map((list) => {
+                        const queueFront = (): void => submitFrontFromList(list);
+                        const queueEnd = (): void => submitEndFromList(list);
                         return (
                             <VideoDisplayCard
                                 key={list.id}
                                 enablePreview={true}
                                 info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
-                                onClick={(): void => {
-                                    submitVideoFromList(list);
-                                }}
+                                onClick={queueEnd}
+                                actionComponent={<VideoQueueMenu queueFront={queueFront} queueEnd={queueEnd} />}
                             />
                         );
                     })}
@@ -159,7 +185,8 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                                 videoCount: 0,
                                 thumbnailMaxRes: likedPreview.thumbnailMaxRes
                             }}
-                            onVideoClick={submitVideoFromList}
+                            queueVideoEnd={submitEndFromList}
+                            queueVideoFront={submitFrontFromList}
                             submitPlaylist={submitPlaylist}
                         />
                     )}
@@ -168,7 +195,8 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             <PlaylistCard
                                 key={list.id}
                                 info={list}
-                                onVideoClick={submitVideoFromList}
+                                queueVideoEnd={submitEndFromList}
+                                queueVideoFront={submitFrontFromList}
                                 submitPlaylist={submitPlaylist}
                             />
                         );

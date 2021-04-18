@@ -44,7 +44,6 @@
 
 .playlistVideos {
     margin-left: 2rem;
-    margin-right: 2rem;
     height: 0;
     overflow-y: auto;
     transition: height 0.25s ease;

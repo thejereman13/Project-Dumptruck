@@ -17,7 +17,8 @@ export interface RoomWebsocketCallbacks {
     reorderQueue: (id: string, videos: YoutubeVideoInformation[]) => void;
     skipVideo: () => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
-    submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
+    submitVideoFront: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
+    submitVideoBack: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     togglePlay: (playing: boolean) => void;
     updateSettings: (settings: RoomSettings) => void;
     logError: (id: string) => void;
@@ -45,10 +46,21 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
         if (ws) ws.send(JSON.stringify({ t: MessageType.Skip }));
     }, [ws]);
 
-    const submitNewVideo = useCallback(
+    const submitVideoFront = useCallback(
         (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
             if (ws) {
-                ws.send(JSON.stringify({ t: MessageType.QueueAdd, d: newVideo }));
+                ws.send(JSON.stringify({ t: MessageType.QueueAddFront, d: newVideo }));
+                RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
+            } else {
+                WSErrorMessage();
+            }
+        },
+        [ws]
+    );
+    const submitVideoBack = useCallback(
+        (newVideo: YoutubeVideoInformation, videoTitle = ""): void => {
+            if (ws) {
+                ws.send(JSON.stringify({ t: MessageType.QueueAddBack, d: newVideo }));
                 RegisterNotification(`Queued ${videoTitle.length > 0 ? videoTitle : "Video"}`, "info");
             } else {
                 WSErrorMessage();
@@ -151,7 +163,8 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
         reorderQueue,
         skipVideo,
         submitAllVideos,
-        submitNewVideo,
+        submitVideoBack,
+        submitVideoFront,
         togglePlay,
         updateSettings,
         logError,

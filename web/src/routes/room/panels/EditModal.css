@@ -3,6 +3,7 @@
     display: flex;
     flex-flow: column;
     overflow: hidden;
+    width: 100%;
 }
 
 .removeAllButton {
@@ -18,7 +19,17 @@
 
 .editTitle {
     padding-left: 0.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding-right: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-height: 2.5rem;
+    display: inline-block;
+}
+
+.editList {
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    flex: auto;
 }

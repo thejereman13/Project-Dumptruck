@@ -47,10 +47,6 @@
     .splitPane {
         flex-direction: column;
     }
-    .sidebarContainer {
-        max-width: unset;
-        width: 100%;
-    }
 }
 
 .scrollBox {

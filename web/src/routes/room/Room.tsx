@@ -158,16 +158,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     }, []);
 
-    // const updateRoomSettings = (): void => {
-    //     if (roomSettings !== null) {
-    //         roomSettings.settings.name = roomSettings.settings.name.trim();
-    //         if (roomSettings.settings.name.length > 0) {
-    //             updateSettings(roomSettings.settings);
-    //         }
-    //         window.location.href = "#";
-    //     }
-    // };
-
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
     const hasVideo = youtubePlayer.current?.playerMounted ?? false;

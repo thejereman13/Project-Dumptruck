@@ -13,11 +13,13 @@ import { MdPlaylistAdd, MdShuffle } from "react-icons/md";
 
 import * as style from "./PlaylistCard.css";
 import * as commonStyle from "./DisplayCard.css";
+import { VideoQueueMenu } from "./QueueMenu";
 
 interface PlaylistDisplayProps {
     info: PlaylistInfo;
     videoInfo: VideoCardInfo[];
-    onVideoClick: (id: VideoCardInfo) => void;
+    queueVideoFront: (id: VideoCardInfo) => void;
+    queueVideoEnd: (id: VideoCardInfo) => void;
     queueAll: () => void;
     shuffleQueue: () => void;
     loading: boolean;
@@ -26,7 +28,17 @@ interface PlaylistDisplayProps {
 }
 
 function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
-    const { info, onVideoClick, loading, queueAll, shuffleQueue, videoInfo, expanded, setExpanded } = props;
+    const {
+        info,
+        queueVideoEnd,
+        queueVideoFront,
+        loading,
+        queueAll,
+        shuffleQueue,
+        videoInfo,
+        expanded,
+        setExpanded
+    } = props;
 
     const expandVideos = (): void => setExpanded(true);
     const hideVideos = (): void => setExpanded(false);
@@ -79,14 +91,19 @@ function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
             )}
         >
             {expanded &&
-                videoInfo.map((vid) => (
-                    <VideoDisplayCard
-                        key={vid.id}
-                        info={vid}
-                        enablePreview={true}
-                        onClick={onVideoClick ? (): void => onVideoClick(vid) : undefined}
-                    />
-                ))}
+                videoInfo.map((vid) => {
+                    const queueFront = (): void => queueVideoFront(vid);
+                    const queueEnd = (): void => queueVideoEnd(vid);
+                    return (
+                        <VideoDisplayCard
+                            key={vid.id}
+                            info={vid}
+                            enablePreview={true}
+                            onClick={queueEnd}
+                            actionComponent={<VideoQueueMenu queueEnd={queueEnd} queueFront={queueFront} />}
+                        />
+                    );
+                })}
         </div>
     );
 
@@ -113,12 +130,13 @@ function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
 
 export interface PlaylistCardProps {
     info: PlaylistInfo;
-    onVideoClick: (id: VideoCardInfo) => void;
+    queueVideoFront: (id: VideoCardInfo) => void;
+    queueVideoEnd: (id: VideoCardInfo) => void;
     submitPlaylist: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
 }
 
 export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick, submitPlaylist } = props;
+    const { info, queueVideoEnd, queueVideoFront, submitPlaylist } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -196,7 +214,8 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
             expanded={videoExpanded}
             info={info}
             loading={loading}
-            onVideoClick={onVideoClick}
+            queueVideoEnd={queueVideoEnd}
+            queueVideoFront={queueVideoFront}
             queueAll={queueAll}
             setExpanded={setVideoExpanded}
             shuffleQueue={shuffleQueue}
@@ -206,7 +225,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
 }
 
 export function LikedVideosCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick, submitPlaylist } = props;
+    const { info, queueVideoEnd, queueVideoFront, submitPlaylist } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
@@ -282,7 +301,8 @@ export function LikedVideosCard(props: PlaylistCardProps): JSX.Element {
             expanded={videoExpanded}
             info={info}
             loading={loading}
-            onVideoClick={onVideoClick}
+            queueVideoEnd={queueVideoEnd}
+            queueVideoFront={queueVideoFront}
             queueAll={queueAll}
             setExpanded={setVideoExpanded}
             shuffleQueue={shuffleQueue}

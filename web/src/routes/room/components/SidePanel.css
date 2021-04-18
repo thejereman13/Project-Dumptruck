@@ -8,8 +8,9 @@
     flex-flow: column;
 }
 .sidebarContainerExpanded {
-    width: 64rem;
-    max-width: 64rem;
+    width: 40rem;
+    max-width: 40rem;
+    min-width: 40rem;
 }
 
 @media (max-width: 960px) {
@@ -67,6 +68,8 @@
 .sidebarBody {
     display: flex;
     overflow: hidden;
+    height: 100%;
+    width: 100%;
 }
 
 .sidebarTabBody {

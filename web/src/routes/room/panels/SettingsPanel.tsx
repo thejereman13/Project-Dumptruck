@@ -91,7 +91,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
         <div class={style.settingContainer} onClick={(e): void => e.stopPropagation()}>
             {roomSettings && (
                 <div>
-                    <div>
+                    <div class={style.settingFullWidth}>
                         <Input
                             floatingLabel
                             label="Room Name"

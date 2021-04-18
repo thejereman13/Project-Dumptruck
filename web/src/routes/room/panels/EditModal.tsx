@@ -8,7 +8,6 @@ import { arrayMove, List } from "react-movable";
 import { useDebouncedCallback } from "use-debounce-preact";
 
 import * as style from "./EditModal.css";
-import * as commonStyle from "../style.css";
 import { IoMdTrash } from "react-icons/io";
 
 interface VideoRowProps {
@@ -65,17 +64,21 @@ export const EditModal = memo(
             removeAll(userID);
         };
 
+        const shuffleAll = (): void => {
+            const array = [...playlist];
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * i);
+                const temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
+            updatePlaylist(userID, array);
+        };
+
         return (
             <div class={style.editContainer}>
                 <div class={[style.editTitle, "mui--text-headline"].join(" ")}>
                     {self ? "Editing Queue" : `Editing Queue for ${userName}`}
-                    <Button
-                        className={["mui-btn", "mui-btn--flat", style.removeAllButton].join(" ")}
-                        variant="flat"
-                        onClick={clearAll}
-                    >
-                        Remove All
-                    </Button>
                 </div>
                 <List
                     values={internalPlaylist}
@@ -85,7 +88,7 @@ export const EditModal = memo(
                         setInternalPlaylist(newArr);
                     }}
                     renderList={({ children, props }): JSX.Element => (
-                        <div {...props} className={commonStyle.scrollBox}>
+                        <div {...props} className={style.editList}>
                             {children}
                         </div>
                     )}
@@ -104,6 +107,22 @@ export const EditModal = memo(
                         </div>
                     )}
                 />
+                <div>
+                    <Button
+                        className={["mui-btn", "mui-btn--flat", style.removeAllButton].join(" ")}
+                        variant="flat"
+                        onClick={shuffleAll}
+                    >
+                        Shuffle All
+                    </Button>
+                    <Button
+                        className={["mui-btn", "mui-btn--flat", style.removeAllButton].join(" ")}
+                        variant="flat"
+                        onClick={clearAll}
+                    >
+                        Remove All
+                    </Button>
+                </div>
             </div>
         );
     },

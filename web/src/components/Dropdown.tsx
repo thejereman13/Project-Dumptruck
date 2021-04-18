@@ -56,6 +56,7 @@ export function Dropdown(props: DropdownProps): JSX.Element {
     const openMenu = useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
         setMenuOpen(true);
         event.stopPropagation();
+        event.preventDefault();
     }, []);
     const closeMenu = useCallback((): void => {
         setMenuOpen(false);

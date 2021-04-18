@@ -70,16 +70,18 @@ export class VideoPlaylist {
         return null;
     }
 
-    public addVideoToQueue(userID: string, videoInfo: YoutubeVideoInformation): boolean {
+    public addVideoToQueue(userID: string, videoInfo: YoutubeVideoInformation, front: boolean): boolean {
         if (!Object.keys(this.playlist).some((u) => this.playlist[u].some((a) => a.youtubeID === videoInfo.videoID))) {
             if (!(userID in this.playlist)) this.playlist[userID] = [];
-            this.playlist[userID].push({
+            const vid = {
                 youtubeID: videoInfo.videoID,
                 playing: false,
                 timeStamp: 0,
                 duration: videoInfo.duration,
                 queuedBy: userID
-            });
+            };
+            if (front) this.playlist[userID].unshift(vid);
+            else this.playlist[userID].push(vid);
             if (!this.userQueue.some((u) => u === userID)) {
                 this.userQueue.push(userID);
             }

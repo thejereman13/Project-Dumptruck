@@ -3,9 +3,8 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { VideoQueue } from "../panels/VideoPanel";
 
-import { MdQueueMusic, MdSettings, MdQueue } from "react-icons/md";
+import { MdQueueMusic, MdSettings, MdQueue, MdFormatListNumbered } from "react-icons/md";
 import { HiUsers, HiChevronDoubleRight } from "react-icons/hi";
-import { CgPlayList } from "react-icons/cg";
 
 import * as style from "./SidePanel.css";
 import { PlaylistByUser } from "../../../utils/WebsocketTypes";
@@ -159,7 +158,7 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                 ) : null}
                 {userHasQueue ? (
                     <TabIcon index={3} title="Edit Queue" current={displayedTab} selectTab={setTab} expanded={expanded}>
-                        <CgPlayList size={iconSize} />
+                        <MdFormatListNumbered size={iconSize} />
                     </TabIcon>
                 ) : null}
                 <TabIcon index={4} title="Users" current={displayedTab} selectTab={setTab} expanded={expanded}>
@@ -196,7 +195,6 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         currentUser={userID}
                         currentUsers={currentUsers}
                         openEdit={editOtherUser}
-                        removeVideo={wsCallbacks.removeVideo}
                         userQueue={userQueue}
                         videoPlaylist={videoPlaylist}
                     />
@@ -204,7 +202,8 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                 <MountedTabBody index={2} current={allowQueuing ? displayedTab : 0}>
                     <QueueModal
                         submitAllVideos={wsCallbacks.submitAllVideos}
-                        submitNewVideo={wsCallbacks.submitNewVideo}
+                        submitNewVideoEnd={wsCallbacks.submitVideoBack}
+                        submitNewVideoFront={wsCallbacks.submitVideoFront}
                     />
                 </MountedTabBody>
                 <MountedTabBody index={3} current={allowQueuing ? displayedTab : 0}>

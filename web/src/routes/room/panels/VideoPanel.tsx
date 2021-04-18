@@ -12,19 +12,17 @@ import { Tooltip } from "../../../components/Popup";
 import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
 
-import { IoMdTrash } from "react-icons/io";
-import { MdFilterList } from "react-icons/md";
+import { MdFormatListNumbered } from "react-icons/md";
 
 interface UserQueueCardProps {
     allowRemoval: boolean;
     user: RoomUser;
     playlist: Video[];
-    removeVideo: (id: string) => void;
     openEdit: (id: string) => void;
 }
 
 function UserQueueCard(props: UserQueueCardProps): JSX.Element {
-    const { playlist, user, removeVideo, openEdit, allowRemoval } = props;
+    const { playlist, user, openEdit, allowRemoval } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
 
@@ -76,7 +74,7 @@ function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                     <div class={style.QueueActionDiv}>
                         <Tooltip content="Edit Video Queue">
                             <Button onClick={editQueue} size="small" variant="fab">
-                                <MdFilterList size="2rem" />
+                                <MdFormatListNumbered size="2rem" />
                             </Button>
                         </Tooltip>
                     </div>
@@ -105,17 +103,6 @@ function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                         videoID={vid.youtubeID}
                         duration={vid.duration}
                         enablePreview={false}
-                        actionComponent={
-                            allowRemoval ? (
-                                <Tooltip content="Remove From Queue">
-                                    <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
-                                        <IoMdTrash size="1.5rem" />
-                                    </Button>
-                                </Tooltip>
-                            ) : (
-                                undefined
-                            )
-                        }
                     />
                 ))}
         </div>
@@ -147,26 +134,24 @@ export interface VideoQueueProps {
     currentUsers: RoomUser[];
     currentUser: string;
     allowRemoval: boolean;
-    removeVideo: (id: string) => void;
     openEdit: (id: string) => void;
 }
 
 export const VideoQueue = memo(
     (props: VideoQueueProps): JSX.Element => {
-        const { userQueue, videoPlaylist, currentUsers, currentUser, removeVideo, openEdit, allowRemoval } = props;
+        const { userQueue, videoPlaylist, currentUsers, currentUser, openEdit, allowRemoval } = props;
 
         return (
             <div class={commonStyle.scrollBox}>
                 {userQueue.map((clientID) => {
                     const playlist = videoPlaylist[clientID];
                     const playlistUser = currentUsers.find((u) => u.clientID == clientID);
-                    if (playlistUser === undefined) return <div />;
+                    if (playlistUser === undefined || !playlist || playlist.length === 0) return <div />;
                     return (
                         <UserQueueCard
                             key={clientID}
                             playlist={playlist}
                             user={playlistUser}
-                            removeVideo={removeVideo}
                             openEdit={openEdit}
                             allowRemoval={allowRemoval || currentUser === clientID}
                         />
@@ -181,8 +166,7 @@ export const VideoQueue = memo(
             prev.userQueue === next.userQueue &&
             prev.currentUser === next.currentUser &&
             prev.currentUsers === next.currentUsers &&
-            prev.allowRemoval === next.allowRemoval &&
-            prev.removeVideo === next.removeVideo;
+            prev.allowRemoval === next.allowRemoval;
         return same;
     }
 );

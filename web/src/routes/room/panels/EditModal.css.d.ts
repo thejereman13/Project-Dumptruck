@@ -3,6 +3,7 @@ declare namespace EditModalCssNamespace {
     export interface IEditModalCss {
         editCard: string;
         editContainer: string;
+        editList: string;
         editTitle: string;
         removeAllButton: string;
     }

@@ -8,7 +8,6 @@ declare namespace StyleCssNamespace {
         UserRowTitle: string;
         centerTooltipChild: string;
         scrollBox: string;
-        sidebarContainer: string;
         splitPane: string;
         textEllipsis: string;
         userContainer: string;

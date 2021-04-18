@@ -185,10 +185,10 @@ class Room {
         this.postPlaylist();
     }
 
-    private queueVideo(videoInfo: Record<string, any>, userID: string) {
+    private queueVideo(videoInfo: Record<string, any>, userID: string, front: boolean) {
         const newVideo = validateVideoInfo(videoInfo);
         if (newVideo.videoID.length > 0) {
-            if (this.playlist.addVideoToQueue(userID, newVideo)) {
+            if (this.playlist.addVideoToQueue(userID, newVideo, front)) {
                 this.postPlaylist();
                 if (!this.currentVideo) this.queueNextVideo();
             } else {
@@ -211,7 +211,7 @@ class Room {
         let failureCounter = 0;
         arr.forEach((newVid) => {
             if (newVid.videoID.length > 0) {
-                if (this.playlist.addVideoToQueue(userID, newVid)) {
+                if (this.playlist.addVideoToQueue(userID, newVid, false)) {
                     successCounter++;
                     if (!this.currentVideo) this.queueNextVideo();
                 } else {
@@ -228,9 +228,9 @@ class Room {
         }
         if (successCounter) this.postPlaylist();
     }
-    private clearQueue(message: { data: string }, id: string) {
-        if (!message.data) return;
-        if (this.authorizedUser(id) || message.data === id) {
+    private clearQueue(message: string, id: string) {
+        if (!message) return;
+        if (this.authorizedUser(id) || message === id) {
             this.playlist.removeUser(id);
             this.postPlaylist();
         }
@@ -352,8 +352,11 @@ class Room {
                     this.messageQueue.postMessage(MessageType.Pause);
                 }
                 break;
-            case MessageType.QueueAdd:
-                this.queueVideo(j["d"], id);
+            case MessageType.QueueAddBack:
+                this.queueVideo(j["d"], id, false);
+                break;
+            case MessageType.QueueAddFront:
+                this.queueVideo(j["d"], id, true);
                 break;
             case MessageType.QueueRemove:
                 this.unqueueVideo(j["d"], id);
@@ -362,7 +365,7 @@ class Room {
                 this.queueAllVideo(j["d"], id);
                 break;
             case MessageType.QueueClear:
-                this.clearQueue(j, id);
+                this.clearQueue(j["d"], id);
                 break;
             case MessageType.QueueReorder:
                 this.updateQueue(j["d"], id, j["target"]);
