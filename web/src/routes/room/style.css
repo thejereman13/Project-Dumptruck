@@ -18,14 +18,6 @@
     align-items: center;
 }
 
-.progress {
-    width: 100%;
-}
-
-.playButton {
-    vertical-align: middle;
-}
-
 .splitPane {
     display: flex;
     flex-direction: row;
@@ -39,22 +31,6 @@
     flex-flow: column;
     padding: 1rem;
     flex: auto;
-}
-
-.sidePanel {
-    max-width: 33%;
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
-    margin: 3rem 1rem;
-    background-color: var(--dp2-surface);
-    border-radius: 1rem;
-}
-
-.sidePanelTabBody {
-    padding: 1rem 1rem 0 1rem;
-    display: flex;
-    overflow-y: hidden;
 }
 
 .videoDiv {
@@ -71,33 +47,10 @@
     .splitPane {
         flex-direction: column;
     }
-    .sidePanel {
+    .sidebarContainer {
         max-width: unset;
+        width: 100%;
     }
-}
-
-.settingButton {
-    margin-left: 2rem;
-}
-
-.QueueContainer {
-    max-height: 100%;
-    width: 50%;
-    margin: 0 8rem;
-    padding: 8rem 0;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-}
-
-.ModalBox {
-    background-color: var(--dp4-surface);
-    border-radius: 1rem;
-    padding: 2rem;
-    flex: auto;
-    display: flex;
-    flex-direction: column;
-    max-width: 100%;
 }
 
 .scrollBox {
@@ -107,17 +60,6 @@
 }
 .scrollBox h2 {
     margin-top: 0;
-}
-
-.EditCard:hover > div {
-    background: var(--dp16-surface);
-}
-
-.removeAllButton {
-    float: right;
-    color: var(--theme-secondary-light) !important;
-    font-size: 1rem;
-    margin: 0.5rem 1rem;
 }
 
 .AdminName {
@@ -138,6 +80,6 @@
     margin-top: 4rem;
 }
 
-.RoomTitleBar {
-    margin-bottom: 0.5rem;
+.userContainer {
+    padding: 1rem;
 }

@@ -2,7 +2,6 @@
   "private": true,
   "name": "web",
   "version": "0.0.0",
-  "proxy": "https://localhost:8000",
   "license": "MIT",
   "scripts": {
     "build": "preact build --no-prerender -c ./preact.config.js --json",

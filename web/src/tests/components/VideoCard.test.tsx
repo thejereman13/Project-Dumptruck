@@ -11,7 +11,7 @@ describe("Video Card", () => {
             title: "Sample Title",
             duration: 96
         };
-        const wrapper = mount(<VideoDisplayCard info={videoInfo} />);
+        const wrapper = mount(<VideoDisplayCard info={videoInfo} enablePreview={false} />);
         expect(wrapper.exists()).toBe(true);
         expect(wrapper.find("img")).toHaveLength(1);
         expect(wrapper.find("img").prop("src")).toEqual(videoInfo.thumbnailURL);
@@ -41,7 +41,7 @@ describe("Video Card", () => {
             duration: 90
         };
         const click = jest.fn();
-        const wrapper = mount(<VideoDisplayCard info={videoInfo} onClick={click} />);
+        const wrapper = mount(<VideoDisplayCard info={videoInfo} onClick={click} enablePreview={false} />);
         expect(wrapper.exists()).toBe(true);
         const button = wrapper.find("button");
         expect(button).toHaveLength(1);
@@ -61,7 +61,7 @@ describe("Video Card", () => {
         };
         const actionText = "Action Text";
         const action = <div id="act">{actionText}</div>;
-        const wrapper = mount(<VideoDisplayCard info={videoInfo} actionComponent={action} />);
+        const wrapper = mount(<VideoDisplayCard info={videoInfo} actionComponent={action} enablePreview={false} />);
         expect(wrapper.exists()).toBe(true);
         const act = wrapper.find("#act");
         expect(act).toHaveLength(1);

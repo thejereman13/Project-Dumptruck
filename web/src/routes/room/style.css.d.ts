@@ -2,24 +2,16 @@
 declare namespace StyleCssNamespace {
     export interface IStyleCss {
         AdminName: string;
-        EditCard: string;
-        ModalBox: string;
         NonexistantRoom: string;
         PageRoot: string;
-        QueueContainer: string;
-        RoomTitleBar: string;
         UserRow: string;
         UserRowTitle: string;
         centerTooltipChild: string;
-        playButton: string;
-        progress: string;
-        removeAllButton: string;
         scrollBox: string;
-        settingButton: string;
-        sidePanel: string;
-        sidePanelTabBody: string;
+        sidebarContainer: string;
         splitPane: string;
         textEllipsis: string;
+        userContainer: string;
         videoDiv: string;
         videoPanel: string;
     }

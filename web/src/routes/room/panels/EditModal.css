@@ -1,0 +1,24 @@
+.editContainer {
+    padding: 0.5rem;
+    display: flex;
+    flex-flow: column;
+    overflow: hidden;
+}
+
+.removeAllButton {
+    float: right;
+    color: var(--theme-secondary-light) !important;
+    font-size: 1rem;
+    margin: 0.5rem 1rem;
+}
+
+.editCard:hover > div {
+    background: var(--dp16-surface);
+}
+
+.editTitle {
+    padding-left: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}

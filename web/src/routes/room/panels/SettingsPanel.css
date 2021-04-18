@@ -20,13 +20,16 @@
 }
 
 .settingRemoveIcon {
-    font-size: 24px;
+    font-size: 1.5rem;
     color: var(--theme-secondary);
 }
 
 .settingUserRow {
     display: flex;
     justify-content: space-between;
+}
+.settingUserRow div:first-child {
+    line-height: 2rem;
 }
 
 .centerTooltipChild {

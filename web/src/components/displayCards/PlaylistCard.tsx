@@ -18,7 +18,6 @@ interface PlaylistDisplayProps {
     info: PlaylistInfo;
     videoInfo: VideoCardInfo[];
     onVideoClick: (id: VideoCardInfo) => void;
-    playingPreview: (playing: boolean) => void;
     queueAll: () => void;
     shuffleQueue: () => void;
     loading: boolean;
@@ -27,17 +26,7 @@ interface PlaylistDisplayProps {
 }
 
 function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
-    const {
-        info,
-        onVideoClick,
-        playingPreview,
-        loading,
-        queueAll,
-        shuffleQueue,
-        videoInfo,
-        expanded,
-        setExpanded
-    } = props;
+    const { info, onVideoClick, loading, queueAll, shuffleQueue, videoInfo, expanded, setExpanded } = props;
 
     const expandVideos = (): void => setExpanded(true);
     const hideVideos = (): void => setExpanded(false);
@@ -55,12 +44,26 @@ function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
                 {loading && <DotLoader />}
                 <div class={commonStyle.videoActionDiv}>
                     <Tooltip content="Queue All">
-                        <Button size="small" variant="fab" onClick={queueAll}>
+                        <Button
+                            size="small"
+                            variant="fab"
+                            onClick={(e): void => {
+                                queueAll();
+                                e.stopPropagation();
+                            }}
+                        >
                             <MdPlaylistAdd size="2rem" />
                         </Button>
                     </Tooltip>
                     <Tooltip content="Shuffle and Queue All">
-                        <Button size="small" variant="fab" onClick={shuffleQueue}>
+                        <Button
+                            size="small"
+                            variant="fab"
+                            onClick={(e): void => {
+                                shuffleQueue();
+                                e.stopPropagation();
+                            }}
+                        >
                             <MdShuffle size="2rem" />
                         </Button>
                     </Tooltip>
@@ -80,8 +83,8 @@ function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
                     <VideoDisplayCard
                         key={vid.id}
                         info={vid}
+                        enablePreview={true}
                         onClick={onVideoClick ? (): void => onVideoClick(vid) : undefined}
-                        playingPreview={playingPreview}
                     />
                 ))}
         </div>
@@ -112,11 +115,10 @@ export interface PlaylistCardProps {
     info: PlaylistInfo;
     onVideoClick: (id: VideoCardInfo) => void;
     submitPlaylist: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
-    playingPreview: (playing: boolean) => void;
 }
 
 export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick, submitPlaylist, playingPreview } = props;
+    const { info, onVideoClick, submitPlaylist } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -195,7 +197,6 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
             info={info}
             loading={loading}
             onVideoClick={onVideoClick}
-            playingPreview={playingPreview}
             queueAll={queueAll}
             setExpanded={setVideoExpanded}
             shuffleQueue={shuffleQueue}
@@ -205,7 +206,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
 }
 
 export function LikedVideosCard(props: PlaylistCardProps): JSX.Element {
-    const { info, onVideoClick, submitPlaylist, playingPreview } = props;
+    const { info, onVideoClick, submitPlaylist } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
@@ -282,7 +283,6 @@ export function LikedVideosCard(props: PlaylistCardProps): JSX.Element {
             info={info}
             loading={loading}
             onVideoClick={onVideoClick}
-            playingPreview={playingPreview}
             queueAll={queueAll}
             setExpanded={setVideoExpanded}
             shuffleQueue={shuffleQueue}

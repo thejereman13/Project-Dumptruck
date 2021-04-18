@@ -18,7 +18,7 @@ export function UserList(props: UserListProps): JSX.Element {
     const { currentUsers, adminList, isAdmin, userID, addAdmin, removeAdmin } = props;
 
     return (
-        <div class={style.scrollBox}>
+        <div class={[style.userContainer, style.scrollBox].join(" ")}>
             <h2>Current Users:</h2>
             {currentUsers.map((usr) => {
                 const hasAdmin = adminList.includes(usr.clientID);

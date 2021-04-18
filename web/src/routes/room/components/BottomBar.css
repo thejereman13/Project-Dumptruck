@@ -5,6 +5,8 @@
     width: 100%;
     background-color: var(--dp2-surface);
     height: 5rem;
+    min-height: 5rem;
+    max-height: 5rem;
 }
 
 .bottomVideoInfo {

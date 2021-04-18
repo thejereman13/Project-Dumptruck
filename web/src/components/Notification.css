@@ -7,7 +7,7 @@
     transition: all 0.3s ease;
     position: absolute;
     right: 1rem;
-    top: 5rem;
+    bottom: 1rem;
     z-index: 1024;
 }
 .NotificationText {

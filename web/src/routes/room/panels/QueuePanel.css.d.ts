@@ -3,7 +3,6 @@ declare namespace QueuePanelCssNamespace {
     export interface IQueuePanelCss {
         queueContainer: string;
         queueTabBody: string;
-        scrollBox: string;
         searchDiv: string;
     }
 }

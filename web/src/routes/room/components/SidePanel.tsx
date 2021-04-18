@@ -1,20 +1,23 @@
 import { h } from "preact";
-import { useCallback, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
-import { VideoQueue } from "./panels/VideoPanel";
+import { VideoQueue } from "../panels/VideoPanel";
 
 import { MdQueueMusic, MdSettings, MdQueue } from "react-icons/md";
 import { HiUsers, HiChevronDoubleRight } from "react-icons/hi";
+import { CgPlayList } from "react-icons/cg";
 
 import * as style from "./SidePanel.css";
-import { PlaylistByUser } from "../../utils/WebsocketTypes";
-import { RoomInfo, RoomUser } from "../../utils/BackendTypes";
-import { RoomWebsocketCallbacks } from "./RoomWebsockets";
-import { Tooltip } from "../../components/Popup";
-import { UserList } from "./panels/UserPanel";
-import { SettingsPanel } from "./panels/SettingsPanel";
-import { QueueModal } from "./panels/QueuePanel";
-import { getSidebarCookie, setSidebarCookie } from "../../utils/Cookies";
+import { PlaylistByUser } from "../../../utils/WebsocketTypes";
+import { RoomInfo, RoomUser } from "../../../utils/BackendTypes";
+import { RoomWebsocketCallbacks } from "../RoomWebsockets";
+import { Tooltip } from "../../../components/Popup";
+import { UserList } from "../panels/UserPanel";
+import { SettingsPanel } from "../panels/SettingsPanel";
+import { QueueModal } from "../panels/QueuePanel";
+import { EditModal } from "../panels/EditModal";
+import { getSidebarCookie, setSidebarCookie } from "../../../utils/Cookies";
+import { useCallbackHook } from "../../../utils/EventSubscriber";
 
 interface MountedTabBodyProps {
     current: number;
@@ -45,10 +48,9 @@ function TabIcon(props: TabIconProps): JSX.Element {
             content={title}
             options={tooltipPlacement}
             className={[style.sidebarTabIcon, expanded && current === index ? style.sidebarTabSelected : ""].join(" ")}
+            onClick={(): void => selectTab(index)}
         >
-            <div class={style.sidebarTabIconDiv} onClick={(): void => selectTab(index)}>
-                {children}
-            </div>
+            <div class={style.sidebarTabIconDiv}>{children}</div>
         </Tooltip>
     );
 }
@@ -87,6 +89,11 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
     } = props;
     const [expanded, setExpanded] = useState(getSidebarCookie() ? true : false);
     const [displayedTab, setDisplayedTab] = useState(getSidebarCookie());
+    const [editedUserQueue, setEditedQueue] = useState<string>("");
+
+    useEffect(() => {
+        setEditedQueue(userID);
+    }, [userID]);
 
     const setTab = (index: number): void => {
         setDisplayedTab(index);
@@ -106,8 +113,12 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
             if (roomSettings.settings.name.length > 0) {
                 wsCallbacks.updateSettings(roomSettings.settings);
             }
-            window.location.href = "#";
         }
+    };
+
+    const editOtherUser = (id: string): void => {
+        setEditedQueue(id);
+        setDisplayedTab(3);
     };
 
     const oldVolume = useRef<number | null>(null);
@@ -125,6 +136,9 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
         },
         [playerVolume, setPlayerVolume, playing]
     );
+    useCallbackHook("preview", playingPreview);
+
+    const userHasQueue = videoPlaylist[userID]?.length > 0;
 
     return (
         <div class={[style.sidebarContainer, expanded ? style.sidebarContainerExpanded : ""].join(" ")}>
@@ -132,12 +146,9 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                 <TabIcon index={1} title="Video Queue" current={displayedTab} selectTab={setTab} expanded={expanded}>
                     <MdQueueMusic size={iconSize} />
                 </TabIcon>
-                <TabIcon index={2} title="Users" current={displayedTab} selectTab={setTab} expanded={expanded}>
-                    <HiUsers size={iconSize} />
-                </TabIcon>
                 {allowQueuing ? (
                     <TabIcon
-                        index={3}
+                        index={2}
                         title="Add Videos to Queue"
                         current={displayedTab}
                         selectTab={setTab}
@@ -146,9 +157,17 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         <MdQueue size={iconSize} />
                     </TabIcon>
                 ) : null}
+                {userHasQueue ? (
+                    <TabIcon index={3} title="Edit Queue" current={displayedTab} selectTab={setTab} expanded={expanded}>
+                        <CgPlayList size={iconSize} />
+                    </TabIcon>
+                ) : null}
+                <TabIcon index={4} title="Users" current={displayedTab} selectTab={setTab} expanded={expanded}>
+                    <HiUsers size={iconSize} />
+                </TabIcon>
                 {adminPermissions ? (
                     <TabIcon
-                        index={4}
+                        index={5}
                         title="Room Settings"
                         current={displayedTab}
                         selectTab={setTab}
@@ -158,8 +177,13 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                     </TabIcon>
                 ) : null}
                 {expanded ? (
-                    <Tooltip content="Minimize" options={tooltipPlacement} className={style.sidebarTabClose}>
-                        <div class={style.sidebarTabIcon} onClick={closeTab}>
+                    <Tooltip
+                        content="Minimize"
+                        options={tooltipPlacement}
+                        className={style.sidebarTabClose}
+                        onClick={closeTab}
+                    >
+                        <div class={style.sidebarTabIcon}>
                             <HiChevronDoubleRight size={iconSize} />
                         </div>
                     </Tooltip>
@@ -171,13 +195,35 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         allowRemoval={adminPermissions}
                         currentUser={userID}
                         currentUsers={currentUsers}
-                        openEdit={(id): void => console.log(id)}
+                        openEdit={editOtherUser}
                         removeVideo={wsCallbacks.removeVideo}
                         userQueue={userQueue}
                         videoPlaylist={videoPlaylist}
                     />
                 </MountedTabBody>
-                <MountedTabBody index={2} current={displayedTab}>
+                <MountedTabBody index={2} current={allowQueuing ? displayedTab : 0}>
+                    <QueueModal
+                        submitAllVideos={wsCallbacks.submitAllVideos}
+                        submitNewVideo={wsCallbacks.submitNewVideo}
+                    />
+                </MountedTabBody>
+                <MountedTabBody index={3} current={allowQueuing ? displayedTab : 0}>
+                    <EditModal
+                        userID={editedUserQueue}
+                        playlist={videoPlaylist[editedUserQueue] ?? []}
+                        userName={currentUsers.find((u) => u.clientID === editedUserQueue)?.name ?? ""}
+                        self={editedUserQueue === userID}
+                        removeVideo={wsCallbacks.removeVideo}
+                        removeAll={wsCallbacks.removeAllVideos}
+                        updatePlaylist={(user, newPlaylist): void =>
+                            wsCallbacks.reorderQueue(
+                                user,
+                                newPlaylist.map((v) => ({ videoID: v.youtubeID, duration: v.duration }))
+                            )
+                        }
+                    />
+                </MountedTabBody>
+                <MountedTabBody index={4} current={displayedTab}>
                     <UserList
                         addAdmin={wsCallbacks.addAdmin}
                         adminList={adminUsers}
@@ -187,14 +233,7 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         userID={userID}
                     />
                 </MountedTabBody>
-                <MountedTabBody index={3} current={allowQueuing ? displayedTab : 0}>
-                    <QueueModal
-                        playingPreview={playingPreview}
-                        submitAllVideos={wsCallbacks.submitAllVideos}
-                        submitNewVideo={wsCallbacks.submitNewVideo}
-                    />
-                </MountedTabBody>
-                <MountedTabBody index={4} current={displayedTab}>
+                <MountedTabBody index={5} current={displayedTab}>
                     <SettingsPanel
                         removeAdmin={wsCallbacks.removeAdmin}
                         roomSettings={roomSettings}

@@ -12,6 +12,13 @@
     max-width: 64rem;
 }
 
+@media (max-width: 960px) {
+    .sidebarContainer {
+        max-width: unset;
+        width: 100%;
+    }
+}
+
 .sidebarTabs {
     display: flex;
     flex-flow: wrap;

@@ -4,7 +4,6 @@ import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import { YouTubeVideo } from "../../components/YTPlayer";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomInfo, RoomUser } from "../../utils/BackendTypes";
-import { BottomBar } from "./components/BottomBar";
 import { useGAPIContext } from "../../utils/GAPI";
 import { RegisterNotification } from "../../components/Notification";
 import { useRoomWebsockets } from "./RoomWebsockets";
@@ -12,7 +11,8 @@ import { getVolumeCookie, setVolumeCookie } from "../../utils/Cookies";
 import { GetRoomInfo } from "../../utils/RestCalls";
 import { useAbortController } from "../../utils/AbortController";
 import { NotifyChannel } from "../../utils/EventSubscriber";
-import { SidePanel } from "./SidePanel";
+import { SidePanel } from "./components/SidePanel";
+import { BottomBar } from "./components/BottomBar";
 
 export interface RoomProps {
     roomID: string;

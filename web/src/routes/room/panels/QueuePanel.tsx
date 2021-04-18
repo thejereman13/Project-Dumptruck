@@ -10,21 +10,22 @@ import {
     useGAPIContext
 } from "../../../utils/GAPI";
 import Input from "preact-mui/lib/input";
-import * as style from "./QueuePanel.css";
 import { VideoDisplayCard, VideoCardInfo } from "../../../components/displayCards/VideoCard";
 import { LikedVideosCard, PlaylistCard } from "../../../components/displayCards/PlaylistCard";
 import { YoutubeVideoInformation } from "../../../utils/BackendTypes";
 import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
 
+import * as style from "./QueuePanel.css";
+import * as commonStyle from "../style.css";
+
 export interface QueueModalProps {
     submitNewVideo: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
-    playingPreview: (playing: boolean) => void;
 }
 
 export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.Element {
-    const { submitNewVideo, submitAllVideos, playingPreview } = props;
+    const { submitNewVideo, submitAllVideos } = props;
     const [searchField, setSearchField] = useState<string>("");
     const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
     const [searchPlaylist, setSearchPlaylist] = useState<PlaylistInfo | null>(null);
@@ -128,24 +129,23 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                 <div class={style.searchDiv}>
                     <Input floatingLabel label="Search" value={searchField} onChange={updateVideoSearch} />
                 </div>
-                <div class={style.scrollBox}>
+                <div class={commonStyle.scrollBox}>
                     {searchPlaylist && (
                         <PlaylistCard
                             info={searchPlaylist}
                             onVideoClick={submitVideoFromList}
                             submitPlaylist={submitPlaylist}
-                            playingPreview={playingPreview}
                         />
                     )}
                     {searchResults.map((list) => {
                         return (
                             <VideoDisplayCard
                                 key={list.id}
+                                enablePreview={true}
                                 info={{ ...list, thumbnailURL: list.thumbnailMaxRes?.url ?? "" }}
                                 onClick={(): void => {
                                     submitVideoFromList(list);
                                 }}
-                                playingPreview={playingPreview}
                             />
                         );
                     })}
@@ -161,7 +161,6 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             }}
                             onVideoClick={submitVideoFromList}
                             submitPlaylist={submitPlaylist}
-                            playingPreview={playingPreview}
                         />
                     )}
                     {filteredPlaylists.map((list) => {
@@ -171,7 +170,6 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                                 info={list}
                                 onVideoClick={submitVideoFromList}
                                 submitPlaylist={submitPlaylist}
-                                playingPreview={playingPreview}
                             />
                         );
                     })}

@@ -11,6 +11,7 @@ import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
 import * as style from "./VideoCard.css";
 import * as commonStyle from "./DisplayCard.css";
+import { NotifyChannel } from "../../utils/EventSubscriber";
 
 export interface VideoCardInfo {
     id: string;
@@ -24,50 +25,48 @@ export interface VideoDisplayCardProps {
     info: VideoCardInfo;
     onClick?: (id: string) => void;
     actionComponent?: JSX.Element;
-    playingPreview?: (playing: boolean) => void;
+    enablePreview: boolean;
 }
 
 export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
-    const { info, onClick, actionComponent, playingPreview } = props;
+    const { info, onClick, actionComponent, enablePreview } = props;
 
     const [videoPreview, setVideoPreview] = useState<boolean>(false);
-    const previewRef = useRef<boolean>(false);
-    const updatePreview = useRef<((playing: boolean) => void) | undefined>(undefined);
-    previewRef.current = videoPreview;
-    updatePreview.current = playingPreview;
 
     const cardClick = (): void => {
         onClick?.(info.id);
-        setVideoPreview(false);
-        updatePreview.current?.(false);
+        if (enablePreview) {
+            setVideoPreview(false);
+            NotifyChannel("preview", false);
+        }
     };
 
     const openPreview = (event: JSX.TargetedMouseEvent<HTMLDivElement> | React.MouseEvent): void => {
         event.stopPropagation();
         setVideoPreview(!videoPreview);
-        updatePreview.current?.(!videoPreview);
+        NotifyChannel("preview", !videoPreview);
     };
 
     useEffect(() => {
         return (): void => {
-            if (previewRef.current) {
-                updatePreview.current?.(false);
-            }
+            if (enablePreview) NotifyChannel("preview", false);
         };
-    }, []);
+    }, [enablePreview]);
 
     const cardContent = (
         <div class={style.videoCard}>
             {info.thumbnailURL && (
                 <div class={style.videoIcon}>
-                    <Tooltip
-                        content="Preview Video"
-                        className={style.videoIconPreview}
-                        onClick={openPreview}
-                        delay={800}
-                    >
-                        {videoPreview ? <IoMdEyeOff size="3rem" /> : <IoMdEye size="3rem" />}
-                    </Tooltip>
+                    {enablePreview ? (
+                        <Tooltip
+                            content="Preview Video"
+                            className={style.videoIconPreview}
+                            onClick={openPreview}
+                            delay={800}
+                        >
+                            {videoPreview ? <IoMdEyeOff size="3rem" /> : <IoMdEye size="3rem" />}
+                        </Tooltip>
+                    ) : null}
                     <img src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
                     <div class={["mui--text-body1", style.videoDuration].join(" ")}>
                         {durationToString(info.duration)}
@@ -115,6 +114,7 @@ export interface VideoCardProps {
     duration?: number;
     onClick?: (id: string) => void;
     actionComponent?: JSX.Element;
+    enablePreview: boolean;
 }
 
 let infoStore: VideoCardInfo[] = [];
@@ -128,7 +128,7 @@ function pushInfoStore(videoInfo: VideoCardInfo): VideoCardInfo {
 
 export const VideoCard = memo(
     function VideoCard(props: VideoCardProps): JSX.Element {
-        const { videoID, duration, onClick, actionComponent } = props;
+        const { videoID, duration, onClick, actionComponent, enablePreview } = props;
         const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
 
         const controller = useAbortController();
@@ -161,7 +161,12 @@ export const VideoCard = memo(
 
         const workingInfo = infoStore.find((inf) => inf.id === videoID) ?? videoInfo;
         return workingInfo ? (
-            <VideoDisplayCard info={workingInfo} onClick={onClick} actionComponent={actionComponent} />
+            <VideoDisplayCard
+                info={workingInfo}
+                onClick={onClick}
+                actionComponent={actionComponent}
+                enablePreview={enablePreview}
+            />
         ) : (
             <div />
         );

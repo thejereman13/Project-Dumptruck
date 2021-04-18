@@ -122,6 +122,7 @@ h3 {
 }
 .mui-btn:hover {
     background-color: var(--theme-secondary-light);
+    color: var(--text-secondary);
 }
 
 .mui-btn--fab {

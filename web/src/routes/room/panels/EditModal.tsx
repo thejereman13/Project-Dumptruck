@@ -1,12 +1,15 @@
 import { h, JSX } from "preact";
 import Button from "preact-mui/lib/button";
-import { memo, Ref, useEffect, useState } from "preact/compat";
-import { Tooltip } from "../../components/Popup";
-import { VideoCard } from "../../components/displayCards/VideoCard";
-import { Video } from "../../utils/WebsocketTypes";
+import { memo, useEffect, useState } from "preact/compat";
+import { Tooltip } from "../../../components/Popup";
+import { VideoCard } from "../../../components/displayCards/VideoCard";
+import { Video } from "../../../utils/WebsocketTypes";
 import { arrayMove, List } from "react-movable";
-import * as style from "./style.css";
 import { useDebouncedCallback } from "use-debounce-preact";
+
+import * as style from "./EditModal.css";
+import * as commonStyle from "../style.css";
+import { IoMdTrash } from "react-icons/io";
 
 interface VideoRowProps {
     vid: Video;
@@ -19,12 +22,11 @@ function VideoRow(props: VideoRowProps): JSX.Element {
         <VideoCard
             videoID={vid.youtubeID}
             duration={vid.duration}
+            enablePreview={false}
             actionComponent={
                 <Tooltip content="Remove From Queue">
                     <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
-                        <i style={{ fontSize: "24px" }} class="material-icons">
-                            delete
-                        </i>
+                        <IoMdTrash size="1.5rem" />
                     </Button>
                 </Tooltip>
             }
@@ -39,20 +41,19 @@ export interface EditModalProps {
     userName: string;
     removeVideo: (videoID: string) => void;
     removeAll: (id: string) => void;
-    closeCallback: Ref<() => void>;
     updatePlaylist: (userID: string, playlist: Video[]) => void;
 }
 
 export const EditModal = memo(
     function EditModal(props: EditModalProps): JSX.Element {
-        const { playlist, self, userName, userID, removeVideo, removeAll, updatePlaylist, closeCallback } = props;
+        const { playlist, self, userName, userID, removeVideo, removeAll, updatePlaylist } = props;
 
         const [internalPlaylist, setInternalPlaylist] = useState<Video[]>(playlist);
         useEffect(() => {
             setInternalPlaylist(playlist);
         }, [playlist]);
 
-        const [debouncedReorder, , debouncedFlush] = useDebouncedCallback(
+        const [debouncedReorder] = useDebouncedCallback(
             (newPlaylist: Video[]) => {
                 updatePlaylist(userID, newPlaylist);
             },
@@ -60,19 +61,13 @@ export const EditModal = memo(
             [userID]
         );
 
-        closeCallback.current = (): void => {
-            debouncedFlush();
-        };
-
         const clearAll = (): void => {
             removeAll(userID);
-            document.location.href = "#";
-            closeCallback.current();
         };
 
         return (
-            <div class={style.ModalBox}>
-                <div class="mui--text-headline">
+            <div class={style.editContainer}>
+                <div class={[style.editTitle, "mui--text-headline"].join(" ")}>
                     {self ? "Editing Queue" : `Editing Queue for ${userName}`}
                     <Button
                         className={["mui-btn", "mui-btn--flat", style.removeAllButton].join(" ")}
@@ -90,7 +85,7 @@ export const EditModal = memo(
                         setInternalPlaylist(newArr);
                     }}
                     renderList={({ children, props }): JSX.Element => (
-                        <div {...props} className={style.scrollBox}>
+                        <div {...props} className={commonStyle.scrollBox}>
                             {children}
                         </div>
                     )}
@@ -103,7 +98,7 @@ export const EditModal = memo(
                                 zIndex: 2048,
                                 cursor: isDragged ? "grabbing" : "grab"
                             }}
-                            className={style.EditCard}
+                            className={style.editCard}
                         >
                             <VideoRow vid={value} removeVideo={removeVideo} />
                         </div>

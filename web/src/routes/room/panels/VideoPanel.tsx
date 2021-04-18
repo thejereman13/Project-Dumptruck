@@ -15,7 +15,7 @@ import { memo } from "preact/compat";
 import { IoMdTrash } from "react-icons/io";
 import { MdFilterList } from "react-icons/md";
 
-export interface UserQueueCardProps {
+interface UserQueueCardProps {
     allowRemoval: boolean;
     user: RoomUser;
     playlist: Video[];
@@ -23,7 +23,7 @@ export interface UserQueueCardProps {
     openEdit: (id: string) => void;
 }
 
-export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
+function UserQueueCard(props: UserQueueCardProps): JSX.Element {
     const { playlist, user, removeVideo, openEdit, allowRemoval } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo | null>(null);
     const [videoExpanded, setVideoExpanded] = useState<boolean>(false);
@@ -104,6 +104,7 @@ export function UserQueueCard(props: UserQueueCardProps): JSX.Element {
                         key={vid.youtubeID}
                         videoID={vid.youtubeID}
                         duration={vid.duration}
+                        enablePreview={false}
                         actionComponent={
                             allowRemoval ? (
                                 <Tooltip content="Remove From Queue">
