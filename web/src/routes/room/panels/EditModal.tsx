@@ -8,7 +8,7 @@ import { arrayMove, List } from "react-movable";
 import { useDebouncedCallback } from "use-debounce-preact";
 
 import * as style from "./EditModal.css";
-import { IoMdTrash } from "react-icons/io";
+import MdTrash from "@meronex/icons/ios/MdTrash";
 
 interface VideoRowProps {
     vid: Video;
@@ -25,7 +25,7 @@ function VideoRow(props: VideoRowProps): JSX.Element {
             actionComponent={
                 <Tooltip content="Remove From Queue">
                     <Button size="small" variant="fab" onClick={(): void => removeVideo(vid.youtubeID)}>
-                        <IoMdTrash size="1.5rem" />
+                        <MdTrash size="1.5rem" />
                     </Button>
                 </Tooltip>
             }

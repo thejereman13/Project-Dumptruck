@@ -11,7 +11,9 @@ import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
 import { VolumeSlider } from "../../../components/VolumeSlider";
 
-import { MdPause, MdPlayArrow, MdSkipNext } from "react-icons/md";
+import MdPause from "@meronex/icons/md/MdPause";
+import MdPlayArrow from "@meronex/icons/md/MdPlayArrow";
+import MdSkipNext from "@meronex/icons/md/MdSkipNext";
 
 export interface BottomBarProps {
     currentVideo: Video | null;

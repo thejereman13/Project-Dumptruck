@@ -1,4 +1,5 @@
 import { resolve } from "path";
+import { pathsToModuleNameMapper } from "ts-jest";
 
 const TerserPlugin = require("terser-webpack-plugin");
 const CompressionPlugin = require("compression-webpack-plugin");

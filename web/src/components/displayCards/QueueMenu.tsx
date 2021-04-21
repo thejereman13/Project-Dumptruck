@@ -1,6 +1,6 @@
 import { h } from "preact";
 import Button from "preact-mui/lib/button";
-import { MdMoreVert } from "react-icons/md";
+import MdMoreVert from "@meronex/icons/md/MdMoreVert";
 import { Dropdown } from "../Dropdown";
 
 interface VideoQueueMenuProps {

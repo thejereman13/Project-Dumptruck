@@ -3,7 +3,7 @@ import Button from "preact-mui/lib/button";
 import { memo } from "preact/compat";
 import { Dropdown } from "../../../components/Dropdown";
 import { RoomUser } from "../../../utils/BackendTypes";
-import { MdMoreVert } from "react-icons/md";
+import MdMoreVert from "@meronex/icons/md/MdMoreVert";
 
 import * as style from "../style.css";
 

@@ -7,7 +7,8 @@ import { Tooltip } from "../Popup";
 import { useAbortController } from "../../utils/AbortController";
 import { memo } from "preact/compat";
 
-import { IoMdEye, IoMdEyeOff } from "react-icons/io";
+import MdEye from "@meronex/icons/ios/MdEye";
+import MdEyeOff from "@meronex/icons/ios/MdEyeOff";
 
 import * as style from "./VideoCard.css";
 import * as commonStyle from "./DisplayCard.css";
@@ -64,7 +65,7 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                             onClick={openPreview}
                             delay={800}
                         >
-                            {videoPreview ? <IoMdEyeOff size="3rem" /> : <IoMdEye size="3rem" />}
+                            {videoPreview ? <MdEyeOff size="3rem" /> : <MdEye size="3rem" />}
                         </Tooltip>
                     ) : null}
                     <img src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />

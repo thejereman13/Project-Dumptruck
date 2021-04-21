@@ -9,7 +9,7 @@ import { GetAnyUser } from "../../../utils/RestCalls";
 import { useAbortController } from "../../../utils/AbortController";
 import { Tooltip } from "../../../components/Popup";
 
-import { IoMdTrash } from "react-icons/io";
+import MdTrash from "@meronex/icons/ios/MdTrash";
 
 export interface SettingsPanelProps {
     roomSettings: RoomInfo | null;
@@ -140,7 +140,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
                                     variant="fab"
                                     color="accent"
                                 >
-                                    <IoMdTrash className={style.settingRemoveIcon} />
+                                    <MdTrash className={style.settingRemoveIcon} />
                                 </Button>
                             </Tooltip>
                         </div>

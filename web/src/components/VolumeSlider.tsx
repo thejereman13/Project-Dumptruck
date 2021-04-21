@@ -4,7 +4,7 @@ import { createPortal } from "preact/compat";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import { useAbortController } from "../utils/AbortController";
-import { MdVolumeUp } from "react-icons/md";
+import MdVolumeUp from "@meronex/icons/md/MdVolumeUp";
 import * as style from "./style.css";
 
 export interface VolumeSliderProps {

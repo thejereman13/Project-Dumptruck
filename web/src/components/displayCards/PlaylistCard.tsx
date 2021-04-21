@@ -9,7 +9,8 @@ import { RegisterLoadingNotification } from "../Notification";
 import { DotLoader } from "../LoadingAnimations";
 import { VideoCardInfo, VideoDisplayCard } from "./VideoCard";
 
-import { MdPlaylistAdd, MdShuffle } from "react-icons/md";
+import MdPlaylistAdd from "@meronex/icons/md/MdPlaylistAdd";
+import MdShuffle from "@meronex/icons/md/MdShuffle";
 
 import * as style from "./PlaylistCard.css";
 import * as commonStyle from "./DisplayCard.css";

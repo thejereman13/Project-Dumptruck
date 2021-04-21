@@ -25,6 +25,7 @@
     "build/*"
   ],
   "dependencies": {
+    "@meronex/icons": "^4.0.0",
     "@popperjs/core": "^2.4.4",
     "@types/gapi": "0.0.39",
     "@types/material__base": "^0.35.2",
@@ -37,7 +38,6 @@
     "preact-render-to-string": "^5.1.4",
     "preact-router": "^3.2.1",
     "react-google-login": "^5.1.21",
-    "react-icons": "^4.2.0",
     "react-movable": "^2.5.3",
     "react-popper": "^2.2.3",
     "use-debounce-preact": "^1.0.2"

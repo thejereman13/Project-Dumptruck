@@ -12,7 +12,7 @@ import { Tooltip } from "../../../components/Popup";
 import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
 
-import { MdFormatListNumbered } from "react-icons/md";
+import MdFormatListNumbered from "@meronex/icons/md/MdFormatListNumbered";
 
 interface UserQueueCardProps {
     allowRemoval: boolean;

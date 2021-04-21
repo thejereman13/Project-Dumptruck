@@ -3,8 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { VideoQueue } from "../panels/VideoPanel";
 
-import { MdQueueMusic, MdSettings, MdQueue, MdFormatListNumbered } from "react-icons/md";
-import { HiUsers, HiChevronDoubleRight } from "react-icons/hi";
+import MdQueueMusic from "@meronex/icons/md/MdQueueMusic";
+import MdSettings from "@meronex/icons/md/MdSettings";
+import MdQueue from "@meronex/icons/md/MdQueue";
+import MdFormatListNumbered from "@meronex/icons/md/MdFormatListNumbered";
+
+import HiUsers from "@meronex/icons/hi/HiUsers";
+import MdcChevronDoubleRight from "@meronex/icons/mdc/MdcChevronDoubleRight";
 
 import * as style from "./SidePanel.css";
 import { PlaylistByUser } from "../../../utils/WebsocketTypes";
@@ -183,7 +188,7 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         onClick={closeTab}
                     >
                         <div class={style.sidebarTabIcon}>
-                            <HiChevronDoubleRight size={iconSize} />
+                            <MdcChevronDoubleRight size={iconSize} />
                         </div>
                     </Tooltip>
                 ) : null}
