@@ -6,6 +6,7 @@ import { VideoQueue } from "../panels/VideoPanel";
 import MdQueueMusic from "@meronex/icons/md/MdQueueMusic";
 import MdSettings from "@meronex/icons/md/MdSettings";
 import MdQueue from "@meronex/icons/md/MdQueue";
+import MdHistory from "@meronex/icons/md/MdHistory";
 import MdFormatListNumbered from "@meronex/icons/md/MdFormatListNumbered";
 
 import HiUsers from "@meronex/icons/hi/HiUsers";
@@ -19,6 +20,7 @@ import { Tooltip } from "../../../components/Popup";
 import { UserList } from "../panels/UserPanel";
 import { SettingsPanel } from "../panels/SettingsPanel";
 import { QueueModal } from "../panels/QueuePanel";
+import { HistoryPanel } from "../panels/HistoryPanel";
 import { EditModal } from "../panels/EditModal";
 import { getSidebarCookie, setSidebarCookie } from "../../../utils/Cookies";
 import { useCallbackHook } from "../../../utils/EventSubscriber";
@@ -64,6 +66,7 @@ export interface SidePanelProps {
     userID: string;
     playing: boolean;
     adminUsers: string[];
+    history: string[];
     videoPlaylist: PlaylistByUser;
     userQueue: string[];
     currentUsers: RoomUser[];
@@ -80,6 +83,7 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
         adminPermissions,
         videoPlaylist,
         userID,
+        history,
         userQueue,
         currentUsers,
         wsCallbacks,
@@ -166,12 +170,17 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         <MdFormatListNumbered size={iconSize} />
                     </TabIcon>
                 ) : null}
-                <TabIcon index={4} title="Users" current={displayedTab} selectTab={setTab} expanded={expanded}>
+                {history.length > 0 ? (
+                    <TabIcon index={4} title="History" current={displayedTab} selectTab={setTab} expanded={expanded}>
+                        <MdHistory size={iconSize} />
+                    </TabIcon>
+                ) : null}
+                <TabIcon index={5} title="Users" current={displayedTab} selectTab={setTab} expanded={expanded}>
                     <HiUsers size={iconSize} />
                 </TabIcon>
                 {adminPermissions ? (
                     <TabIcon
-                        index={5}
+                        index={6}
                         title="Room Settings"
                         current={displayedTab}
                         selectTab={setTab}
@@ -228,6 +237,13 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                     />
                 </MountedTabBody>
                 <MountedTabBody index={4} current={displayedTab}>
+                    <HistoryPanel
+                        history={history}
+                        submitNewVideoFront={wsCallbacks.submitVideoFront}
+                        submitNewVideoEnd={wsCallbacks.submitVideoBack}
+                    />
+                </MountedTabBody>
+                <MountedTabBody index={5} current={displayedTab}>
                     <UserList
                         addAdmin={wsCallbacks.addAdmin}
                         adminList={adminUsers}
@@ -237,7 +253,7 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         userID={userID}
                     />
                 </MountedTabBody>
-                <MountedTabBody index={5} current={displayedTab}>
+                <MountedTabBody index={6} current={displayedTab}>
                     <SettingsPanel
                         removeAdmin={wsCallbacks.removeAdmin}
                         roomSettings={roomSettings}

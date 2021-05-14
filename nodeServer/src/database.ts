@@ -65,6 +65,7 @@ export interface DBRoomInfo {
     roomID: number;
     settings: DBRoomSettings;
     admins: string[];
+    history: string[];
 }
 
 export function parseRoomSettings(settings: Record<string, any>): DBRoomSettings {
@@ -106,23 +107,25 @@ export async function peekRoomInformation(roomID: number): Promise<DBRoomInfo | 
         const settings = parseRoomSettings(JSON.parse(r));
         if (settings.name.length > 0) {
             const admins = await redis.lrange("roomAdmins:" + roomID, 0, -1);
+            const history = await redis.lrange("roomHistory:" + roomID, 0, -1);
             return {
                 roomID,
                 settings,
-                admins
+                admins,
+                history
             };
         } else {
             return {
                 roomID,
                 settings,
-                admins: []
+                admins: [],
+                history: [],
             };
         }
     }
     return null;
 }
 
-// TODO: check the type for settings
 export async function setRoomSettings(roomID: number, settings: Record<string, any>): Promise<DBRoomSettings> {
     const roomSettings = parseRoomSettings(settings);
     if (roomSettings.name.length > 0)
@@ -145,4 +148,9 @@ export async function setRoomAdmins(roomID: number, admins: string[]): Promise<v
             await redis.lpush("userAdmins:" + ad, roomID.toString());
         }
     }
+}
+
+export async function appendRoomHistory(roomID: number, videoID: string): Promise<void> {
+    await redis.lpush("roomHistory:" + roomID, videoID);
+    await redis.ltrim("roomHistory:" + roomID, 0, 249);
 }

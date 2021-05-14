@@ -70,6 +70,16 @@ export function getRoomPlaying(req: Request, res: Response): void {
     }
 }
 
+export async function getRoomHistory(req: Request, res: Response): Promise<void> {
+    const id = Number(req.params["id"]);
+    const ri = await peekRoomInformation(id);
+    if (ri) {
+        res.status(200).send(JSON.stringify(ri.history));
+    } else {
+        res.status(404).send("{}");
+    }
+}
+
 export function getOpenRooms(_: Request, res: Response): void {
     const rooms = getActiveRooms();
     res.status(200).send(JSON.stringify(rooms));

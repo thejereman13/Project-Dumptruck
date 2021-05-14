@@ -1,4 +1,4 @@
-import { DBRoomSettings, peekRoomInformation, setRoomAdmins, setRoomSettings } from "./database";
+import { appendRoomHistory, DBRoomSettings, peekRoomInformation, setRoomAdmins, setRoomSettings } from "./database";
 import { User, UserList } from "./user";
 import { MessageQueue, MessageType } from "./message";
 import { validateVideoInfo, Video, VideoPlaylist } from "./video";
@@ -142,7 +142,7 @@ class Room {
             } else {
                 this.messageQueue.postMessage(MessageType.Pause);
                 this.currentVideo.playing = false;
-                this.queueNextVideo();
+                this.playNextVideo();
             }
             this.counter = (this.counter + 1) & 0x3; // counter up to 3 (modulo 4)
         }
@@ -159,13 +159,14 @@ class Room {
 
     /* Video Queue */
 
-    private queueNextVideo() {
+    private playNextVideo() {
         this.currentVideo = this.playlist.getNextVideo();
         if (this.currentVideo) {
             // if not waiting on users, start playing the video immediately
             this.currentVideo.playing = !this.settings.waitUsers;
             this.roomUsers.clearTempUserLists();
             this.messageQueue.postMessage(MessageType.Video, this.currentVideo, [], "Video");
+            appendRoomHistory(this.roomID, this.currentVideo.youtubeID);
             if (!this.settings.waitUsers) {
                 if (!this.videoLoopActive) {
                     this.videoLoop.setInterval(() => this.videoSyncLoop(), "", "1s");
@@ -190,7 +191,7 @@ class Room {
         if (newVideo.videoID.length > 0) {
             if (this.playlist.addVideoToQueue(userID, newVideo, front)) {
                 this.postPlaylist();
-                if (!this.currentVideo) this.queueNextVideo();
+                if (!this.currentVideo) this.playNextVideo();
             } else {
                 this.messageQueue.postMessage(MessageType.Error, "Video already in Queue", [userID], "error");
             }
@@ -213,7 +214,7 @@ class Room {
             if (newVid.videoID.length > 0) {
                 if (this.playlist.addVideoToQueue(userID, newVid, false)) {
                     successCounter++;
-                    if (!this.currentVideo) this.queueNextVideo();
+                    if (!this.currentVideo) this.playNextVideo();
                 } else {
                     failureCounter++;
                 }
@@ -308,8 +309,10 @@ class Room {
 
     private logUserError(videoID: string, id: string) {
         // skip the current video if more than half of the users have encountered an error
+        console.log(videoID, this.currentVideo);
         if (this.settings.skipErrors && this.currentVideo && this.currentVideo.youtubeID === videoID && this.roomUsers.setUserErrored(id) >= 0.5) {
-            this.queueNextVideo();
+            this.playNextVideo();
+            this.messageQueue.postMessage(MessageType.Error, "Skipping Video", [], "error");
         }
     }
     private logUserReady(id: string) {
@@ -386,7 +389,7 @@ class Room {
                 break;
             case MessageType.Skip:
                 if (this.settings.guestControls || this.authorizedUser(id)) {
-                    this.queueNextVideo();
+                    this.playNextVideo();
                 }
                 break;
             case MessageType.RoomSettings:

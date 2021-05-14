@@ -106,6 +106,19 @@ export async function GetRoomPlaying(
     return null;
 }
 
+export async function GetRoomHistory(roomID: string, controller: Ref<AbortController>): Promise<string[] | null> {
+    try {
+        const resp = await fetch(`/api/history/${roomID}`, { signal: controller.current.signal });
+        if (!resp.ok) return null;
+        const h = await resp.json();
+        if (Array.isArray(h)) return h as string[];
+        return null;
+    } catch (e) {
+        console.warn(e);
+    }
+    return null;
+}
+
 export async function GetActiveRooms(controller: Ref<AbortController>): Promise<number[]> {
     try {
         const resp = await fetch("/api/rooms", { signal: controller.current.signal });

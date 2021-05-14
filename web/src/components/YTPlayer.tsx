@@ -1,5 +1,6 @@
 import { h, Component } from "preact";
 import { RegisterNotification } from "./Notification";
+import { videoIDFromURL } from "../utils/YoutubeTypes";
 
 export interface YouTubeVideoProps {
     className: string;
@@ -134,9 +135,9 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                 events: {
                     onReady: this.onPlayerReady,
                     onError: (e): void => {
-                        console.warn("Youtube Error:", e);
+                        const vidID = videoIDFromURL(e.target.getVideoUrl());
                         RegisterNotification("Youtube Player Encountered Error", "error");
-                        playerError(id);
+                        if (vidID) playerError(vidID);
                     }
                     // onStateChange: (e): void => this.onPlayerStateChange(e.data)
                 },

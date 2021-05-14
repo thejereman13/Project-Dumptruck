@@ -8,7 +8,7 @@ import { useGAPIContext } from "../../utils/GAPI";
 import { RegisterNotification } from "../../components/Notification";
 import { useRoomWebsockets } from "./RoomWebsockets";
 import { getVolumeCookie, setVolumeCookie } from "../../utils/Cookies";
-import { GetRoomInfo } from "../../utils/RestCalls";
+import { GetRoomHistory, GetRoomInfo } from "../../utils/RestCalls";
 import { useAbortController } from "../../utils/AbortController";
 import { NotifyChannel } from "../../utils/EventSubscriber";
 import { SidePanel } from "./components/SidePanel";
@@ -24,6 +24,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [adminUsers, setAdminUsers] = useState<string[]>([]);
     const [videoPlaylist, setVideoPlaylist] = useState<PlaylistByUser>({});
     const [userQueue, setUserQueue] = useState<string[]>([]);
+    const [videoHistory, setVideoHistory] = useState<string[]>([]);
     const [guestControls, setGuestControls] = useState(false);
     const [currentVideo, setCurrentVideo] = useState<Video | null>(null);
     const [playerVolume, setPlayerVolume] = useState<number>(0);
@@ -41,6 +42,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
             if (res === null) {
                 setRoomNonexistant(true);
             }
+        });
+        GetRoomHistory(roomID, controller).then((res) => {
+            if (res !== null) setVideoHistory(res);
         });
         return (): void => {
             NotifyChannel("roomName", "");
@@ -108,6 +112,15 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     }
                     break;
                 case MessageType.Video:
+                    if (msg.Video)
+                        setVideoHistory((h) => {
+                            const v = msg.Video;
+                            if (v) {
+                                h = h.slice(0, 248);
+                                h.unshift(v.youtubeID);
+                            }
+                            return h;
+                        });
                     setVideoInformation(msg.Video ?? null);
                     break;
                 case MessageType.Play:
@@ -186,6 +199,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                         setPlayerVolume={updateVolume}
                         adminPermissions={isAdmin}
                         adminUsers={adminUsers}
+                        history={videoHistory}
                         currentUsers={currentUsers}
                         roomSettings={roomSettings}
                         setRoomSettings={setRoomSettings}

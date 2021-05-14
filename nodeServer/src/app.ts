@@ -7,7 +7,7 @@ import fs from "fs";
 import https from "https";
 import { v4 as randomUUID } from "uuid";
 
-import { readConfigFile, server_configuration, ConfigItems, createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying } from "./configuration";
+import { readConfigFile, server_configuration, ConfigItems, createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying, getRoomHistory } from "./configuration";
 import { getUserLogin, userLogin, userLogout } from "./authentication";
 import { clearUserInfo, getPublicUserInfo, getUserInfo } from "./site_user";
 import { handleWebsocketConnection } from "./sockets";
@@ -37,7 +37,7 @@ app.use(session({
 	store: new redisStore({ client: redisClient })
 }));
 
-const WebServerVersion = "0.9.0";
+const WebServerVersion = "0.9.1";
 
 app.ws("/api/ws", handleWebsocketConnection);
 app.post("/api/login", userLogin);
@@ -51,6 +51,7 @@ app.get("/api/room/:id", getRoomSettings);
 app.post("/api/room/:id", createNewRoom);
 app.get("/api/rooms", getOpenRooms);
 app.get("/api/playing/:id", getRoomPlaying);
+app.get("/api/history/:id", getRoomHistory);
 
 
 console.info("Starting Web Server: " + WebServerVersion + " on port ", server_configuration[ConfigItems.Port]);
