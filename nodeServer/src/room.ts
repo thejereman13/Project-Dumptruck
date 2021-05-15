@@ -309,7 +309,6 @@ class Room {
 
     private logUserError(videoID: string, id: string) {
         // skip the current video if more than half of the users have encountered an error
-        console.log(videoID, this.currentVideo);
         if (this.settings.skipErrors && this.currentVideo && this.currentVideo.youtubeID === videoID && this.roomUsers.setUserErrored(id) >= 0.5) {
             this.playNextVideo();
             this.messageQueue.postMessage(MessageType.Error, "Skipping Video", [], "error");
@@ -431,7 +430,7 @@ export function getActiveRooms(): number[] {
     return rooms.filter((k) => roomList[k].roomLoopRunning && roomList[k].settings.publicVisibility);
 }
 
-export function deleteRoom(roomID: number): void {
+function deleteRoom(roomID: number): void {
     if (!(roomID in roomList)) return;
     console.info("Deallocating Room " + roomID);
     roomList[roomID].destroy();

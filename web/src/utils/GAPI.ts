@@ -12,6 +12,7 @@ import {
     parseSearchVideoJSON
 } from "./YoutubeTypes";
 import { RegisterNotification } from "../components/Notification";
+import { ArrayCache } from "./Caching";
 
 /* Util hook and context for logging in with GAPI user and retrieving user info */
 
@@ -182,6 +183,9 @@ export function RequestLikedVideos(
     addPage();
 }
 
+// Should average < 600KB of LocalStorage
+const durationCache = new ArrayCache<Pick<VideoInfo, "id" | "channel" | "duration">>("VideoInfo", 4096);
+
 /**
  * Request all information on a Youtube Playlist
  * @param playlistID ID of the Youtube Playlist
@@ -194,16 +198,19 @@ export function RequestVideosFromPlaylist(
     responseCallback: (item: VideoInfo[] | undefined, final: boolean) => void
 ): void {
     let returnArr: VideoInfo[] = [];
-    let durationCount = 0;
-    const getAllDurations = (): void => {
-        const startIndex = durationCount * 50;
-        const elementCount = Math.min(returnArr.length - startIndex, 50);
+    const getAllDurations = (durationsRequested: number[]): void => {
+        if (durationsRequested.length === 0) {
+            responseCallback(returnArr, true);
+            return;
+        }
+        const elementCount = Math.min(durationsRequested.length, 50);
+        const workingDurations = durationsRequested.slice(0, elementCount);
         gapi.client
             .request({
                 path: "https://www.googleapis.com/youtube/v3/videos",
                 params: {
                     part: "snippet,contentDetails",
-                    id: returnArr.map((v) => v.id).slice(startIndex, startIndex + elementCount), // max 50 at a time
+                    id: workingDurations.map((ind) => returnArr[ind].id), // max 50 at a time
                     maxResults: 50
                 }
             })
@@ -211,24 +218,26 @@ export function RequestVideosFromPlaylist(
                 if (!controller.current.signal.aborted) {
                     if (resp.result.items.length === elementCount) {
                         resp.result.items.forEach((result: any, index: number) => {
-                            returnArr[startIndex + index] = parseVideoJSON(result);
+                            const vid = parseVideoJSON(result);
+                            returnArr[workingDurations[index]] = vid;
+                            durationCache.pushInfoStore({ id: vid.id, channel: vid.channel, duration: vid.duration });
                         });
                     } else {
                         let i = 0;
                         resp.result.items.forEach((result: any) => {
                             const vid = parseVideoJSON(result);
                             // Skip over any invalid videos that couldn't be returned by GAPI request
-                            while (returnArr[startIndex + i].id !== vid.id) {
+                            while (returnArr[workingDurations[i]].id !== vid.id) {
                                 i++;
                             }
-                            returnArr[startIndex + i] = vid;
+                            returnArr[workingDurations[i]] = vid;
+                            durationCache.pushInfoStore({ id: vid.id, channel: vid.channel, duration: vid.duration });
                             i++;
                         });
                     }
 
-                    if (startIndex + elementCount < returnArr.length) {
-                        durationCount += 1;
-                        getAllDurations();
+                    if (elementCount < durationsRequested.length) {
+                        getAllDurations(durationsRequested.slice(elementCount));
                         responseCallback(returnArr, false);
                     } else {
                         responseCallback(returnArr, true);
@@ -260,7 +269,16 @@ export function RequestVideosFromPlaylist(
                     addPage(resp.result.nextPageToken);
                 } else {
                     responseCallback(returnArr, false);
-                    getAllDurations();
+                    const needDurations: number[] = [];
+                    returnArr.forEach((v, i) => {
+                        const vid = durationCache.queryInfoStore((e) => e.id === v.id);
+                        if (vid) {
+                            returnArr[i] = { ...returnArr[i], ...vid };
+                        } else {
+                            needDurations.push(i);
+                        }
+                    });
+                    getAllDurations(needDurations);
                 }
             })
             .catch(() => {

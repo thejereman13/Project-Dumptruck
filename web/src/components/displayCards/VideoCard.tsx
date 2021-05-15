@@ -1,5 +1,5 @@
 import { h, JSX } from "preact";
-import { useState, useEffect, useRef } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import Button from "preact-mui/lib/button";
 import { VideoInfo, durationToString } from "../../utils/YoutubeTypes";
 import { RequestVideoPreview } from "../../utils/RestCalls";
@@ -13,6 +13,7 @@ import MdEyeOff from "@meronex/icons/ios/MdEyeOff";
 import * as style from "./VideoCard.css";
 import * as commonStyle from "./DisplayCard.css";
 import { NotifyChannel } from "../../utils/EventSubscriber";
+import { ArrayCache } from "../../utils/Caching";
 
 export interface VideoCardInfo {
     id: string;
@@ -118,14 +119,8 @@ export interface VideoCardProps {
     enablePreview: boolean;
 }
 
-let infoStore: VideoCardInfo[] = [];
-const infoStoreLength = 512;
-
-function pushInfoStore(videoInfo: VideoCardInfo): VideoCardInfo {
-    if (infoStore.includes(videoInfo)) return videoInfo;
-    if (infoStore.push(videoInfo) > infoStoreLength) infoStore = infoStore.slice(1);
-    return videoInfo;
-}
+// Should average < 400KB of LocalStorage
+const infoStore = new ArrayCache<VideoCardInfo>("VideoCardInfo", 1024);
 
 export const VideoCard = memo(
     function VideoCard(props: VideoCardProps): JSX.Element {
@@ -134,18 +129,17 @@ export const VideoCard = memo(
 
         const controller = useAbortController();
 
-        const vidID = useRef<VideoInfo>(null);
-
         useEffect(() => {
             if (videoID) {
-                const ind = infoStore.findIndex((inf) => inf.id === videoID);
-                if (ind >= 0) {
-                    setVideoInfo(infoStore[ind]);
+                const existingInfo = infoStore.queryInfoStore((inf) => inf.id === videoID);
+                console.log(existingInfo);
+                if (existingInfo) {
+                    setVideoInfo({ ...existingInfo, duration });
                 } else {
                     RequestVideoPreview(videoID, controller).then((info: VideoInfo | null) => {
                         if (info) {
                             setVideoInfo(
-                                pushInfoStore({
+                                infoStore.pushInfoStore({
                                     id: info.id,
                                     title: info.title,
                                     channel: info.channel,
@@ -153,17 +147,15 @@ export const VideoCard = memo(
                                     thumbnailURL: info.thumbnailMaxRes.url
                                 })
                             );
-                            vidID.current = info;
                         }
                     });
                 }
             }
         }, [videoID, duration, controller]);
 
-        const workingInfo = infoStore.find((inf) => inf.id === videoID) ?? videoInfo;
-        return workingInfo ? (
+        return videoInfo ? (
             <VideoDisplayCard
-                info={workingInfo}
+                info={videoInfo}
                 onClick={onClick}
                 actionComponent={actionComponent}
                 enablePreview={enablePreview}

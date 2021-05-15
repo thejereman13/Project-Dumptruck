@@ -92,6 +92,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
 
     const submitFrontFromList = (videoID: VideoCardInfo | VideoInfo): void => {
         if (videoID.duration === undefined) {
+            // Rarely-taken path, no need to cache
             RequestVideo(videoID.id, controller, (info) => {
                 submitNewVideoFront(
                     {
@@ -113,6 +114,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
     };
     const submitEndFromList = (videoID: VideoCardInfo | VideoInfo): void => {
         if (videoID.duration === undefined) {
+            // Rarely-taken path, no need to cache
             RequestVideo(videoID.id, controller, (info) => {
                 submitNewVideoEnd(
                     {
