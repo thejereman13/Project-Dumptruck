@@ -104,7 +104,7 @@ export async function createNewRoom(req: Request, res: Response): Promise<void> 
         set.name = "Room " + id;
         // setRoomSettings will parse out any invalid info, so we assign and serialize again just to be safe
         await setRoomSettings(id, set);
-        res.status(201).send(id);
+        res.status(201).send(JSON.stringify(id));
     } else {
         res.status(400).send("{}");
     }

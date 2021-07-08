@@ -132,7 +132,6 @@ export const VideoCard = memo(
         useEffect(() => {
             if (videoID) {
                 const existingInfo = infoStore.queryInfoStore((inf) => inf.id === videoID);
-                console.log(existingInfo);
                 if (existingInfo) {
                     setVideoInfo({ ...existingInfo, duration });
                 } else {
