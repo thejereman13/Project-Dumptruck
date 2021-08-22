@@ -19,7 +19,23 @@
     display: flex;
     align-items: center;
     flex-direction: row;
+    position: relative;
 }
 .searchDiv > div {
     flex: auto;
+}
+
+.searchClear {
+    position: absolute;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 50%;
+    color: var(--theme-primary);
+    padding: 0.25rem;
+    display: flex;
+}
+.searchClear:hover {
+    background: var(--dp16-surface);
 }

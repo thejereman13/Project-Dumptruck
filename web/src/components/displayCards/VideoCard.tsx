@@ -13,7 +13,7 @@ import MdEyeOff from "@meronex/icons/ios/MdEyeOff";
 import * as style from "./VideoCard.css";
 import * as commonStyle from "./DisplayCard.css";
 import { NotifyChannel } from "../../utils/EventSubscriber";
-import { ArrayCache } from "../../utils/Caching";
+import { videoInfoCache } from "../../utils/GAPI";
 
 export interface VideoCardInfo {
     id: string;
@@ -119,9 +119,6 @@ export interface VideoCardProps {
     enablePreview: boolean;
 }
 
-// Should average < 400KB of LocalStorage
-const infoStore = new ArrayCache<VideoCardInfo>("VideoCardInfo", 1024);
-
 export const VideoCard = memo(
     function VideoCard(props: VideoCardProps): JSX.Element {
         const { videoID, duration, onClick, actionComponent, enablePreview } = props;
@@ -131,14 +128,14 @@ export const VideoCard = memo(
 
         useEffect(() => {
             if (videoID) {
-                const existingInfo = infoStore.queryInfoStore((inf) => inf.id === videoID);
+                const existingInfo = videoInfoCache.queryInfoStore(videoID);
                 if (existingInfo) {
                     setVideoInfo({ ...existingInfo, duration });
                 } else {
                     RequestVideoPreview(videoID, controller).then((info: VideoInfo | null) => {
                         if (info) {
                             setVideoInfo(
-                                infoStore.pushInfoStore({
+                                videoInfoCache.pushInfoStore({
                                     id: info.id,
                                     title: info.title,
                                     channel: info.channel,

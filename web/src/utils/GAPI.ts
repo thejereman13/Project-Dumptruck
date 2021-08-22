@@ -12,7 +12,8 @@ import {
     parseSearchVideoJSON
 } from "./YoutubeTypes";
 import { RegisterNotification } from "../components/Notification";
-import { ArrayCache } from "./Caching";
+import { ObjectCache } from "./Caching";
+import { VideoCardInfo } from "../components/displayCards/VideoCard";
 
 /* Util hook and context for logging in with GAPI user and retrieving user info */
 
@@ -183,8 +184,8 @@ export function RequestLikedVideos(
     addPage();
 }
 
-// Should average < 600KB of LocalStorage
-const durationCache = new ArrayCache<Pick<VideoInfo, "id" | "channel" | "duration">>("VideoInfo", 4096);
+// Should average < 1MB of LocalStorage
+export const videoInfoCache = new ObjectCache<VideoCardInfo>("VideoInfoCache", 4096);
 
 /**
  * Request all information on a Youtube Playlist
@@ -220,7 +221,13 @@ export function RequestVideosFromPlaylist(
                         resp.result.items.forEach((result: any, index: number) => {
                             const vid = parseVideoJSON(result);
                             returnArr[workingDurations[index]] = vid;
-                            durationCache.pushInfoStore({ id: vid.id, channel: vid.channel, duration: vid.duration });
+                            videoInfoCache.pushInfoStore({
+                                id: vid.id,
+                                title: vid.title,
+                                channel: vid.channel,
+                                duration: vid.duration,
+                                thumbnailURL: vid.thumbnailMaxRes.url
+                            });
                         });
                     } else {
                         let i = 0;
@@ -231,7 +238,13 @@ export function RequestVideosFromPlaylist(
                                 i++;
                             }
                             returnArr[workingDurations[i]] = vid;
-                            durationCache.pushInfoStore({ id: vid.id, channel: vid.channel, duration: vid.duration });
+                            videoInfoCache.pushInfoStore({
+                                id: vid.id,
+                                title: vid.title,
+                                channel: vid.channel,
+                                duration: vid.duration,
+                                thumbnailURL: vid.thumbnailMaxRes.url
+                            });
                             i++;
                         });
                     }
@@ -271,8 +284,8 @@ export function RequestVideosFromPlaylist(
                     responseCallback(returnArr, false);
                     const needDurations: number[] = [];
                     returnArr.forEach((v, i) => {
-                        const vid = durationCache.queryInfoStore((e) => e.id === v.id);
-                        if (vid) {
+                        const vid = videoInfoCache.queryInfoStore(v.id);
+                        if (vid && vid.duration) {
                             returnArr[i] = { ...returnArr[i], ...vid };
                         } else {
                             needDurations.push(i);

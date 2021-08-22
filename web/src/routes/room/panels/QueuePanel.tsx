@@ -19,6 +19,7 @@ import { memo } from "preact/compat";
 import * as style from "./QueuePanel.css";
 import * as commonStyle from "../style.css";
 import { VideoQueueMenu } from "../../../components/displayCards/QueueMenu";
+import MdClear from "@meronex/icons/md/MdClear";
 
 export interface QueueModalProps {
     submitNewVideoEnd: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
@@ -89,6 +90,11 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
         setSearchField(val);
         debouncedSearch(val);
     };
+    const clearVideoSearch = (): void => {
+        // For some reason manually clearing the value of an input won't update the floating label
+        setSearchField("");
+        debouncedSearch("");
+    };
 
     const submitFrontFromList = (videoID: VideoCardInfo | VideoInfo): void => {
         if (videoID.duration === undefined) {
@@ -148,12 +154,17 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
         playlistSearch.length > 0
             ? userPlaylists.filter((p) => p.title.toUpperCase().includes(playlistSearch.toUpperCase()))
             : userPlaylists;
-
+    console.log(searchField.length);
     return (
         <div class={style.queueContainer}>
             <div class={style.queueTabBody}>
                 <div class={style.searchDiv}>
                     <Input floatingLabel label="Search" value={searchField} onChange={updateVideoSearch} />
+                    {searchField.length > 0 ? (
+                        <button class={style.searchClear} onClick={clearVideoSearch}>
+                            <MdClear size="1.5rem" />
+                        </button>
+                    ) : null}
                 </div>
                 <div class={commonStyle.scrollBox}>
                     {searchPlaylist && (
@@ -177,7 +188,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             />
                         );
                     })}
-                    {likedPreview !== null && filteredPlaylists === userPlaylists && (
+                    {likedPreview !== null && searchResults.length === 0 && filteredPlaylists === userPlaylists ? (
                         <LikedVideosCard
                             info={{
                                 id: "",
@@ -191,18 +202,20 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             queueVideoFront={submitFrontFromList}
                             submitPlaylist={submitPlaylist}
                         />
-                    )}
-                    {filteredPlaylists.map((list) => {
-                        return (
-                            <PlaylistCard
-                                key={list.id}
-                                info={list}
-                                queueVideoEnd={submitEndFromList}
-                                queueVideoFront={submitFrontFromList}
-                                submitPlaylist={submitPlaylist}
-                            />
-                        );
-                    })}
+                    ) : null}
+                    {searchResults.length === 0
+                        ? filteredPlaylists.map((list) => {
+                              return (
+                                  <PlaylistCard
+                                      key={list.id}
+                                      info={list}
+                                      queueVideoEnd={submitEndFromList}
+                                      queueVideoFront={submitFrontFromList}
+                                      submitPlaylist={submitPlaylist}
+                                  />
+                              );
+                          })
+                        : null}
                 </div>
             </div>
         </div>
