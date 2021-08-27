@@ -1,20 +1,24 @@
 import { h, JSX } from "preact";
 import Button from "preact-mui/lib/button";
 import { useEffect, useState } from "preact/hooks";
-import { GetRoomPlaying, RequestVideoPreview } from "../../../utils/RestCalls";
+import { GetRoomPlaying, RemoveRecentRoom, RequestVideoPreview } from "../../../utils/RestCalls";
 import { VideoInfo } from "../../../utils/YoutubeTypes";
 import { useAbortController } from "../../../utils/AbortController";
+import MdRemoveCircle from "@meronex/icons/md/MdRemoveCircle";
 
 import * as style from "./RoomCard.css";
+import { Tooltip } from "../../../components/Popup";
 
 export interface RoomCardProps {
     onClick: () => void;
+    updateCallback?: () => void;
     name: string;
     roomID: number;
+    showRemove?: boolean;
 }
 
 export function RoomCard(props: RoomCardProps): JSX.Element {
-    const { name, onClick, roomID } = props;
+    const { name, onClick, roomID, showRemove, updateCallback } = props;
 
     const [playingPreview, setPlayingPreview] = useState<VideoInfo | null>(null);
     const [userCount, setUserCount] = useState<number>(0);
@@ -30,6 +34,12 @@ export function RoomCard(props: RoomCardProps): JSX.Element {
             }
         });
     }, [roomID, controller]);
+
+    const removeRecent = (e: h.JSX.TargetedMouseEvent<HTMLDivElement>): void => {
+        e.preventDefault();
+        e.stopPropagation();
+        RemoveRecentRoom(roomID).then(updateCallback);
+    };
 
     return (
         <Button className={["mui-btn", style.RoomCard].join(" ")} variant="flat" onClick={onClick}>
@@ -51,6 +61,16 @@ export function RoomCard(props: RoomCardProps): JSX.Element {
                         <p>Nothing Currently Playing</p>
                     </div>
                 )}
+                {showRemove ? (
+                    <Tooltip
+                        content="Remove from Recent"
+                        options={{ placement: "bottom" }}
+                        className={style.cardIcon}
+                        onClick={removeRecent}
+                    >
+                        <MdRemoveCircle size="1.5rem" />
+                    </Tooltip>
+                ) : null}
             </div>
         </Button>
     );

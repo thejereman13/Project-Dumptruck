@@ -59,7 +59,7 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             ws.current.addEventListener("error", (e) => console.warn("WS Error: ", e));
             ws.current.addEventListener("close", () => {
                 clearTimeout(ping);
-                createWebSocket();
+                setTimeout(() => createWebSocket(), 200);
             });
         };
         if (ws.current === null) {

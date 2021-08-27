@@ -44,3 +44,8 @@
     display: inline-flex !important;
     align-items: center;
 }
+
+.deleteButton {
+    margin-top: auto;
+    background-color: var(--theme-primary-dark);
+}

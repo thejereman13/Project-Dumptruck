@@ -1,5 +1,11 @@
 import Redis from "ioredis";
 
+const user_prefix = "user:";
+const userAdmins_prefix = "userAdmins:";
+const roomAdmins_prefix = "roomAdmins:";
+const roomHistory_prefix = "roomHistory:";
+const roomSettings_prefix = "room:";
+
 const redis = new Redis();
 redis.on("error", (e) => {
     console.error("REDIS ERROR: ", e);
@@ -7,22 +13,39 @@ redis.on("error", (e) => {
 
 
 export async function getUserData(userID: string): Promise<string> {
-    const r = await redis.hget("user:" + userID, "data");
+    const r = await redis.hget(user_prefix + userID, "data");
     if (r && r.length > 0)
         return r;
     else
         return "{}";
 }
 
+export async function getAllUsers(): Promise<string[]> {
+    return new Promise((resolve) => {
+        const list = new Set<string>();
+        const stream = redis.scanStream({
+            match: user_prefix + "*",
+        });
+        stream.on("data", (resultKeys: string[]) => {
+            resultKeys.forEach((key) => {
+                list.add(key.replace(user_prefix, ""));
+            });
+        });
+        stream.on("end", () => {
+            resolve(new Array(...list.values()));
+        })
+    });
+}
+
 export async function setUserData(user: string, data: string): Promise<void> {
-    await redis.hmset("user:" + user, "data", data);
+    await redis.hmset(user_prefix + user, "data", data);
 }
 
 export async function clearUserData(user: string): Promise<boolean> {
-    await redis.del("user:" + user);
-    const r = await redis.lrange("userAdmins:" + user, 0, -1);
-    for (const u in r) {
-        await redis.lrem("roomAdmins:" + u, 0, user);
+    await redis.del(user_prefix + user);
+    const r = await redis.lrange(userAdmins_prefix + user, 0, -1);
+    for (const u of r) {
+        await redis.lrem(roomAdmins_prefix + u, 0, user);
     }
     return true;
 }
@@ -35,7 +58,7 @@ export async function findGIDUser(gid: string): Promise<string | null> {
 }
 
 export async function setUserGID(user: string, gid: string): Promise<void> {
-    await redis.hmset("user:" + user, "gid", gid);
+    await redis.hmset(user_prefix + user, "gid", gid);
     await redis.set("gid:" + gid, user);
 }
 
@@ -71,7 +94,7 @@ export interface DBRoomInfo {
 export function parseRoomSettings(settings: Record<string, any>): DBRoomSettings {
     const room = defaultDBSettings();
     Object.entries(settings).forEach(([key, value]) => {
-        switch (key) {
+        switch (key as keyof DBRoomSettings) {
             case "name":
                 room.name = value;
                 break;
@@ -93,7 +116,6 @@ export function parseRoomSettings(settings: Record<string, any>): DBRoomSettings
             case "waitUsers":
                 room.waitUsers = Boolean(value);
                 break;
-            default: break;
         }
     });
     return room;
@@ -101,13 +123,13 @@ export function parseRoomSettings(settings: Record<string, any>): DBRoomSettings
 
 export async function peekRoomInformation(roomID: number): Promise<DBRoomInfo | null> {
     if (Number.isNaN(roomID)) return null;
-    const r = await redis.get("room:" + roomID);
+    const r = await redis.get(roomSettings_prefix + roomID);
     // r.value is empty if room doesn't exist
     if (r && r.length > 0) {
         const settings = parseRoomSettings(JSON.parse(r));
         if (settings.name.length > 0) {
-            const admins = await redis.lrange("roomAdmins:" + roomID, 0, -1);
-            const history = await redis.lrange("roomHistory:" + roomID, 0, -1);
+            const admins = await redis.lrange(roomAdmins_prefix + roomID, 0, -1);
+            const history = await redis.lrange(roomHistory_prefix + roomID, 0, -1);
             return {
                 roomID,
                 settings,
@@ -129,28 +151,39 @@ export async function peekRoomInformation(roomID: number): Promise<DBRoomInfo | 
 export async function setRoomSettings(roomID: number, settings: Record<string, any>): Promise<DBRoomSettings> {
     const roomSettings = parseRoomSettings(settings);
     if (roomSettings.name.length > 0)
-        redis.set("room:" + roomID, JSON.stringify(roomSettings));
+        redis.set(roomSettings_prefix + roomID, JSON.stringify(roomSettings));
     return roomSettings;
 }
 
-export async function setRoomAdmins(roomID: number, admins: string[]): Promise<void> {
-    const r = await redis.lrange("roomAdmins:" + roomID, 0, -1);
+export async function removeRoomInfo(roomID: number): Promise<void> {
+    await redis.del(roomSettings_prefix + roomID);
+    await redis.del(roomHistory_prefix + roomID);
+    const r = await redis.lrange(roomAdmins_prefix + roomID, 0, -1);
     if (r.length > 0)
-        for (const k in r) {
+        for (const k of r) {
             // remove room from a user's list of adminable rooms
-            await redis.lrem("userAdmins:" + k, 0, roomID);
+            await redis.lrem(userAdmins_prefix + k, 0, roomID);
+        }
+}
+
+export async function setRoomAdmins(roomID: number, admins: string[]): Promise<void> {
+    const r = await redis.lrange(roomAdmins_prefix + roomID, 0, -1);
+    if (r.length > 0)
+        for (const k of r) {
+            // remove room from a user's list of adminable rooms
+            await redis.lrem(userAdmins_prefix + k, 0, roomID);
         }
 
-    await redis.del("roomAdmins:" + roomID);
-    for (const ad in admins) {
+    await redis.del(roomAdmins_prefix + roomID);
+    for (const ad of admins) {
         if (ad) {
-            await redis.lpush("roomAdmins:" + roomID, ad);
-            await redis.lpush("userAdmins:" + ad, roomID.toString());
+            await redis.lpush(roomAdmins_prefix + roomID, ad);
+            await redis.lpush(userAdmins_prefix + ad, roomID.toString());
         }
     }
 }
 
 export async function appendRoomHistory(roomID: number, videoID: string): Promise<void> {
-    await redis.lpush("roomHistory:" + roomID, videoID);
-    await redis.ltrim("roomHistory:" + roomID, 0, 249);
+    await redis.lpush(roomHistory_prefix + roomID, videoID);
+    await redis.ltrim(roomHistory_prefix + roomID, 0, 249);
 }

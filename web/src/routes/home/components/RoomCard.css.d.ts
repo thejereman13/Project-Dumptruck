@@ -4,6 +4,7 @@ declare namespace RoomCardCssNamespace {
         RoomCard: string;
         RoomCardPreview: string;
         RoomCardTitle: string;
+        cardIcon: string;
     }
 }
 

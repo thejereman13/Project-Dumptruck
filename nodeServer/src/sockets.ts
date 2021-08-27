@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import { Request } from "express";
-import { getOrCreateRoom } from "./room";
+import { getOrCreateRoom } from "./site_room";
 import { sleep } from "./utils";
 
 export async function handleWebsocketConnection(socket: WebSocket, req: Request): Promise<void> {
@@ -12,7 +12,7 @@ export async function handleWebsocketConnection(socket: WebSocket, req: Request)
 	const r = await getOrCreateRoom(roomID);
 	let counter = 0;
 	while (!r.initialized) {
-		sleep(100);
+		await sleep(100);
 		if (counter++ > 20) {
 			socket.close();
 			return;

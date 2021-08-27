@@ -151,3 +151,27 @@ export async function RequestVideoPreview(
     }
     return null;
 }
+
+export async function RemoveRecentRoom(roomID: number): Promise<boolean> {
+    try {
+        const resp = await fetch("/api/userHistory/" + roomID, {
+            method: "DELETE"
+        });
+        return resp.ok;
+    } catch (e) {
+        console.warn(e);
+    }
+    return false;
+}
+
+export async function RemoveRoom(roomID: number): Promise<boolean> {
+    try {
+        const resp = await fetch("/api/room/" + roomID, {
+            method: "DELETE"
+        });
+        return resp.ok;
+    } catch (e) {
+        console.warn(e);
+    }
+    return false;
+}

@@ -2,6 +2,7 @@
 declare namespace SettingsPanelCssNamespace {
     export interface ISettingsPanelCss {
         centerTooltipChild: string;
+        deleteButton: string;
         settingContainer: string;
         settingFullWidth: string;
         settingRemoveIcon: string;

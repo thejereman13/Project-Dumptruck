@@ -1,6 +1,6 @@
 import { h, JSX } from "preact";
 import * as style from "./style.css";
-import { useState, useEffect } from "preact/hooks";
+import { useState, useEffect, useCallback } from "preact/hooks";
 import { route } from "preact-router";
 import { CreateNewRoom, GetActiveRooms, GetCurrentUser, GetRoomInfo } from "../../utils/RestCalls";
 import { RoomInfo, SiteUser } from "../../utils/BackendTypes";
@@ -18,11 +18,15 @@ export function Home(): JSX.Element {
     const controller = useAbortController();
     const gapi = useGAPIContext();
 
-    useEffect(() => {
+    const updateUser = useCallback(() => {
         if (gapi?.getUser() !== null)
             GetCurrentUser(controller).then((usr) => {
                 if (!controller.current.signal.aborted) setCurrentUser(usr);
             });
+    }, [controller, gapi]);
+
+    useEffect(() => {
+        updateUser();
         GetActiveRooms(controller).then((res) => {
             Promise.all(res.map(async (a) => await GetRoomInfo(a.toString(), controller))).then((results) => {
                 if (!controller.current.signal.aborted)
@@ -34,7 +38,7 @@ export function Home(): JSX.Element {
                     );
             });
         });
-    }, [controller, gapi]);
+    }, [controller, updateUser]);
 
     useEffect(() => {
         if (currentUser !== null) {
@@ -105,12 +109,14 @@ export function Home(): JSX.Element {
                             <h2>Recent Rooms</h2>
                             {userRooms.map((room) => (
                                 <RoomCard
+                                    showRemove
                                     key={room.roomID}
                                     roomID={room.roomID}
                                     name={room.settings.name}
                                     onClick={(): void => {
                                         route(`/room/${room.roomID}`);
                                     }}
+                                    updateCallback={updateUser}
                                 />
                             ))}
                         </div>

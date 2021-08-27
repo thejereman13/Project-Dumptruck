@@ -42,7 +42,7 @@ export default {
                 {
                     options: {
                         eslintPath: require.resolve("eslint"),
-                        failOnError: true
+                        failOnError: false
                     },
                     loader: require.resolve("eslint-loader")
                 }

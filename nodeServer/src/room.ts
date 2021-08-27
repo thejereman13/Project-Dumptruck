@@ -5,6 +5,7 @@ import { validateVideoInfo, Video, VideoPlaylist } from "./video";
 import { sleep } from "./utils";
 
 import NanoTimer from "nanotimer";
+import { destroyRoom } from "./site_room";
 
 export interface RoomInfo {
     roomName: string;
@@ -16,7 +17,7 @@ export interface RoomInfo {
     guestControls: boolean;
 }
 
-class Room {
+export class Room {
     private roomID: number;
     public settings: DBRoomSettings = {} as DBRoomSettings;
 
@@ -42,7 +43,7 @@ class Room {
         this.messageQueue = new MessageQueue();
     }
 
-    public async init() {
+    public async init(): Promise<void> {
         const dbInfo = await peekRoomInformation(this.roomID);
         if (dbInfo) {
             if (dbInfo.roomID > 0) {
@@ -63,7 +64,7 @@ class Room {
         this.initialized = true;
     }
 
-    public destroy() {
+    public destroy(): void {
         this.clearUser.clearTimeout();
         this.videoLoop.clearInterval();
         this.messageQueue.destroy();
@@ -113,7 +114,7 @@ class Room {
                     this.videoLoop.clearInterval();
                     this.videoLoopActive = false;
                     if (this.roomDeletionDelay) clearTimeout(this.roomDeletionDelay);
-                    deleteRoom(this.roomID);
+                    destroyRoom(this.roomID);
                 }
             }, 30000);
     }
@@ -268,7 +269,7 @@ class Room {
             Room: this.getRoomInfo(),
         };
     }
-    public removeUser(id: string) {
+    public removeUser(id: string): void {
         if (!this.constructed) return;
         if (this.roomUsers.removeUser(id)) {
             this.postUserList();
@@ -334,7 +335,7 @@ class Room {
         }
     }
 
-    public receivedMessage(id: string, message: string) {
+    public receivedMessage(id: string, message: string): void {
         if (!this.constructed || !id) return;
         const j = JSON.parse(message);
         switch (j["t"]) {
@@ -407,37 +408,4 @@ class Room {
     public getUserCount(): number {
         return this.roomUsers.getUserList().length;
     }
-}
-
-const roomList: Record<number, Room> = {};
-
-export async function getOrCreateRoom(roomID: number): Promise<Room> {
-    if (roomID in roomList) return roomList[roomID];
-    const r = new Room(roomID);
-    await r.init();
-    roomList[roomID] = r;
-    return r;
-}
-
-export function getRoom(roomID: number): Room | null {
-    if (Number.isNaN(roomID)) return null;
-    if (roomID in roomList) return roomList[roomID];
-    return null;
-}
-
-export function getActiveRooms(): number[] {
-    const rooms = Object.keys(roomList) as unknown as number[];
-    return rooms.filter((k) => roomList[k].roomLoopRunning && roomList[k].settings.publicVisibility);
-}
-
-function deleteRoom(roomID: number): void {
-    if (!(roomID in roomList)) return;
-    console.info("Deallocating Room " + roomID);
-    roomList[roomID].destroy();
-    delete roomList[roomID];
-}
-
-const maxRoom = 1 << 20; // 1048576
-export function getNextRoomID(): number {
-    return Math.round(Math.random() * maxRoom);
 }

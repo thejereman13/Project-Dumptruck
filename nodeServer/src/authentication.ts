@@ -28,7 +28,7 @@ async function validateToken(clientId: string, token: string, req: Request, resp
         }
     } catch (e) {
         console.error(e, "Failed to Verify User Token");
-        response.status(401).send("{}");
+        response.sendStatus(401);
     }
 }
 
@@ -38,7 +38,7 @@ export async function validateExistingLogin(req: Request, res: Response): Promis
         res.status(201).send(JSON.stringify(user));
     } else {
         req.session.destroy(() => {
-            res.status(401).send("{}");
+            res.sendStatus(401);
         });
     }
 }
@@ -71,9 +71,9 @@ export function getUserLogin(req: Request, res: Response): void {
 export function userLogout(req: Request, res: Response): void {
     if (req.session) {
         req.session.destroy(() => {
-            res.status(200).send("{}");
+            res.sendStatus(201);
         });
     } else {
-        res.status(200).send("{}");
+        res.sendStatus(200);
     }
 }

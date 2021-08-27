@@ -48,6 +48,16 @@ export async function addRecentRoomToUser(clientID: string, roomID: number): Pro
     }
 }
 
+export async function removeRecentRoomToUser(clientID: string, roomID: number): Promise<void> {
+    const data = constructSiteUser(await getUserData(clientID));
+    if (data && data.googleID) {
+        const index = data.recentRooms.indexOf(roomID);
+        if (index >= 0)
+            data.recentRooms.splice(index, 1);
+        await setUserData(clientID, JSON.stringify(data));
+    }
+}
+
 export async function getSiteUser(clientID: string): Promise<SiteUser | null> {
     if (!clientID) return null;
     return constructSiteUser(await getUserData(clientID));
@@ -60,18 +70,18 @@ export async function getUserInfo(req: Request, res: Response): Promise<void> {
         res.status(201).send(data);
         return;
     }
-    res.status(400).send("{}");
+    res.sendStatus(400);
 }
 
 export async function clearUserInfo(req: Request, res: Response): Promise<void> {
-    const id = req.session.clientID;
+    const id = req.session["clientID"];
     if (id) {
         if (await clearUserData(id)) {
-            res.status(201).send("{}");
+            res.sendStatus(201);
             return;
         }
     }
-    res.status(401).send("{}");
+    res.sendStatus(401);
 }
 
 export async function getPublicUserInfo(req: Request, res: Response): Promise<void> {
@@ -87,5 +97,15 @@ export async function getPublicUserInfo(req: Request, res: Response): Promise<vo
             return;
         }
     }
-    res.status(400).send("{}");
+    res.sendStatus(400);
+}
+
+export async function removeRecentRoom(req: Request, res: Response): Promise<void> {
+    const id = req.session["clientID"];
+    const roomID = Number(req.params["id"]);
+    if (id && !Number.isNaN(roomID)) {
+        await removeRecentRoomToUser(id, roomID);
+        res.sendStatus(201);
+    }
+    res.sendStatus(401);
 }

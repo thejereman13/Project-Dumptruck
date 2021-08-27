@@ -16,11 +16,13 @@ export interface SettingsPanelProps {
     setRoomSettings: (settings: RoomInfo) => void;
     removeAdmin: (id: string) => void;
     submitSettings: () => void;
+    removeRoom: () => void;
 }
 
 export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
-    const { removeAdmin, roomSettings, setRoomSettings, submitSettings } = props;
+    const { removeAdmin, roomSettings, setRoomSettings, submitSettings, removeRoom } = props;
     const [roomAdmins, setRoomAdmins] = useState<SiteUser[]>([]);
+    const [confirmDeletion, setConfirmDeletion] = useState(false);
 
     const controller = useAbortController();
 
@@ -87,9 +89,17 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
     //     setRoomSettings(newSettings);
     // };
 
+    const maybeDeleteRoom = (): void => {
+        if (confirmDeletion) {
+            removeRoom();
+        } else {
+            setConfirmDeletion(true);
+        }
+    };
+
     return (
         <div class={style.settingContainer} onClick={(e): void => e.stopPropagation()}>
-            {roomSettings && (
+            {roomSettings ? (
                 <div>
                     <div class={style.settingFullWidth}>
                         <Input
@@ -147,7 +157,10 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
                     ))}
                     <Button onClick={submitSettings}>Save</Button>
                 </div>
-            )}
+            ) : null}
+            <Button className={["mui-btn", style.deleteButton].join(" ")} variant="secondary" onClick={maybeDeleteRoom}>
+                {confirmDeletion ? "Confirm Room Deletion?" : "Delete Room"}
+            </Button>
         </div>
     );
 }

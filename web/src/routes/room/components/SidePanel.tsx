@@ -24,6 +24,8 @@ import { HistoryPanel } from "../panels/HistoryPanel";
 import { EditModal } from "../panels/EditModal";
 import { getSidebarCookie, setSidebarCookie } from "../../../utils/Cookies";
 import { useCallbackHook } from "../../../utils/EventSubscriber";
+import { RemoveRoom } from "../../../utils/RestCalls";
+import { route } from "preact-router";
 
 interface MountedTabBodyProps {
     current: number;
@@ -122,6 +124,12 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                 wsCallbacks.updateSettings(roomSettings.settings);
             }
         }
+    };
+
+    const removeRoom = (): void => {
+        RemoveRoom(roomSettings?.roomID ?? 0).then((res) => {
+            if (res) route("/");
+        });
     };
 
     const editOtherUser = (id: string): void => {
@@ -253,12 +261,13 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
                         userID={userID}
                     />
                 </MountedTabBody>
-                <MountedTabBody index={6} current={displayedTab}>
+                <MountedTabBody index={6} current={adminPermissions ? displayedTab : 0}>
                     <SettingsPanel
                         removeAdmin={wsCallbacks.removeAdmin}
                         roomSettings={roomSettings}
                         setRoomSettings={setRoomSettings}
                         submitSettings={updateRoomSettings}
+                        removeRoom={removeRoom}
                     />
                 </MountedTabBody>
             </div>

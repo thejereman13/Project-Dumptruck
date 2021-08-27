@@ -7,9 +7,10 @@ import fs from "fs";
 import https from "https";
 import { v4 as randomUUID } from "uuid";
 
-import { readConfigFile, server_configuration, ConfigItems, createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying, getRoomHistory } from "./configuration";
+import { readConfigFile, server_configuration, ConfigItems } from "./configuration";
 import { getUserLogin, userLogin, userLogout } from "./authentication";
-import { clearUserInfo, getPublicUserInfo, getUserInfo } from "./site_user";
+import { createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying, getRoomHistory, removeRoom } from "./site_room";
+import { clearUserInfo, getPublicUserInfo, getUserInfo, removeRecentRoom } from "./site_user";
 import { handleWebsocketConnection } from "./sockets";
 
 readConfigFile();
@@ -37,7 +38,7 @@ app.use(session({
 	store: new redisStore({ client: redisClient })
 }));
 
-const WebServerVersion = "0.9.1";
+const WebServerVersion = "0.10.0";
 
 app.ws("/api/ws", handleWebsocketConnection);
 app.post("/api/login", userLogin);
@@ -47,8 +48,12 @@ app.post("/api/logout", userLogout);
 app.get("/api/user", getUserInfo);
 app.delete("/api/user", clearUserInfo);
 app.get("/api/user/:id", getPublicUserInfo);
+app.delete("/api/userHistory/:id", removeRecentRoom);
+
 app.get("/api/room/:id", getRoomSettings);
 app.post("/api/room/:id", createNewRoom);
+app.delete("/api/room/:id", removeRoom);
+
 app.get("/api/rooms", getOpenRooms);
 app.get("/api/playing/:id", getRoomPlaying);
 app.get("/api/history/:id", getRoomHistory);

@@ -1,8 +1,4 @@
 import fs from "fs";
-import { Request, Response } from "express";
-import { Video } from "./video";
-import { setRoomSettings, defaultDBSettings, peekRoomInformation } from "./database";
-import { getActiveRooms, getNextRoomID, getRoom } from "./room";
 //Constant data values
 
 //Server JSON configurations (constant per runtime)
@@ -40,72 +36,4 @@ export function readConfigFile(): void {
             throw "Configuration Item '" + value + "' is missing from the server_configuration.json file";
         server_configuration[value as ConfigItems] = obj[value];
     });
-}
-
-export async function getRoomSettings(req: Request, res: Response): Promise<void> {
-    const id = Number(req.params["id"]);
-    const room = await peekRoomInformation(id);
-    if (room)
-        res.status(201).send(JSON.stringify(room));
-    else
-        res.status(404).send("{}");
-}
-
-export interface PublicRoomPreview {
-    currentVideo: Video | null;
-    userCount: number;
-}
-
-export function getRoomPlaying(req: Request, res: Response): void {
-    const id = Number(req.params["id"]);
-    const r = getRoom(id);
-    if (r) {
-        const rm: PublicRoomPreview = {
-            currentVideo: r.getPlaying(),
-            userCount: r.getUserCount()
-        };
-        res.status(200).send(JSON.stringify(rm));
-    } else {
-        res.status(404).send("{}");
-    }
-}
-
-export async function getRoomHistory(req: Request, res: Response): Promise<void> {
-    const id = Number(req.params["id"]);
-    const ri = await peekRoomInformation(id);
-    if (ri) {
-        res.status(200).send(JSON.stringify(ri.history));
-    } else {
-        res.status(404).send("{}");
-    }
-}
-
-export function getOpenRooms(_: Request, res: Response): void {
-    const rooms = getActiveRooms();
-    res.status(200).send(JSON.stringify(rooms));
-}
-
-export async function createNewRoom(req: Request, res: Response): Promise<void> {
-    let id = Number(req.params["id"]);
-    if (id === Number.NaN) {
-        res.status(400).send("{}");
-        return;
-    }
-    if (id === 0) {
-        // if id is 0, generated a random (available) id
-        do {
-            id = getNextRoomID();
-        } while (await peekRoomInformation(id));
-    }
-    const info = await peekRoomInformation(id);
-    if (id > 0 && (info === null || info.settings.name.length === 0)) {
-        // new room
-        const set = defaultDBSettings();
-        set.name = "Room " + id;
-        // setRoomSettings will parse out any invalid info, so we assign and serialize again just to be safe
-        await setRoomSettings(id, set);
-        res.status(201).send(JSON.stringify(id));
-    } else {
-        res.status(400).send("{}");
-    }
 }
