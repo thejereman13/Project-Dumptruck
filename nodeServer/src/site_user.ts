@@ -106,6 +106,7 @@ export async function removeRecentRoom(req: Request, res: Response): Promise<voi
     if (id && !Number.isNaN(roomID)) {
         await removeRecentRoomToUser(id, roomID);
         res.sendStatus(201);
+        return;
     }
     res.sendStatus(401);
 }

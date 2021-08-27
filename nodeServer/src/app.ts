@@ -38,7 +38,7 @@ app.use(session({
 	store: new redisStore({ client: redisClient })
 }));
 
-const WebServerVersion = "0.10.0";
+const WebServerVersion = "0.10.1";
 
 app.ws("/api/ws", handleWebsocketConnection);
 app.post("/api/login", userLogin);
