@@ -12,7 +12,6 @@ import MdFormatListNumbered from "@meronex/icons/md/MdFormatListNumbered";
 import HiUsers from "@meronex/icons/hi/HiUsers";
 import MdcChevronDoubleRight from "@meronex/icons/mdc/MdcChevronDoubleRight";
 
-import * as style from "./SidePanel.css";
 import { PlaylistByUser } from "../../../utils/WebsocketTypes";
 import { RoomInfo, RoomUser } from "../../../utils/BackendTypes";
 import { RoomWebsocketCallbacks } from "../RoomWebsockets";
@@ -26,6 +25,78 @@ import { getSidebarCookie, setSidebarCookie } from "../../../utils/Cookies";
 import { useCallbackHook } from "../../../utils/EventSubscriber";
 import { RemoveRoom } from "../../../utils/RestCalls";
 import { route } from "preact-router";
+import { css } from "@linaria/core";
+
+const style = {
+    sidebarContainer: css`
+        width: 4rem;
+        background-color: var(--dp4-surface);
+        padding-top: 0.5rem;
+        transition: width 0.2s;
+        overflow: hidden;
+        display: flex;
+        flex-flow: column;
+        @media (max-width: 960px) {
+            max-width: unset;
+            width: 100%;
+        }
+    `,
+    sidebarContainerExpanded: css`
+        width: 40rem;
+        max-width: 40rem;
+        min-width: 40rem;
+    `,
+    sidebarTabs: css`
+        display: flex;
+        flex-flow: wrap;
+    `,
+    sidebarTabsExpanded: css`
+        padding: 0 0.5rem;
+        border-bottom: 2px solid var(--theme-secondary-dark);
+        padding-bottom: 0.25rem;
+        margin: var(--expandedMargin, unset);
+        --expandedMargin: 0 0.5rem;
+        --expandedHeight: 100%;
+    `,
+    sidebarTabIcon: css`
+        color: var(--theme-secondary);
+        padding: 0.75rem;
+        margin: var(--expandedMargin, 0.25rem 0);
+        height: var(--expandedHeight, unset);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        &:hover {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--theme-secondary-light);
+        }
+    `,
+    sidebarTabIconDiv: css`
+        display: flex;
+    `,
+    sidebarTabSelected: css`
+        color: var(--theme-primary-dark);
+        &:hover {
+            color: var(--theme-primary-dark);
+        }
+    `,
+    sidebarTabClose: css`
+        margin-left: auto;
+    `,
+    sidebarBody: css`
+        display: flex;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+    `,
+    sidebarTabBody: css`
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+    `
+};
 
 interface MountedTabBodyProps {
     current: number;

@@ -1,5 +1,4 @@
 import { h, JSX } from "preact";
-import * as style from "./style.css";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
 import { YouTubeVideo } from "../../components/YTPlayer";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
@@ -13,11 +12,52 @@ import { useAbortController } from "../../utils/AbortController";
 import { NotifyChannel } from "../../utils/EventSubscriber";
 import { SidePanel } from "./components/SidePanel";
 import { BottomBar } from "./components/BottomBar";
+import { css } from "@linaria/core";
+
+const style = {
+    pageRoot: css`
+        padding-top: var(--navbar-height);
+        min-height: 100%;
+        width: 100%;
+        max-height: 100%;
+        display: flex;
+        flex-flow: column;
+    `,
+    nonexistantRoom: css`
+        display: flex;
+        justify-content: center;
+        margin-top: 4rem;
+    `,
+    splitPane: css`
+        display: flex;
+        flex-direction: row;
+        flex: auto;
+        overflow-y: hidden;
+        @media (max-width: 960px) {
+            flex-direction: column;
+        }
+    `,
+    videoPanel: css`
+        width: 100%;
+        display: flex;
+        flex-flow: column;
+        padding: 1rem;
+        flex: auto;
+    `,
+    videoDiv: css`
+        height: 100%;
+        display: flex;
+        flex: auto;
+        & iframe {
+            width: 100%;
+            height: auto;
+        }
+    `,
+}
 
 export interface RoomProps {
     roomID: string;
 }
-
 export function Room({ roomID }: RoomProps): JSX.Element {
     const [userID, setUserID] = useState("");
     const [currentUsers, setCurrentUsers] = useState<RoomUser[]>([]);
@@ -176,9 +216,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const hasVideo = youtubePlayer.current?.playerMounted ?? false;
 
     return (
-        <div class={style.PageRoot}>
+        <div class={style.pageRoot}>
             {roomNonexistant ? (
-                <div class={style.NonexistantRoom}>
+                <div class={style.nonexistantRoom}>
                     <h1>Room Does not Exist</h1>
                 </div>
             ) : (

@@ -1,6 +1,6 @@
 {
-  "name": "Project Dumptruck",
-  "short_name": "Dumptruck",
+  "name": "jsTest",
+  "short_name": "jsTest",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

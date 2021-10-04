@@ -2,8 +2,7 @@ import { h } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { VideoInfo } from "../../../utils/YoutubeTypes";
 import Button from "preact-mui/lib/button";
-import * as style from "./BottomBar.css";
-import * as commonStyle from "../style.css";
+import {style as commonStyle } from "../../../components/sharedStyle";
 import { Video } from "../../../utils/WebsocketTypes";
 import { RequestVideoPreview } from "../../../utils/RestCalls";
 import { Tooltip } from "../../../components/Popup";
@@ -14,6 +13,66 @@ import { VolumeSlider } from "../../../components/VolumeSlider";
 import MdPause from "@meronex/icons/md/MdPause";
 import MdPlayArrow from "@meronex/icons/md/MdPlayArrow";
 import MdSkipNext from "@meronex/icons/md/MdSkipNext";
+import { css } from "@linaria/core";
+
+const style = {
+    bottomBar: css`
+        display: flex;
+        justify-content: space-between;
+        flex-direction: row;
+        width: 100%;
+        background-color: var(--dp2-surface);
+        height: 5rem;
+        min-height: 5rem;
+        max-height: 5rem;
+    `,
+    bottomVideoInfo: css`
+        display: flex;
+        flex-direction: row;
+        padding: 0.5rem;
+        padding-right: 8rem;
+        width: 50%;
+        max-width: 50%;
+    `,
+    bottomVideoInfoFull: css`
+        width: 100%;
+        max-width: 100%;
+    `,
+    bottomVideoIcon: css`
+        max-height: 4rem;
+        padding-right: 1rem;
+    `,
+    bottomMiddleActions: css`
+        width: 16rem;
+        position: absolute;
+        left: 50%;
+        right: 50%;
+        height: 5rem;
+        transform: translate3d(-50%, 0, 0);
+        display: flex;
+        justify-content: space-evenly;
+    `,
+    bottomRightActions: css`
+        display: flex;
+        align-content: center;
+        justify-content: flex-end;
+        padding-left: 8rem;
+        width: 50%;
+        max-width: 50%;
+    `,
+    bottomQueueButton: css`
+        height: 3rem;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        display: inline-flex;
+        background-color: var(--theme-primary-dark);
+        & p {
+            line-height: 2rem;
+            padding: 0 0.5rem;
+            font-size: 1rem;
+        }
+    `,
+};
 
 export interface BottomBarProps {
     currentVideo: Video | null;
@@ -53,7 +112,7 @@ export const BottomBar = memo(
         }, [currentVideo, controller]);
 
         return (
-            <div class={style.BottomBar}>
+            <div class={style.bottomBar}>
                 <div
                     class={
                         !allowQueuing && !showControls

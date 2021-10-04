@@ -2,8 +2,20 @@ import { h, JSX } from "preact";
 import { useState, useCallback, useRef, useEffect } from "preact/hooks";
 import { createPortal } from "preact/compat";
 import { usePopper } from "react-popper";
-import * as style from "./style.css";
 import { useAbortController } from "../utils/AbortController";
+import { css } from "@linaria/core";
+
+const style = {
+    popupTooltip: css`
+        background-color: var(--dp16-surface);
+        border-radius: 0.25rem;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1024;
+    `
+};
 
 export interface PopupProps {
     content: JSX.Element | string;

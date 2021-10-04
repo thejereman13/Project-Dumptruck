@@ -12,9 +12,61 @@ import { VideoCardInfo, VideoDisplayCard } from "./VideoCard";
 import MdPlaylistAdd from "@meronex/icons/md/MdPlaylistAdd";
 import MdShuffle from "@meronex/icons/md/MdShuffle";
 
-import * as style from "./PlaylistCard.css";
-import * as commonStyle from "./DisplayCard.css";
+import {style as commonStyle } from "../sharedStyle";
 import { VideoQueueMenu } from "./QueueMenu";
+import { css } from "@linaria/core";
+
+const style = {
+    playlistCardButton: css`
+        display: flex;
+        height: unset;
+        padding: 0;
+        width: 100%;
+        margin: 0 !important;
+        flex-flow: column;
+    `,
+    
+    playlistButtonActive: css`
+        position: sticky;
+        top: 0;
+        z-index: 128;
+        background-color: var(--dp2-surface) !important;
+        &:hover {
+            background-color: var(--dp24-surface) !important;
+        }
+    `,
+    playlistCard: css`
+        display: flex;
+        flex-flow: column;
+        padding: 1rem;
+        width: 100%;
+    `,
+    playlistIcon: css`
+        height: 100%;
+    `,
+    playlistInfo: css`
+        height: 100%;
+        flex-direction: column;
+        padding-left: 1rem;
+        text-align: start;
+        overflow: hidden;
+    `,
+    playlistCardInfo: css`
+        display: flex;
+        flex-flow: row;
+        height: 4rem;
+    `,
+    playlistVideos: css`
+        margin-left: 2rem;
+        height: 0;
+        overflow-y: auto;
+        transition: height 0.25s ease;
+        background-color: var(--dp8-surface);
+    `,
+    playlistVideosExpanded: css`
+        height: unset;
+    `,
+};
 
 interface PlaylistDisplayProps {
     info: PlaylistInfo;

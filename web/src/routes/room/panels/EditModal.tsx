@@ -7,8 +7,44 @@ import { Video } from "../../../utils/WebsocketTypes";
 import { arrayMove, List } from "react-movable";
 import { useDebouncedCallback } from "use-debounce-preact";
 
-import * as style from "./EditModal.css";
 import MdTrash from "@meronex/icons/ios/MdTrash";
+import { css } from "@linaria/core";
+
+const style = {
+    editContainer: css`
+        padding: 0.5rem;
+        display: flex;
+        flex-flow: column;
+        overflow: hidden;
+        width: 100%;
+    `,
+    removeAllButton: css`
+        float: right;
+        color: var(--theme-secondary-light) !important;
+        font-size: 1rem;
+        margin: 0.5rem 1rem;
+    `,
+    editCard: css`
+        &:hover > div {
+            background: var(--dp16-surface);
+        }
+    `,
+    editTitle: css`
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-height: 2.5rem;
+        display: inline-block;
+    `,
+    editList: css`
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 100%;
+        flex: auto;
+    `,
+};
 
 interface VideoRowProps {
     vid: Video;

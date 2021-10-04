@@ -5,7 +5,26 @@ import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import { useAbortController } from "../utils/AbortController";
 import MdVolumeUp from "@meronex/icons/md/MdVolumeUp";
-import * as style from "./style.css";
+import { style as sharedStyle } from "./sharedStyle";
+import { css } from "@linaria/core";
+
+const style = {
+    volumeBox: css`
+        width: 2rem;
+        height: 24rem;
+        margin: 0 0.25rem;
+        position: relative;
+    `,
+    volumeSlider: css`
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--theme-primary);
+        border-radius: 0.25rem;
+    `,
+}
 
 export interface VolumeSliderProps {
     disabled?: boolean;
@@ -88,14 +107,14 @@ export function VolumeSlider(props: VolumeSliderProps): JSX.Element {
         createPortal(
             <div
                 ref={setPopperRef}
-                className={style.DropdownContainer}
+                className={sharedStyle.dropdownContainer}
                 style={{
                     ...(styles.popper as { [key: string]: string | number })
                 }}
                 {...attributes.popper}
             >
-                <div className={style.VolumeBox} onMouseDown={startDrag} onMouseMove={dragSlider} ref={boxRef}>
-                    <div className={style.VolumeSlider} style={{ top: `${100 - volume}%` }} />
+                <div className={style.volumeBox} onMouseDown={startDrag} onMouseMove={dragSlider} ref={boxRef}>
+                    <div className={style.volumeSlider} style={{ top: `${100 - volume}%` }} />
                 </div>
             </div>,
             containerElement
@@ -103,7 +122,7 @@ export function VolumeSlider(props: VolumeSliderProps): JSX.Element {
     const clickOff =
         containerElement &&
         open &&
-        createPortal(<div onClick={closeMenu} className={style.DropdownBackdrop} />, containerElement);
+        createPortal(<div onClick={closeMenu} className={sharedStyle.dropdownBackdrop} />, containerElement);
 
     return (
         <div ref={setReferenceRef}>

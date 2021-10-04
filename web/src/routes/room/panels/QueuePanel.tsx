@@ -16,10 +16,51 @@ import { YoutubeVideoInformation } from "../../../utils/BackendTypes";
 import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
 
-import * as style from "./QueuePanel.css";
-import * as commonStyle from "../style.css";
+import { style as commonStyle } from "./panelStyle";
 import { VideoQueueMenu } from "../../../components/displayCards/QueueMenu";
 import MdClear from "@meronex/icons/md/MdClear";
+import { css } from "@linaria/core";
+
+const style = {
+    queueContainer: css`
+        padding-top: 0.5rem;
+        padding-right: 0.5rem;
+        display: flex;
+        overflow: hidden;
+        width: 100%;
+    `,
+    queueTabBody: css`
+        display: flex;
+        flex-flow: column;
+        overflow-y: hidden;
+        width: 100%;
+    `,
+    searchDiv: css`
+        width: 100%;
+        padding: 0 1rem;
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        position: relative;
+        & > div {
+            flex: auto;
+        }
+    `,
+    searchClear: css`
+        position: absolute;
+        right: 1rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        border-radius: 50%;
+        color: var(--theme-primary);
+        padding: 0.25rem;
+        display: flex;
+        &:hover {
+            background: var(--dp16-surface);
+        }
+    `,
+};
 
 export interface QueueModalProps {
     submitNewVideoEnd: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;

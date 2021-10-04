@@ -2,10 +2,18 @@ import { h, JSX } from "preact";
 import { route } from "preact-router";
 import { GoogleLogin, GoogleLoginResponse, GoogleLoginResponseOffline } from "react-google-login";
 import { CLIENTID } from "../../constants";
-import * as style from "./style.css";
 import { useGAPIContext } from "../../utils/GAPI";
 import { useEffect } from "preact/hooks";
 import { RegisterNotification } from "../../components/Notification";
+import { css } from "@linaria/core";
+
+const style = {
+    profile: css`
+        padding: 56px 20px;
+        min-height: 100%;
+        width: 100%;
+    `,
+};
 
 export function Login(): JSX.Element {
     const gapi = useGAPIContext();

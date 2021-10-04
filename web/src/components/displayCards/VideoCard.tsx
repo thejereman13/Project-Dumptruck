@@ -10,10 +10,90 @@ import { memo } from "preact/compat";
 import MdEye from "@meronex/icons/ios/MdEye";
 import MdEyeOff from "@meronex/icons/ios/MdEyeOff";
 
-import * as style from "./VideoCard.css";
-import * as commonStyle from "./DisplayCard.css";
+import { style as commonStyle } from "../sharedStyle";
 import { NotifyChannel } from "../../utils/EventSubscriber";
 import { videoInfoCache } from "../../utils/GAPI";
+import { css } from "@linaria/core";
+
+export const videoIconPreviewStyle = css`
+    opacity: var(--iconPreviewOpacity, 0);
+    position: absolute;
+    color: var(--text-secondary);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 8;
+    & svg {
+        filter: drop-shadow(4px 4px 0.5rem black);
+    }
+`;
+export const videoDurationStyle = css`
+    font-weight: 500;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--dp2-surface);
+    padding: 0 0.4rem;
+    border-radius: 0 0 0.25rem 0;
+    display: var(--durationDisplay, none);
+    z-index: 2;
+`;
+
+export const style = {
+    videoCard: css`
+        display: flex;
+        padding: 0.5rem;
+        height: 5rem;
+        width: 100%;
+        position: relative;
+        &:hover {
+            --durationDisplay: block;
+        }
+    `,
+    videoIcon: css`
+        height: 100%;
+        display: inline-block;
+        position: relative;
+        z-index: 1;
+        &:hover {
+            --iconPreviewOpacity: 1;
+        }
+        & > img {
+            height: 100%;
+        }
+    `,
+    
+    videoInfo: css`
+        height: 100%;
+        display: inline-flex;
+        flex-direction: column;
+        padding-left: 1rem;
+        text-align: start;
+        overflow: hidden;
+    `,
+    videoCardButton: css`
+        display: flex;
+        height: unset;
+        padding: 0 1rem;
+        width: 100%;
+        margin: 0 !important;
+        flex-flow: column;
+        &:hover {
+            --durationDisplay: block;
+        }
+    `,
+    videoPreview: css`
+        z-index: 64;
+        padding-left: 2rem;
+        height: 0;
+        transition: height 0.5s;
+    `,
+    videoPreviewOpen: css`
+        height: 256px;
+    `,
+};
 
 export interface VideoCardInfo {
     id: string;
@@ -62,7 +142,7 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                     {enablePreview ? (
                         <Tooltip
                             content="Preview Video"
-                            className={style.videoIconPreview}
+                            className={videoIconPreviewStyle}
                             onClick={openPreview}
                             delay={800}
                         >
@@ -70,16 +150,16 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                         </Tooltip>
                     ) : null}
                     <img src={info.thumbnailURL.replace("hqdefault", "mqdefault")} />
-                    <div class={["mui--text-body1", style.videoDuration].join(" ")}>
+                    <div class={["mui--text-body1", videoDurationStyle].join(" ")}>
                         {durationToString(info.duration)}
                     </div>
                 </div>
             )}
             <div class={style.videoInfo}>
                 <Tooltip content={info.title} delay={800}>
-                    <div class={["mui--text-subhead", style.textEllipsis].join(" ")}>{info.title}</div>
+                    <div class={["mui--text-subhead", commonStyle.textEllipsis].join(" ")}>{info.title}</div>
                 </Tooltip>
-                <div class={["mui--text-body1", style.textEllipsis].join(" ")}>
+                <div class={["mui--text-body1", commonStyle.textEllipsis].join(" ")}>
                     {info.channel?.length > 0 ? info.channel : ". . ."}
                 </div>
             </div>

@@ -1,7 +1,38 @@
+import { css } from "@linaria/core";
 import { h, JSX } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { BlockLoader } from "./LoadingAnimations";
-import * as style from "./Notification.css";
+
+const style = {
+    notificationBackground: css`
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        display: flex;
+        max-width: 24rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 1024;
+    `,
+    notificationText: css`
+        display: flex;
+        align-items: center;
+    `,
+    notificationHide: css`
+        opacity: 0;
+    `,
+    notificationError: css`
+        background-color: var(--theme-error);
+    `,
+    notificationInfo: css`
+        background-color: var(--theme-primary);
+    `,
+    notificationLoading: css`
+        background-color: var(--theme-primary);
+    `,
+}
 
 type notificationType = "info" | "error" | "loading";
 
@@ -76,8 +107,8 @@ export function RenderAllNotifications(): JSX.Element {
         color += ` ${style.notificationHide}`;
     }
     return (
-        <div className={[style.NotificationBackground, color].join(" ")}>
-            <div className={style.NotificationText}>{newestNote.text}</div>
+        <div className={[style.notificationBackground, color].join(" ")}>
+            <div className={style.notificationText}>{newestNote.text}</div>
             {newestNote.type === "loading" && <BlockLoader />}
         </div>
     );

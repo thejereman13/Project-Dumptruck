@@ -3,8 +3,8 @@ import { PlaylistByUser, Video } from "../../../utils/WebsocketTypes";
 import { RoomUser } from "../../../utils/BackendTypes";
 import Button from "preact-mui/lib/button";
 import { VideoCard, VideoCardInfo } from "../../../components/displayCards/VideoCard";
-import * as style from "./VideoPanel.css";
-import * as commonStyle from "../style.css";
+import { style as panelStyle } from "./panelStyle";
+import { style as commonStyle } from "../../../components/sharedStyle";
 import { useState, useEffect } from "preact/hooks";
 import { RequestVideoPreview } from "../../../utils/RestCalls";
 import { durationToString, VideoInfo } from "../../../utils/YoutubeTypes";
@@ -13,6 +13,69 @@ import { useAbortController } from "../../../utils/AbortController";
 import { memo } from "preact/compat";
 
 import MdFormatListNumbered from "@meronex/icons/md/MdFormatListNumbered";
+import { css } from "@linaria/core";
+
+const style = {
+    QueueVideos: css`
+        margin-left: 2rem;
+        height: 0;
+        overflow-y: auto;
+        transition: height 0.25s ease;
+        background-color: var(--dp4-surface);
+    `,
+    QueueVideosExpanded: css`
+        max-height: 20rem;
+        height: unset;
+    `,
+    QueueActionDiv: css`
+        margin-left: auto;
+    `,
+    QueueExpandedTitle: css`
+        margin: 0.5rem 0.5rem 0 0.5rem;
+        padding-left: 1rem;
+        border-bottom: 2px solid var(--theme-primary-dark);
+    `,
+    VideoCardButton: css`
+        display: flex;
+        height: unset;
+        padding: 0;
+        width: 100%;
+        margin: 0 !important;
+        letter-spacing: 0.03em;
+    `,
+    VideoDuration: css`
+        font-weight: 500;
+    `,
+    PlaylistCardButton: css`
+        display: flex;
+        height: unset;
+        padding: 0;
+        width: 100%;
+        margin: 0 !important;
+        flex-flow: column;
+    `,
+    QueueCard: css`
+        display: flex;
+        flex-flow: column;
+        padding: 1rem;
+        width: 100%;
+    `,
+    QueueIcon: css`
+        height: 5rem;
+    `,
+    QueueInfo: css`
+        height: 5rem;
+        flex-direction: column;
+        padding-left: 1rem;
+        text-align: start;
+        display: flex;
+        overflow: hidden;
+    `,
+    QueueCardInfo: css`
+        display: flex;
+        flex-flow: row;
+    `,
+}
 
 interface UserQueueCardProps {
     allowRemoval: boolean;
@@ -142,7 +205,7 @@ export const VideoQueue = memo(
         const { userQueue, videoPlaylist, currentUsers, currentUser, openEdit, allowRemoval } = props;
 
         return (
-            <div class={commonStyle.scrollBox}>
+            <div class={panelStyle.scrollBox}>
                 {userQueue.map((clientID) => {
                     const playlist = videoPlaylist[clientID];
                     const playlistUser = currentUsers.find((u) => u.clientID == clientID);

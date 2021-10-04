@@ -4,12 +4,55 @@ import Checkbox from "preact-mui/lib/checkbox";
 import Button from "preact-mui/lib/button";
 import Input from "preact-mui/lib/input";
 import { RoomInfo, SiteUser } from "../../../utils/BackendTypes";
-import * as style from "./SettingsPanel.css";
 import { GetAnyUser } from "../../../utils/RestCalls";
 import { useAbortController } from "../../../utils/AbortController";
 import { Tooltip } from "../../../components/Popup";
 
 import MdTrash from "@meronex/icons/ios/MdTrash";
+import { style as commonStyle } from "../../../components/sharedStyle";
+import { css } from "@linaria/core";
+
+const style = {
+    settingContainer: css`
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        width: 32rem;
+        margin: 0 auto;
+    `,
+    settingFullWidth: css`
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    `,
+    settingTrimField: css`
+        display: inline-flex;
+        & > div {
+            padding: 0;
+            margin-bottom: 0;
+            width: 8rem;
+        }
+    `,
+    settingTrimLabel: css`
+        display: inline-flex;
+        margin-right: 1rem;
+    `,
+    settingRemoveIcon: css`
+        font-size: 1.5rem;
+        color: var(--theme-secondary);
+    `,
+    settingUserRow: css`
+        display: flex;
+        justify-content: space-between;
+        & div:first-child {
+            line-height: 2rem;
+        }
+    `,
+    deleteButton: css`
+        margin-top: auto;
+        background-color: var(--theme-primary-dark);
+    `,
+};
 
 export interface SettingsPanelProps {
     roomSettings: RoomInfo | null;
@@ -143,7 +186,7 @@ export function SettingsPanel(props: SettingsPanelProps): JSX.Element {
                     {roomAdmins.map((admin) => (
                         <div key={admin.id} class={style.settingUserRow}>
                             <div class="mui--text-subhead">{admin.name}</div>
-                            <Tooltip className={style.centerTooltipChild} content="Remove Admin">
+                            <Tooltip className={commonStyle.centerTooltipChild} content="Remove Admin">
                                 <Button
                                     onClick={(): void => removeAdmin(admin.id)}
                                     size="tiny"

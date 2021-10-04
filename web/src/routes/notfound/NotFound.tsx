@@ -1,6 +1,13 @@
+import { css } from "@linaria/core";
 import { FunctionalComponent, h, JSX } from "preact";
 import { Link } from "preact-router/match";
-import * as style from "./style.css";
+
+const style = {
+    notfound: css`
+        padding: 0 5%;
+        margin: 100px 0;
+    `,
+};
 
 export const NotFound: FunctionalComponent = (): JSX.Element => {
     return (

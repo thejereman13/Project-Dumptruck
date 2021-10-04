@@ -4,8 +4,24 @@ import { memo } from "preact/compat";
 import { Dropdown } from "../../../components/Dropdown";
 import { RoomUser } from "../../../utils/BackendTypes";
 import MdMoreVert from "@meronex/icons/md/MdMoreVert";
+import { css } from "@linaria/core";
+import { style as commonStyle } from "./panelStyle";
 
-import * as style from "../style.css";
+const style = {
+    AdminName: css`
+        color: var(--theme-secondary-light) !important;
+    `,
+    UserRow: css`
+        display: flex;
+        justify-content: space-between;
+    `,
+    UserRowTitle: css`
+        line-height: 44px;
+    `,
+    userContainer: css`
+        padding: 1rem;
+    `,
+}
 
 export interface UserListProps {
     currentUsers: RoomUser[];
@@ -20,7 +36,7 @@ export const UserList = memo(
     (props: UserListProps): JSX.Element => {
         const { currentUsers, adminList, isAdmin, userID, addAdmin, removeAdmin } = props;
         return (
-            <div class={[style.userContainer, style.scrollBox].join(" ")}>
+            <div class={[style.userContainer, commonStyle.scrollBox].join(" ")}>
                 <h2>Current Users:</h2>
                 {currentUsers.map((usr) => {
                     const hasAdmin = adminList.includes(usr.clientID);

@@ -1,10 +1,10 @@
 import { h, JSX } from "preact";
 import Button from "preact-mui/lib/button";
-import * as style from "./style.css";
 import { usePopper } from "react-popper";
 import { useState, useCallback } from "preact/hooks";
 import { createPortal } from "preact/compat";
 import { useAbortController } from "../utils/AbortController";
+import { style } from "./sharedStyle";
 
 export interface DropdownOptionProps {
     className?: string;
@@ -16,7 +16,7 @@ function DropdownOption(props: DropdownOptionProps): JSX.Element {
     const { display, onClick, className } = props;
     return (
         <Button
-            className={["mui-btn", "mui-btn--flat", className ?? "", style.DropdownOption].join(" ")}
+            className={["mui-btn", "mui-btn--flat", className ?? "", style.dropdownOption].join(" ")}
             onClick={onClick}
         >
             {display}
@@ -70,7 +70,7 @@ export function Dropdown(props: DropdownProps): JSX.Element {
         createPortal(
             <div
                 ref={setPopperRef}
-                className={style.DropdownContainer}
+                className={style.dropdownContainer}
                 style={{
                     ...(styles.popper as { [key: string]: string | number })
                 }}
@@ -92,7 +92,7 @@ export function Dropdown(props: DropdownProps): JSX.Element {
     const clickOff =
         containerElement &&
         open &&
-        createPortal(<div onClick={closeMenu} className={style.DropdownBackdrop} />, containerElement);
+        createPortal(<div onClick={closeMenu} className={style.dropdownBackdrop} />, containerElement);
 
     return (
         <div className={className} ref={setReferenceRef}>

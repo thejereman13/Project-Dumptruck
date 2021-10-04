@@ -1,14 +1,27 @@
 import { h, JSX } from "preact";
-import * as style from "./style.css";
 import { useState, useEffect, useCallback } from "preact/hooks";
 import { route } from "preact-router";
 import { CreateNewRoom, GetActiveRooms, GetCurrentUser, GetRoomInfo } from "../../utils/RestCalls";
 import { RoomInfo, SiteUser } from "../../utils/BackendTypes";
 import { useAbortController } from "../../utils/AbortController";
 import { useGAPIContext } from "../../utils/GAPI";
-import { RoomCard } from "./components/RoomCard";
+import { RoomCard } from "./RoomCard";
 import { RegisterNotification } from "../../components/Notification";
 import Button from "preact-mui/lib/button";
+import { css } from "@linaria/core";
+
+const style = {
+    home: css`
+        padding: 0 20px;
+        padding-top: var(--navbar-height);
+        height: 100%;
+        overflow-y: auto;
+        width: 100%;
+    `,
+    roomRow: css`
+        display: block;
+    `,
+};
 
 export function Home(): JSX.Element {
     const [currentUser, setCurrentUser] = useState<SiteUser | null>(null);

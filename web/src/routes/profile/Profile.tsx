@@ -3,12 +3,28 @@ import { useState, useEffect } from "preact/hooks";
 import { SiteUser } from "../../utils/BackendTypes";
 import { GetCurrentUser, ClearUserInfo, LogoutUser } from "../../utils/RestCalls";
 import { route } from "preact-router";
-import * as style from "./style.css";
 import { useAbortController } from "../../utils/AbortController";
 import { GoogleLogout } from "react-google-login";
 import { CLIENTID } from "../../constants";
 import { useGAPIContext } from "../../utils/GAPI";
 import { RegisterNotification } from "../../components/Notification";
+import { css } from "@linaria/core";
+
+const style = {
+    root: css`
+        padding: 56px 20px;
+        min-height: 100%;
+        width: 100%;
+    `,
+    logoutButton: css`
+        color: var(--text-secondary);
+        font-weight: 600;
+        margin-left: 0;
+    `,
+    disconnectTooltip: css`
+        display: inline-block;
+    `,
+};
 
 export function Profile(): JSX.Element {
     const [user, setUser] = useState<SiteUser | null>(null);

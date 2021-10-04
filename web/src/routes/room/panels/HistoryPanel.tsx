@@ -6,7 +6,7 @@ import { useAbortController } from "../../../utils/AbortController";
 import { YoutubeVideoInformation } from "../../../utils/BackendTypes";
 import { RequestVideo } from "../../../utils/GAPI";
 
-import * as commonStyle from "../style.css";
+import {style as commonStyle } from "./panelStyle";
 
 export interface HistoryPanelProps {
     submitNewVideoEnd: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
