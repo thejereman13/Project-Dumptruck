@@ -33,6 +33,7 @@ export interface Video {
     playing: boolean;
     timeStamp: number;
     duration: number;
+    queuedBy: string;
 }
 
 export interface PlaylistByUser {
@@ -43,7 +44,7 @@ export interface RoomInfo {
     roomName: string;
     userList: RoomUser[];
     adminList: string[]; // list of UUIDs matching userList members
-    video: Video;
+    video?: Video;
     playlist: PlaylistByUser;
     userQueue: string[];
     guestControls: boolean;

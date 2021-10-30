@@ -13,6 +13,7 @@ import { NotifyChannel } from "../../utils/EventSubscriber";
 import { SidePanel } from "./components/SidePanel";
 import { BottomBar } from "./components/BottomBar";
 import { css } from "@linaria/core";
+import { UserList } from "./panels/UserPanel";
 
 const style = {
     pageRoot: css`
@@ -99,7 +100,6 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     }, [roomID, adminUsers, controller]);
 
     const setVideoInformation = useCallback((video: Video | null) => {
-        console.log("New Video", video);
         setCurrentVideo(video);
         setStateIncrement((val) => val + 1);
         if (video) {
@@ -131,17 +131,19 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const newMessage = useCallback(
         (msg: WSMessage) => {
             switch (msg.t) {
+                case MessageType.Ping:
+                    break;
                 case MessageType.Init:
                     setUserID(msg.ID ?? "");
                     if (msg.Room) {
                         NotifyChannel("roomName", msg.Room.roomName);
                         setCurrentUsers(msg.Room.userList);
                         setAdminUsers(msg.Room.adminList);
-                        setVideoInformation(msg.Room.video);
+                        setVideoInformation(msg.Room.video ?? null);
                         setVideoPlaylist(msg.Room.playlist);
                         setUserQueue(msg.Room.userQueue);
                         setGuestControls(msg.Room.guestControls);
-                        playing.current = msg.Room.video.playing;
+                        playing.current = msg.Room.video?.playing ?? false;
                     }
                     break;
                 case MessageType.Room:
@@ -211,6 +213,10 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         }
     }, []);
 
+    const togglePlay = useCallback(() => {
+        wsCallbacks.togglePlay(playing.current);
+    }, [wsCallbacks.togglePlay]);
+
     const isAdmin = userID.length > 0 && adminUsers.includes(userID);
     const apiLoaded = (apiUser && currentAPI?.isAPILoaded()) ?? false;
     const hasVideo = youtubePlayer.current?.playerMounted ?? false;
@@ -258,7 +264,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     hasVideo={hasVideo}
                     playing={playing.current}
                     currentVideo={currentVideo}
-                    togglePlay={(): void => wsCallbacks.togglePlay(playing.current)}
+                    userList={currentUsers}
+                    togglePlay={togglePlay}
                     skipVideo={wsCallbacks.skipVideo}
                     showControls={guestControls || isAdmin}
                     allowQueuing={apiLoaded}

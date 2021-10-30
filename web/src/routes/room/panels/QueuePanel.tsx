@@ -19,7 +19,12 @@ import { memo } from "preact/compat";
 import { style as commonStyle } from "./panelStyle";
 import { VideoQueueMenu } from "../../../components/displayCards/QueueMenu";
 import MdClear from "@meronex/icons/md/MdClear";
+import MdSort from '@meronex/icons/md/MdSort';
 import { css } from "@linaria/core";
+import { Dropdown } from "../../../components/Dropdown";
+import Button from "preact-mui/lib/button";
+import { getSortCookie, setSortCookie } from "../../../utils/Cookies";
+import { LRUList } from "../../../utils/Caching";
 
 const style = {
     queueContainer: css`
@@ -46,9 +51,17 @@ const style = {
             flex: auto;
         }
     `,
+    inputDiv: css`
+        display: flex;
+        position: relative;
+        align-items: center;
+        & > div {
+            flex: auto;
+        }
+    `,
     searchClear: css`
         position: absolute;
-        right: 1rem;
+        right: 0;
         background: transparent;
         border: none;
         cursor: pointer;
@@ -60,7 +73,52 @@ const style = {
             background: var(--dp16-surface);
         }
     `,
+    sortDropdown: css`
+        flex: none !important;
+        margin-left: 1rem;
+        & > button {
+            color: var(--theme-primary);
+        }
+    `,
 };
+
+const recentPlaylists = new LRUList<string>("playlistLRU");
+
+const sortOptions = [
+    {
+        display: "Create Date (Dec)",
+    },
+    {
+        display: "Create Date (Asc)",
+    },
+    {
+        display: "Recently Queued",
+    },
+    {
+        display: "A - Z (Dec)",
+    },
+    {
+        display: "A - Z (Asc)",
+    }
+];
+
+function sortPlaylist(list: PlaylistInfo[], sortType: number): PlaylistInfo[] {
+    switch (sortType) {
+        case 0:
+            return list;
+        case 1:
+            return [...list].reverse();
+        case 2:
+            const recent = recentPlaylists.getList().map((id) => list.find((p) => p.id === id)).filter((p) => p !== undefined) as PlaylistInfo[];
+            return [...recent, ...list.filter((p) => !recent.includes(p))];
+        case 3:
+            return [...list].sort((p, q) => p.title.toLocaleUpperCase() > q.title.toLocaleUpperCase() ? 1 : -1);
+        case 4:
+            return [...list].sort((p, q) => p.title.toLocaleUpperCase() > q.title.toLocaleUpperCase() ? -1 : 1);
+        default:
+            return list;
+    }
+}
 
 export interface QueueModalProps {
     submitNewVideoEnd: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
@@ -76,6 +134,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
     const [userPlaylists, setUserPlaylists] = useState<PlaylistInfo[]>([]);
     const [likedPreview, setLikedPreview] = useState<VideoInfo | null>(null);
     const [playlistSearch, setPlaylistSearch] = useState<string>("");
+    const [playlistSort, setPlaylistSort] = useState<number>(getSortCookie());
 
     const controller = useAbortController();
     const currentAPI = useGAPIContext();
@@ -137,7 +196,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
         debouncedSearch("");
     };
 
-    const submitFrontFromList = (videoID: VideoCardInfo | VideoInfo): void => {
+    const submitFrontFromList = (videoID: VideoCardInfo | VideoInfo, pID: string | undefined): void => {
         if (videoID.duration === undefined) {
             // Rarely-taken path, no need to cache
             RequestVideo(videoID.id, controller, (info) => {
@@ -148,6 +207,8 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                     },
                     videoID.title
                 );
+                if (pID)
+                    recentPlaylists.pushItem(pID);
             });
         } else {
             submitNewVideoFront(
@@ -157,9 +218,11 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                 },
                 videoID.title
             );
+            if (pID)
+                    recentPlaylists.pushItem(pID);
         }
     };
-    const submitEndFromList = (videoID: VideoCardInfo | VideoInfo): void => {
+    const submitEndFromList = (videoID: VideoCardInfo | VideoInfo, pID: string | undefined): void => {
         if (videoID.duration === undefined) {
             // Rarely-taken path, no need to cache
             RequestVideo(videoID.id, controller, (info) => {
@@ -170,6 +233,8 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                     },
                     videoID.title
                 );
+                if (pID)
+                    recentPlaylists.pushItem(pID);
             });
         } else {
             submitNewVideoEnd(
@@ -179,6 +244,8 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                 },
                 videoID.title
             );
+            if (pID)
+                    recentPlaylists.pushItem(pID);
         }
     };
     const submitPlaylist = (vids: VideoCardInfo[], info: PlaylistInfo): void => {
@@ -189,23 +256,41 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
             })),
             info.title
         );
+        recentPlaylists.pushItem(info.id);
     };
 
-    const filteredPlaylists =
-        playlistSearch.length > 0
-            ? userPlaylists.filter((p) => p.title.toUpperCase().includes(playlistSearch.toUpperCase()))
-            : userPlaylists;
-    console.log(searchField.length);
+    const updatePlaylistSort = (srt: number) => {
+        setPlaylistSort(srt);
+        setSortCookie(srt);
+    };
+
+    const sortedPlaylists = sortPlaylist(userPlaylists, playlistSort);
     return (
         <div class={style.queueContainer}>
             <div class={style.queueTabBody}>
                 <div class={style.searchDiv}>
-                    <Input floatingLabel label="Search" value={searchField} onChange={updateVideoSearch} />
-                    {searchField.length > 0 ? (
-                        <button class={style.searchClear} onClick={clearVideoSearch}>
-                            <MdClear size="1.5rem" />
-                        </button>
-                    ) : null}
+                    <div class={style.inputDiv}>
+                        <Input floatingLabel label="Search" value={searchField} onChange={updateVideoSearch} />
+                        {searchField.length > 0 ? (
+                            <button class={style.searchClear} onClick={clearVideoSearch}>
+                                <MdClear size="1.5rem" />
+                            </button>
+                        ) : null}
+                    </div>
+                    <Dropdown
+                        className={style.sortDropdown}
+                        base={(open): JSX.Element => (
+                            <Button onClick={open} size="small" variant="fab" color="accent">
+                                <MdSort size="2rem" />
+                            </Button>
+                        )}
+                        options={
+                            sortOptions.map((s, i) => ({
+                                display: playlistSort === i ? <strong>{s.display}</strong> : s.display,
+                                onClick: () => updatePlaylistSort(i),
+                            }))
+                        }
+                    />
                 </div>
                 <div class={commonStyle.scrollBox}>
                     {searchPlaylist && (
@@ -214,11 +299,12 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             queueVideoEnd={submitEndFromList}
                             queueVideoFront={submitFrontFromList}
                             submitPlaylist={submitPlaylist}
+                            searchText=""
                         />
                     )}
                     {searchResults.map((list) => {
-                        const queueFront = (): void => submitFrontFromList(list);
-                        const queueEnd = (): void => submitEndFromList(list);
+                        const queueFront = (): void => submitFrontFromList(list, undefined);
+                        const queueEnd = (): void => submitEndFromList(list, undefined);
                         return (
                             <VideoDisplayCard
                                 key={list.id}
@@ -229,7 +315,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             />
                         );
                     })}
-                    {likedPreview !== null && searchResults.length === 0 && filteredPlaylists === userPlaylists ? (
+                    {likedPreview !== null && playlistSearch.length === 0 && searchResults.length === 0 ? (
                         <LikedVideosCard
                             info={{
                                 id: "",
@@ -242,10 +328,11 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                             queueVideoEnd={submitEndFromList}
                             queueVideoFront={submitFrontFromList}
                             submitPlaylist={submitPlaylist}
+                            searchText=""
                         />
                     ) : null}
                     {searchResults.length === 0
-                        ? filteredPlaylists.map((list) => {
+                        ? sortedPlaylists.map((list) => {
                               return (
                                   <PlaylistCard
                                       key={list.id}
@@ -253,6 +340,7 @@ export const QueueModal = memo(function QueueModal(props: QueueModalProps): JSX.
                                       queueVideoEnd={submitEndFromList}
                                       queueVideoFront={submitFrontFromList}
                                       submitPlaylist={submitPlaylist}
+                                      searchText={playlistSearch.toLocaleUpperCase()}
                                   />
                               );
                           })

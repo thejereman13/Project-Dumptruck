@@ -71,8 +71,8 @@ const style = {
 interface PlaylistDisplayProps {
     info: PlaylistInfo;
     videoInfo: VideoCardInfo[];
-    queueVideoFront: (id: VideoCardInfo) => void;
-    queueVideoEnd: (id: VideoCardInfo) => void;
+    queueVideoFront: (id: VideoCardInfo, pID: string) => void;
+    queueVideoEnd: (id: VideoCardInfo, pID: string) => void;
     queueAll: () => void;
     shuffleQueue: () => void;
     loading: boolean;
@@ -145,8 +145,8 @@ function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
         >
             {expanded &&
                 videoInfo.map((vid) => {
-                    const queueFront = (): void => queueVideoFront(vid);
-                    const queueEnd = (): void => queueVideoEnd(vid);
+                    const queueFront = (): void => queueVideoFront(vid, info.id);
+                    const queueEnd = (): void => queueVideoEnd(vid, info.id);
                     return (
                         <VideoDisplayCard
                             key={vid.id}
@@ -183,13 +183,14 @@ function PlaylistDisplayCard(props: PlaylistDisplayProps): JSX.Element {
 
 export interface PlaylistCardProps {
     info: PlaylistInfo;
-    queueVideoFront: (id: VideoCardInfo) => void;
-    queueVideoEnd: (id: VideoCardInfo) => void;
+    queueVideoFront: (id: VideoCardInfo, pID: string) => void;
+    queueVideoEnd: (id: VideoCardInfo, pID: string) => void;
     submitPlaylist: (vids: VideoCardInfo[], info: PlaylistInfo) => void;
+    searchText: string;
 }
 
-export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
-    const { info, queueVideoEnd, queueVideoFront, submitPlaylist } = props;
+export function PlaylistCard(props: PlaylistCardProps): JSX.Element | null {
+    const { info, queueVideoEnd, queueVideoFront, submitPlaylist, searchText } = props;
     const [videoInfo, setVideoInfo] = useState<VideoCardInfo[]>([]);
     const [durationsLoaded, setDurationsLoaded] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -262,6 +263,15 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
         });
     };
 
+    const filteredVideos = (searchText.length > 0 && videoExpanded)
+        ? videoInfo.filter((v) => v.title.toLocaleUpperCase().includes(searchText) || v.channel.toLocaleUpperCase().includes(searchText))
+        : videoInfo;
+
+    if (searchText.length > 0 && (!videoExpanded || filteredVideos.length === 0)) {
+        if (!info.title.toLocaleUpperCase().includes(searchText))
+            return null;
+    }
+
     return (
         <PlaylistDisplayCard
             expanded={videoExpanded}
@@ -272,7 +282,7 @@ export function PlaylistCard(props: PlaylistCardProps): JSX.Element {
             queueAll={queueAll}
             setExpanded={setVideoExpanded}
             shuffleQueue={shuffleQueue}
-            videoInfo={videoInfo}
+            videoInfo={filteredVideos}
         />
     );
 }

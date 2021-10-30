@@ -68,3 +68,38 @@ export class ObjectCache<T extends { id: string }> {
         return null;
     }
 }
+
+export class LRUList<T> {
+    infoStoreID: string;
+
+    constructor(id: string) {
+        this.infoStoreID = id;
+    }
+
+    infoStoreLRU: T[] = [];
+
+    private saveLRU(): void {
+        localStorage[this.infoStoreID] = JSON.stringify(this.infoStoreLRU);
+    }
+
+    public pushItem(id: T): void {
+        // LRU is backwards in memory, newest members are at the end of the array
+        const ind = this.infoStoreLRU.indexOf(id);
+        if (ind > 0) {
+            this.infoStoreLRU.splice(ind, 1);
+        }
+        if (ind !== 0) {
+            this.infoStoreLRU.unshift(id);
+            this.saveLRU();
+        }
+    }
+
+    public getList(): T[] {
+        if (this.infoStoreLRU.length == 0) {
+            const lruStr = localStorage[this.infoStoreID];
+            if (lruStr) this.infoStoreLRU = JSON.parse(lruStr) ?? [];
+            else this.infoStoreLRU = [];
+        }
+        return this.infoStoreLRU;
+    }
+}

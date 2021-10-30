@@ -30,6 +30,11 @@ export default config => {
             "/api": {
                 target: "https://localhost:8000",
                 secure: false
+            },
+            "/api/ws": {
+                target: "wss://localhost:8000",
+                secure: false,
+                ws: true,
             }
         }
     };

@@ -1,19 +1,20 @@
 import { useRef, useEffect, useCallback } from "preact/hooks";
-import { WSMessage } from "./WebsocketTypes";
+import { MessageType, WSMessage } from "./WebsocketTypes";
 import { RegisterNotification } from "../components/Notification";
 
 function getBaseURL(): string {
     if (process.env.NODE_ENV !== "production") {
-        return "wss://localhost:8000";
+        return "wss://" + window.location.host;
     } else {
         return "wss://" + window.location.host;
     }
 }
 
-const WS_MAX_TRIES = 5;
+const WS_MAX_TRIES = 15;
 
 export function useWebsockets(roomID: string, messageCallback: (data: WSMessage) => void): WebSocket | null {
     const ws = useRef<WebSocket | null>(null);
+    const ping = useRef<NodeJS.Timeout | null>(null);
     const wsAttemptCounter = useRef<number>(0);
 
     const closeWSSession = useCallback((ev: BeforeUnloadEvent | null): undefined => {
@@ -23,25 +24,28 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
         return undefined;
     }, []);
 
+    const continuousPing = (): void => {
+        if (ws.current?.readyState === ws.current?.OPEN)
+            ws.current?.send(
+                JSON.stringify({
+                    t: "ping"
+                })
+            );
+    };
+
     const onMessage = useCallback((ev: MessageEvent) => {
         const message = JSON.parse(ev.data) as WSMessage;
         wsAttemptCounter.current = 0;
+        if (message.t === MessageType.Ping) {
+            ping.current = setTimeout(() => continuousPing(), 8000);
+        }
         messageCallback(message);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
         let websocketMounted = true;
-        let ping: NodeJS.Timeout;
-        const continuousPing = (): void => {
-            if (ws.current?.readyState === ws.current?.OPEN)
-                ws.current?.send(
-                    JSON.stringify({
-                        t: "ping"
-                    })
-                );
-            ping = setTimeout(() => continuousPing(), 4000);
-        };
+        
         const createWebSocket = (): void => {
             wsAttemptCounter.current += 1;
             if (wsAttemptCounter.current > WS_MAX_TRIES) {
@@ -54,12 +58,13 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
             ws.current = new WebSocket(`${getBaseURL()}/api/ws?room=${roomID}`);
             ws.current.addEventListener("message", onMessage);
             ws.current.addEventListener("open", () => {
-                continuousPing();
+                ping.current = setTimeout(() => continuousPing(), 8000);
             });
             ws.current.addEventListener("error", (e) => console.warn("WS Error: ", e));
             ws.current.addEventListener("close", () => {
-                clearTimeout(ping);
-                setTimeout(() => createWebSocket(), 200);
+                if (ping.current)
+                    clearTimeout(ping.current);
+                setTimeout(() => createWebSocket(), 800);
             });
         };
         if (ws.current === null) {
@@ -72,7 +77,8 @@ export function useWebsockets(roomID: string, messageCallback: (data: WSMessage)
 
         return (): void => {
             closeWSSession(null);
-            clearTimeout(ping);
+            if (ping.current)
+                clearTimeout(ping.current);
             websocketMounted = false;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps

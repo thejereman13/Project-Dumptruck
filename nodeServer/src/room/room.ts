@@ -1,11 +1,11 @@
-import { appendRoomHistory, DBRoomSettings, peekRoomInformation, setRoomAdmins, setRoomSettings } from "./database";
+import { appendRoomHistory, DBRoomSettings, peekRoomInformation, setRoomAdmins, setRoomSettings } from "../database";
 import { User, UserList } from "./user";
 import { MessageQueue, MessageType } from "./message";
 import { validateVideoInfo, Video, VideoPlaylist } from "./video";
-import { sleep } from "./utils";
+import { sleep } from "../utils";
 
 import NanoTimer from "nanotimer";
-import { destroyRoom } from "./site_room";
+import { destroyRoom } from "../site_room";
 
 export interface RoomInfo {
     roomName: string;
@@ -98,13 +98,6 @@ export class Room {
         if (!this.constructed) return;
         this.roomLoopRunning = true;
         while (this.roomUsers.userCount > 0) {
-            const removed = this.roomUsers.updateUserStatus();
-            removed.forEach((id) => {
-                this.playlist.removeUser(id);
-            });
-            if (removed.length > 0)
-                this.postUserList();
-
             await sleep(10000);
         }
         this.roomLoopRunning = false;
@@ -335,12 +328,10 @@ export class Room {
         }
     }
 
-    public receivedMessage(id: string, message: string): void {
+    public receivedMessage(id: string, type: MessageType, message: Record<string, any>): void {
         if (!this.constructed || !id) return;
-        const j = JSON.parse(message);
-        switch (j["t"]) {
+        switch (type) {
             case MessageType.Ping:
-                this.roomUsers.setUserActive(id);
                 break;
             case MessageType.Play:
                 if ((this.settings.guestControls || this.authorizedUser(id)) && this.currentVideo) {
@@ -356,33 +347,33 @@ export class Room {
                 }
                 break;
             case MessageType.QueueAddBack:
-                this.queueVideo(j["d"], id, false);
+                this.queueVideo(message["d"], id, false);
                 break;
             case MessageType.QueueAddFront:
-                this.queueVideo(j["d"], id, true);
+                this.queueVideo(message["d"], id, true);
                 break;
             case MessageType.QueueRemove:
-                this.unqueueVideo(j["d"], id);
+                this.unqueueVideo(message["d"], id);
                 break;
             case MessageType.QueueMultiple:
-                this.queueAllVideo(j["d"], id);
+                this.queueAllVideo(message["d"], id);
                 break;
             case MessageType.QueueClear:
-                this.clearQueue(j["d"], id);
+                this.clearQueue(message["d"], id);
                 break;
             case MessageType.QueueReorder:
-                this.updateQueue(j["d"], id, j["target"]);
+                this.updateQueue(message["d"], id, message["target"]);
                 break;
             case MessageType.AdminAdd:
                 if (this.authorizedUser(id))
-                    this.addAdmin(j["d"]);
+                    this.addAdmin(message["d"]);
                 break;
             case MessageType.AdminRemove:
                 if (this.authorizedUser(id))
-                    this.removeAdmin(j["d"], id);
+                    this.removeAdmin(message["d"], id);
                 break;
             case MessageType.UserError:
-                this.logUserError(j["d"], id);
+                this.logUserError(message["d"], id);
                 break;
             case MessageType.UserReady:
                 this.logUserReady(id);
@@ -394,7 +385,7 @@ export class Room {
                 break;
             case MessageType.RoomSettings:
                 if (this.authorizedUser(id))
-                    this.setRoomSettings(j["d"]);
+                    this.setRoomSettings(message["d"]);
                 break;
             default:
                 console.warn("Invalid Message Type %s", message);

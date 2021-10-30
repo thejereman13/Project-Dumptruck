@@ -29,7 +29,7 @@ import { css } from "@linaria/core";
 
 const style = {
     sidebarContainer: css`
-        width: 4rem;
+        width: 4.5rem;
         background-color: var(--dp4-surface);
         padding-top: 0.5rem;
         transition: width 0.2s;
@@ -61,7 +61,7 @@ const style = {
     sidebarTabIcon: css`
         color: var(--theme-secondary);
         padding: 0.75rem;
-        margin: var(--expandedMargin, 0.25rem 0);
+        margin: var(--expandedMargin, 0.25rem 0.125rem);
         height: var(--expandedHeight, unset);
         border-radius: 50%;
         display: flex;
@@ -180,6 +180,8 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
         setDisplayedTab(index);
         setSidebarCookie(index);
         setExpanded(true);
+        // reset any temporal tab values
+        setEditedQueue(userID);
     };
     const closeTab = (): void => {
         setDisplayedTab(0);
@@ -225,7 +227,16 @@ export function SidePanel(props: SidePanelProps): JSX.Element {
     );
     useCallbackHook("preview", playingPreview);
 
-    const userHasQueue = videoPlaylist[userID]?.length > 0;
+    const userHasQueue = videoPlaylist[editedUserQueue]?.length > 0;
+
+    useEffect(() => {
+        if (!userHasQueue && displayedTab === 3) {
+            if (allowQueuing)
+                setDisplayedTab(2);
+            else
+                setDisplayedTab(1);
+        }
+    }, [userHasQueue]);
 
     return (
         <div class={[style.sidebarContainer, expanded ? style.sidebarContainerExpanded : ""].join(" ")}>

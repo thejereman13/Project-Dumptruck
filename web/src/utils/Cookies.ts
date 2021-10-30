@@ -34,3 +34,12 @@ export function getSidebarCookie(): number {
     if (val !== null) return Number.parseInt(val);
     return 0;
 }
+
+export function setSortCookie(order: number): void {
+    setCookie("playlistSort", order);
+}
+export function getSortCookie(): number {
+    const val = getCookie("playlistSort");
+    if (val !== null) return Number.parseInt(val);
+    return 0;
+}

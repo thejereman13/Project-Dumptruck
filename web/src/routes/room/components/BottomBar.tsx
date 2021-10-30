@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import { VideoInfo } from "../../../utils/YoutubeTypes";
 import Button from "preact-mui/lib/button";
 import {style as commonStyle } from "../../../components/sharedStyle";
@@ -14,6 +14,7 @@ import MdPause from "@meronex/icons/md/MdPause";
 import MdPlayArrow from "@meronex/icons/md/MdPlayArrow";
 import MdSkipNext from "@meronex/icons/md/MdSkipNext";
 import { css } from "@linaria/core";
+import { RoomUser } from "../../../utils/BackendTypes";
 
 const style = {
     bottomBar: css`
@@ -72,10 +73,19 @@ const style = {
             font-size: 1rem;
         }
     `,
+    titleContainer: css`
+        overflow: hidden;
+    `,
+    creditSeparator: css`
+        border-left: 2px solid;
+        margin-left: 1rem;
+        padding-left: 1rem;
+    `,
 };
 
 export interface BottomBarProps {
     currentVideo: Video | null;
+    userList: RoomUser[];
     togglePlay: () => void;
     skipVideo: () => void;
     playing: boolean;
@@ -86,11 +96,16 @@ export interface BottomBarProps {
     setPlayerVolume: (value: number) => void;
 }
 
+function getUserName(userList: RoomUser[], currentVideo: Video) {
+    return userList.find((u) => u.clientID === currentVideo.queuedBy)?.name;
+}
+
 export const BottomBar = memo(
     function BottomBar(props: BottomBarProps): JSX.Element {
         const {
             hasVideo,
             currentVideo,
+            userList,
             togglePlay,
             skipVideo,
             playing,
@@ -100,6 +115,7 @@ export const BottomBar = memo(
             showControls
         } = props;
         const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
+        const [queuedName, setQueuedName] = useState(currentVideo ? getUserName(userList, currentVideo) : undefined);
 
         const controller = useAbortController();
 
@@ -110,6 +126,19 @@ export const BottomBar = memo(
                 setVideoInfo(null);
             }
         }, [currentVideo, controller]);
+        const oldVid = useRef<Video | null>(null);
+        useEffect(() => {
+            if (queuedName === undefined || oldVid.current !== currentVideo) {
+                if (currentVideo !== null) {
+                    const n = getUserName(userList, currentVideo);
+                    if (n)
+                        setQueuedName(n);
+                } else {
+                    setQueuedName(undefined);
+                }
+            }
+            oldVid.current = currentVideo;
+        }, [userList, currentVideo]);
 
         return (
             <div class={style.bottomBar}>
@@ -125,11 +154,21 @@ export const BottomBar = memo(
                     ) : (
                         <div class={style.bottomVideoIcon} />
                     )}
-                    <Tooltip className={commonStyle.textEllipsis} content={videoInfo?.title ?? ""} delay={800}>
-                        <div class={["mui--text-title", commonStyle.textEllipsis].join(" ")}>
-                            {videoInfo?.title ?? "Nothing Currently Playing"}
+                    <div class={style.titleContainer}>
+                        <Tooltip className={commonStyle.textEllipsis} content={videoInfo?.title ?? ""} delay={700}>
+                            <div class={["mui--text-title", commonStyle.textEllipsis].join(" ")}>
+                                {videoInfo?.title ?? "Nothing Currently Playing"}
+                            </div>
+                        </Tooltip>
+                        <Tooltip className={commonStyle.textEllipsis} content={(videoInfo?.channel?? "") + (queuedName ? ` | Queued By: ${queuedName}` : "")} delay={700}>
+                        <div class={["mui--text-subhead", commonStyle.textEllipsis].join(" ")}>
+                            {videoInfo?.channel ?? ""}
+                            {queuedName ? (
+                                <span class={videoInfo?.channel ? style.creditSeparator : undefined}>Queued By: {queuedName}</span>
+                            ) : null}
                         </div>
-                    </Tooltip>
+                        </Tooltip>
+                    </div>
                 </div>
                 <div class={style.bottomMiddleActions}>
                     <Tooltip className={commonStyle.centerTooltipChild} content="Adjust Video Volume">

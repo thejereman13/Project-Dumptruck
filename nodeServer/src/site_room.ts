@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { Video } from "./video";
+import { Video } from "./room/video";
 import { setRoomSettings, defaultDBSettings, peekRoomInformation, removeRoomInfo, getAllUsers, setRoomAdmins } from "./database";
-import { Room } from "./room";
+import { Room } from "./room/room";
 import { removeRecentRoomToUser } from "./site_user";
 
 export async function getRoomSettings(req: Request, res: Response): Promise<void> {

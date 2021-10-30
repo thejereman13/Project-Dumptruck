@@ -1,5 +1,5 @@
 import { v4 as randomUUID } from "uuid";
-import { getSiteUser, addRecentRoomToUser } from "./site_user";
+import { getSiteUser, addRecentRoomToUser } from "../site_user";
 
 export interface User {
     clientID: string;
@@ -9,7 +9,6 @@ export interface User {
 
 export class UserList {
     private roomUsers: Record<string, User> = {};
-    private roomUserStatus: Record<string, boolean> = {};
     private roomUsersReady: Record<string, boolean> = {};
     private roomUsersErrored: Record<string, boolean> = {};
     private roomID = 0;
@@ -38,7 +37,6 @@ export class UserList {
                 name,
                 userCount: user ? 1 : 0
             };
-        this.roomUserStatus[id] = true;
         if (clientID) {
             addRecentRoomToUser(clientID, this.roomID);
         }
@@ -52,9 +50,8 @@ export class UserList {
             this.userCount--;
             return false;
         }
-        if (id in this.roomUsers && id in this.roomUserStatus) {
+        if (id in this.roomUsers) {
             delete this.roomUsers[id];
-            delete this.roomUserStatus[id];
             this.userCount--;
             return true;
         }
@@ -62,24 +59,7 @@ export class UserList {
     }
 
     public activeUser(id: string): boolean {
-        return id in this.roomUsers && id in this.roomUserStatus;
-    }
-    public setUserActive(id: string): void {
-        this.roomUserStatus[id] = true;
-    }
-
-    public updateUserStatus(): string[] {
-        const removed: string[] = [];
-        this.getUserList().forEach((u) => {
-            if (u.clientID in this.roomUserStatus) {
-                if (!this.roomUserStatus[u.clientID]) {
-                    this.removeUser(u.clientID);
-                    removed.push(u.clientID);
-                }
-                this.roomUserStatus[u.clientID] = false;
-            }
-        });
-        return removed;
+        return id in this.roomUsers;
     }
 
     public removeAdmin(id: string): void {

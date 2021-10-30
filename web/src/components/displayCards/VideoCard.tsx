@@ -156,9 +156,15 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
                 </div>
             )}
             <div class={style.videoInfo}>
-                <Tooltip content={info.title} delay={800}>
-                    <div class={["mui--text-subhead", commonStyle.textEllipsis].join(" ")}>{info.title}</div>
-                </Tooltip>
+                {onClick? (
+                    <div>
+                        <div class={["mui--text-subhead", commonStyle.textEllipsis].join(" ")}>{info.title}</div>
+                    </div>
+                ) : (
+                    <Tooltip content={info.title} delay={800}>
+                        <div class={["mui--text-subhead", commonStyle.textEllipsis].join(" ")}>{info.title}</div>
+                    </Tooltip>
+                )}
                 <div class={["mui--text-body1", commonStyle.textEllipsis].join(" ")}>
                     {info.channel?.length > 0 ? info.channel : ". . ."}
                 </div>
