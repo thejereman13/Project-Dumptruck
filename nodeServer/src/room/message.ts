@@ -16,6 +16,7 @@ export enum MessageType {
     Play = "play", // Server starting playback, Client requesting playback
     Pause = "pause", // Server pausing playback, Client requesting pause
     Skip = "skip", // Client requesting the next video
+    Seek = "seek", // Client skipping within the video
     Video = "video", // Server setting the active Client video
     Init = "init", // Server sending all initialization info
     Room = "room", // Server sending all room information

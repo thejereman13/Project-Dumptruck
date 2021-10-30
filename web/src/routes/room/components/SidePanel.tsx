@@ -37,7 +37,6 @@ const style = {
         display: flex;
         flex-flow: column;
         @media (max-width: 960px) {
-            max-width: unset;
             width: 100%;
         }
     `,
@@ -45,6 +44,10 @@ const style = {
         width: 40rem;
         max-width: 40rem;
         min-width: 40rem;
+        @media (max-width: 960px) {
+            max-width: unset;
+            width: 100%;
+        }
     `,
     sidebarTabs: css`
         display: flex;
@@ -84,6 +87,9 @@ const style = {
     `,
     sidebarTabClose: css`
         margin-left: auto;
+        @media (max-width: 960px) {
+            transform: rotate(90deg);
+        }
     `,
     sidebarBody: css`
         display: flex;

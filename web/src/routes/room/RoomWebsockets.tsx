@@ -16,6 +16,7 @@ export interface RoomWebsocketCallbacks {
     removeVideo: (id: string) => void;
     reorderQueue: (id: string, videos: YoutubeVideoInformation[]) => void;
     skipVideo: () => void;
+    seekVideo: (time: number) => void;
     submitAllVideos: (newVideos: YoutubeVideoInformation[], playlistTitle: string) => void;
     submitVideoFront: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
     submitVideoBack: (newVideo: YoutubeVideoInformation, videoTitle: string) => void;
@@ -44,6 +45,9 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
     );
     const skipVideo = useCallback((): void => {
         if (ws) ws.send(JSON.stringify({ t: MessageType.Skip }));
+    }, [ws]);
+    const seekVideo = useCallback((time: number): void => {
+        if (ws) ws.send(JSON.stringify({ t: MessageType.Seek, d: Math.floor(time) }));
     }, [ws]);
 
     const submitVideoFront = useCallback(
@@ -162,6 +166,7 @@ export function useRoomWebsockets(roomID: string, newMessage: (msg: WSMessage) =
         removeVideo,
         reorderQueue,
         skipVideo,
+        seekVideo,
         submitAllVideos,
         submitVideoBack,
         submitVideoFront,

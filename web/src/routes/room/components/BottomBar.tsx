@@ -35,10 +35,6 @@ const style = {
         width: 50%;
         max-width: 50%;
     `,
-    bottomVideoInfoFull: css`
-        width: 100%;
-        max-width: 100%;
-    `,
     bottomVideoIcon: css`
         max-height: 4rem;
         padding-right: 1rem;
@@ -90,8 +86,8 @@ export interface BottomBarProps {
     skipVideo: () => void;
     playing: boolean;
     hasVideo: boolean;
-    showControls: boolean;
-    allowQueuing: boolean;
+    canPause: boolean;
+    canSkip: boolean;
     playerVolume: number;
     setPlayerVolume: (value: number) => void;
 }
@@ -111,8 +107,8 @@ export const BottomBar = memo(
             playing,
             playerVolume,
             setPlayerVolume,
-            allowQueuing,
-            showControls
+            canPause,
+            canSkip,
         } = props;
         const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
         const [queuedName, setQueuedName] = useState(currentVideo ? getUserName(userList, currentVideo) : undefined);
@@ -142,13 +138,7 @@ export const BottomBar = memo(
 
         return (
             <div class={style.bottomBar}>
-                <div
-                    class={
-                        !allowQueuing && !showControls
-                            ? [style.bottomVideoInfo, style.bottomVideoInfoFull].join(" ")
-                            : style.bottomVideoInfo
-                    }
-                >
+                <div class={style.bottomVideoInfo}>
                     {videoInfo ? (
                         <img class={style.bottomVideoIcon} src={videoInfo?.thumbnailMaxRes?.url ?? ""} />
                     ) : (
@@ -174,7 +164,7 @@ export const BottomBar = memo(
                     <Tooltip className={commonStyle.centerTooltipChild} content="Adjust Video Volume">
                         <VolumeSlider disabled={!hasVideo} volume={playerVolume} setVolume={setPlayerVolume} />
                     </Tooltip>
-                    {showControls ? (
+                    {canPause ? (
                         <Tooltip
                             className={commonStyle.centerTooltipChild}
                             content={`${playing ? "Pause" : "Resume"} Room Playback`}
@@ -184,7 +174,7 @@ export const BottomBar = memo(
                             </Button>
                         </Tooltip>
                     ) : null}
-                    {showControls ? (
+                    {canSkip ? (
                         <Tooltip className={commonStyle.centerTooltipChild} content="Skip Current Video">
                             <Button disabled={!hasVideo} size="small" variant="fab" onClick={skipVideo}>
                                 <MdSkipNext size="2rem" />
@@ -198,10 +188,10 @@ export const BottomBar = memo(
     (prev: BottomBarProps, next: BottomBarProps) => {
         const same =
             prev.hasVideo === next.hasVideo &&
-            prev.allowQueuing === next.allowQueuing &&
+            prev.canPause === next.canPause &&
             prev.currentVideo === next.currentVideo &&
             prev.playing === next.playing &&
-            prev.showControls === next.showControls &&
+            prev.canSkip === next.canSkip &&
             prev.playerVolume === next.playerVolume &&
             prev.skipVideo === next.skipVideo &&
             prev.togglePlay === next.togglePlay &&

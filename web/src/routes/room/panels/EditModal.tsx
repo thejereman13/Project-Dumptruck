@@ -92,8 +92,11 @@ export const EditModal = memo(
             (newPlaylist: Video[]) => {
                 updatePlaylist(userID, newPlaylist);
             },
-            1600,
-            [userID]
+            1000,
+            [userID],
+            {
+
+            }
         );
 
         const clearAll = (): void => {

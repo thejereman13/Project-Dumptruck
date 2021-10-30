@@ -8,6 +8,7 @@ export interface YouTubeVideoProps {
     playerMount: () => void;
     playerError: (id: string) => void;
     playerReady: () => void;
+    seekTo: (time: number) => void;
 }
 
 enum SynchronizationState {
@@ -32,18 +33,20 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
     player: YT.Player | undefined;
     synchronizationState: SynchronizationState;
 
-    setVolume(level: number): number {
+    seekTimer: NodeJS.Timeout | null = null;
+
+    setVolume = (level: number): number => {
         if (!this.player || !this.playerMounted) return 0;
         const val = Math.max(0, Math.min(level, 100));
         this.player.setVolume(val);
         return val;
     }
-    getVolume(): number {
+    getVolume = (): number => {
         if (!this.player || !this.playerMounted) return 0;
         return this.player.getVolume();
     }
 
-    synchronizeYoutube(videoTime: number, playing: boolean): void {
+    synchronizeYoutube = (videoTime: number, playing: boolean): void => {
         if (!this.player || !this.playerMounted) return;
         // console.log("Sync", videoTime, playing, new Date().toUTCString());
         switch (this.synchronizationState) {
@@ -58,6 +61,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
             case SynchronizationState.Playing:
                 if (Math.abs(this.player.getCurrentTime() - videoTime) > 1) {
                     this.player.seekTo(videoTime, true);
+                    this.lastTimestamp = videoTime;
                 }
                 if (this.player.getPlayerState() === 0) {
                     this.synchronizationState = SynchronizationState.Finished;
@@ -72,6 +76,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
             case SynchronizationState.Paused:
                 if (Math.abs(this.player.getCurrentTime() - videoTime) > 1) {
                     this.player.seekTo(videoTime, true);
+                    this.lastTimestamp = videoTime;
                 }
                 if (this.player.getPlayerState() !== 2) {
                     this.player.pauseVideo();
@@ -90,7 +95,7 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
         }
     }
 
-    componentDidMount = (): void => {
+    componentDidMount = () => {
         // On mount, check to see if the API script is already loaded
         if (!window.YT) {
             // If not, load the script asynchronously TS-ignore
@@ -108,9 +113,10 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
             this.YTLoaded = true;
             this.loadVideo();
         }
+        this.seekTimer = setInterval(this.seekCheck, 250);
     };
 
-    componentDidUpdate = (newProps: YouTubeVideoProps): void => {
+    componentDidUpdate = (newProps: YouTubeVideoProps) => {
         if (newProps.id !== this.id) {
             const oldEl = document.getElementById(`youtube-player-${this.id}`);
             if (oldEl) oldEl?.parentElement?.removeChild(oldEl);
@@ -118,12 +124,17 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
         }
     };
 
-    scriptLoaded = (): void => {
+    componentWillUnmount() {
+        if (this.seekTimer)
+            clearInterval(this.seekTimer);
+    }
+
+    scriptLoaded = () => {
         this.YTLoaded = true;
         this.loadVideo();
     };
 
-    loadVideo = (): void => {
+    loadVideo = () => {
         const { id, playerError } = this.props;
         this.id = id;
         if (!this.YTLoaded) return;
@@ -159,22 +170,29 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
         }
     };
 
-    onPlayerReady = (): void => {
+
+    onPlayerReady = () => {
         this.playerMounted = true;
+        this.lastTimestamp = 0;
         this.props.playerMount();
     };
+    
+    lastTimestamp = 0;
 
-    // Temporarily abandoned due to difficulties determining the correct loading state.
-    // lastState = -4;
-    // onPlayerStateChange = (state: number): void => {
-    //     // Once the player finishes buffering or becomes queued, it is ready
-    //     if ((this.lastState === 3 && state !== 3) || (this.lastState !== 5 && state === 5)) {
-    //         this.props.playerReady();
-    //     }
-    //     this.lastState = state;
-    // };
+    seekCheck = () => {
+        if (!this.YTLoaded || !this.playerMounted || !this.player) return;
+        const currTime = this.player.getCurrentTime();
 
-    render = (): JSX.Element => {
+        if (Math.abs(currTime - this.lastTimestamp) > 1.5) {
+            console.log("Player Seek to ", currTime);
+            this.props.seekTo(currTime);
+            this.player.seekTo(Math.floor(currTime), true);
+        }
+
+        this.lastTimestamp = currTime;
+    }
+
+    render(): JSX.Element {
         const { className } = this.props;
         return (
             <div class={className}>

@@ -44,12 +44,12 @@ export const HistoryPanel = memo(function HistoryPanel(props: HistoryPanelProps)
 
     return (
         <div class={commonStyle.scrollBox}>
-            {history.map((vid) => {
+            {history.map((vid, i) => {
                 const queueFront = (): void => submitFrontFromList(vid);
                 const queueEnd = (): void => submitEndFromList(vid);
                 return (
                     <VideoCard
-                        key={vid}
+                        key={vid + i}
                         videoID={vid}
                         enablePreview={true}
                         onClick={queueEnd}

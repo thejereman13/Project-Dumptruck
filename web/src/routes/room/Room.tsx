@@ -44,6 +44,7 @@ const style = {
         flex-flow: column;
         padding: 1rem;
         flex: auto;
+        min-height: 33vh;
     `,
     videoDiv: css`
         height: 100%;
@@ -237,6 +238,7 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                             playerMount={playerMount}
                             playerError={wsCallbacks.logError}
                             playerReady={wsCallbacks.logReady}
+                            seekTo={wsCallbacks.seekVideo}
                         />
                     </div>
                     <SidePanel
@@ -267,8 +269,8 @@ export function Room({ roomID }: RoomProps): JSX.Element {
                     userList={currentUsers}
                     togglePlay={togglePlay}
                     skipVideo={wsCallbacks.skipVideo}
-                    showControls={guestControls || isAdmin}
-                    allowQueuing={apiLoaded}
+                    canPause={guestControls || isAdmin}
+                    canSkip={guestControls || isAdmin || currentVideo?.queuedBy === userID}
                     playerVolume={playerVolume}
                     setPlayerVolume={updateVolume}
                 />

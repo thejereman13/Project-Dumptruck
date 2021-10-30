@@ -141,6 +141,21 @@ export class Room {
             this.counter = (this.counter + 1) & 0x3; // counter up to 3 (modulo 4)
         }
     }
+
+    private seekVideo(time: number) {
+        if (!this.constructed) return;
+        if (this.currentVideo && !Number.isNaN(time)) {
+            this.currentVideo.timeStamp = Math.floor(time);
+            this.messageQueue.postMessage(MessageType.Sync, this.currentVideo.timeStamp);
+            if (this.videoLoopActive) {
+                this.videoLoop.clearInterval();
+                this.videoLoop.clearTimeout();
+                this.videoLoop.setInterval(() => this.videoSyncLoop(), "", "1s");
+                this.counter = 0;
+            }
+        }
+    }
+
     private removeUsersFromQueue() {
         if (!this.constructed) return;
         this.usersPendingRemoval.forEach((id) => {
@@ -285,6 +300,9 @@ export class Room {
     private authorizedUser(id: string): boolean {
         return this.roomUsers.adminUsers.includes(id);
     }
+    private controllableUser(id: string): boolean {
+        return this.currentVideo?.queuedBy === "id" || this.authorizedUser(id);
+    }
 
     private addAdmin(target: string) {
         this.roomUsers.addAdmin(target);
@@ -379,9 +397,13 @@ export class Room {
                 this.logUserReady(id);
                 break;
             case MessageType.Skip:
-                if (this.settings.guestControls || this.authorizedUser(id)) {
+                if (this.settings.guestControls || this.controllableUser(id)) {
                     this.playNextVideo();
                 }
+                break;
+            case MessageType.Seek:
+                if (this.settings.guestControls || this.controllableUser(id))
+                    this.seekVideo(Number(message["d"]));
                 break;
             case MessageType.RoomSettings:
                 if (this.authorizedUser(id))
