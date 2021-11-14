@@ -174,22 +174,31 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
     onPlayerReady = () => {
         this.playerMounted = true;
         this.lastTimestamp = 0;
+        this.lastTimestampCheck = new Date().getTime();
+        this.lastSeek = 0;
         this.props.playerMount();
     };
     
     lastTimestamp = 0;
+    lastTimestampCheck = 0;
+    lastSeek = 0;
 
     seekCheck = () => {
         if (!this.YTLoaded || !this.playerMounted || !this.player) return;
         const currTime = this.player.getCurrentTime();
+        const currTimeFlat = Math.floor(currTime);
+        const currCheck = new Date().getTime();
 
-        if (Math.abs(currTime - this.lastTimestamp) > 1.5) {
+        // only try skipping if the last seekCheck was run recently (to avoid delayed callbacks)
+        if (currCheck - this.lastTimestampCheck < 1500 && Math.abs(currTime - this.lastTimestamp) > 2.5 && currTimeFlat !== this.lastSeek) {
             console.log("Player Seek to ", currTime);
-            this.props.seekTo(currTime);
-            this.player.seekTo(Math.floor(currTime), true);
+            this.props.seekTo(currTimeFlat);
+            this.player.seekTo(currTimeFlat, true);
+            this.lastSeek = currTimeFlat;
         }
 
         this.lastTimestamp = currTime;
+        this.lastTimestampCheck = currCheck;
     }
 
     render(): JSX.Element {

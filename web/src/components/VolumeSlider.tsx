@@ -26,6 +26,16 @@ const style = {
     `,
 }
 
+const LOG_SLIDER = true;
+const LOG_BASE = 1.5;
+
+const computeLogVolume = (p: number) => {
+    return Math.pow(p / 100, LOG_BASE) * 100;
+};
+const computeLogPercentage = (v: number) => {
+    return Math.pow(10, Math.log10(v / 100) / LOG_BASE) * 100;
+}
+
 export interface VolumeSliderProps {
     disabled?: boolean;
     volume: number;
@@ -72,7 +82,10 @@ export function VolumeSlider(props: VolumeSliderProps): JSX.Element {
             if (dragging.current && boxRef.current) {
                 const y = boxRef.current.getBoundingClientRect().y;
                 const scale = 100 - Math.round(((e.clientY - y) / boxRef.current.clientHeight) * 100);
-                const val = Math.max(0, Math.min(scale, 100));
+                let val = Math.max(1, Math.min(scale, 100));
+                if (LOG_SLIDER) {
+                    val = computeLogVolume(val);
+                }
                 setVolume(val);
             }
         },
@@ -114,7 +127,7 @@ export function VolumeSlider(props: VolumeSliderProps): JSX.Element {
                 {...attributes.popper}
             >
                 <div className={style.volumeBox} onMouseDown={startDrag} onMouseMove={dragSlider} ref={boxRef}>
-                    <div className={style.volumeSlider} style={{ top: `${100 - volume}%` }} />
+                    <div className={style.volumeSlider} style={{ top: `${100 - (LOG_SLIDER ? computeLogPercentage(volume) : volume)}%` }} />
                 </div>
             </div>,
             containerElement

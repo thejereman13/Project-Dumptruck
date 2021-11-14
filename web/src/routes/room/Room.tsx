@@ -1,5 +1,6 @@
 import { h, JSX } from "preact";
 import { useCallback, useState, useRef, useEffect } from "preact/hooks";
+import { route } from "preact-router";
 import { YouTubeVideo } from "../../components/YTPlayer";
 import { WSMessage, MessageType, Video, PlaylistByUser } from "../../utils/WebsocketTypes";
 import { RoomInfo, RoomUser } from "../../utils/BackendTypes";
@@ -13,7 +14,6 @@ import { NotifyChannel } from "../../utils/EventSubscriber";
 import { SidePanel } from "./components/SidePanel";
 import { BottomBar } from "./components/BottomBar";
 import { css } from "@linaria/core";
-import { UserList } from "./panels/UserPanel";
 
 const style = {
     pageRoot: css`
@@ -74,6 +74,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
     const [, setStateIncrement] = useState(0);
     const videoTime = useRef(0);
     const playing = useRef(false);
+    const lastMessage = useRef(0);
+    const currVid = useRef<Video | null>(null);
+    currVid.current = currentVideo;
 
     const youtubePlayer = useRef<YouTubeVideo>();
 
@@ -88,8 +91,15 @@ export function Room({ roomID }: RoomProps): JSX.Element {
         GetRoomHistory(roomID, controller).then((res) => {
             if (res !== null) setVideoHistory(res);
         });
+        const tm = setInterval(() => {
+            const ct = new Date().getTime();
+            if (currVid === null && lastMessage && ct - lastMessage.current > (30 * 60 * 1000)) { // 30 minute timeout with no player
+                route("/");
+            }
+        }, 60 * 1000);
         return (): void => {
             NotifyChannel("roomName", "");
+            clearInterval(tm);
         };
     }, [roomID, controller]);
 
@@ -131,6 +141,9 @@ export function Room({ roomID }: RoomProps): JSX.Element {
 
     const newMessage = useCallback(
         (msg: WSMessage) => {
+            if (msg.t !== MessageType.Ping) {
+                lastMessage.current = new Date().getTime();
+            }
             switch (msg.t) {
                 case MessageType.Ping:
                     break;

@@ -183,7 +183,7 @@ export function VideoDisplayCard(props: VideoDisplayCardProps): JSX.Element {
             <div className={[style.videoPreview, videoPreview ? style.videoPreviewOpen : ""].join(" ")}>
                 {videoPreview ? (
                     <iframe
-                        src={`https://www.youtube.com/embed/${info.id}?autoplay=1`}
+                        src={`https://www.youtube-nocookie.com/embed/${info.id}?autoplay=1`}
                         height="240"
                         width="426"
                         frameBorder={0}

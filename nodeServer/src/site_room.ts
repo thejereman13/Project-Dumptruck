@@ -117,10 +117,16 @@ export function getActiveRooms(): number[] {
     return new Array(...roomList.entries()).filter(([, r]) => r.roomLoopRunning && r.settings.publicVisibility).map(([n]) => n);
 }
 
+export function listAllRooms(): void {
+    console.log(`(${new Date().toISOString()}) Active Rooms:`);
+    for (const r of roomList.keys())
+        console.log("  Room " + r);
+}
+
 export function destroyRoom(roomID: number): void {
     const r = roomList.get(roomID);
     if (!r) return;
-    console.info("Deallocating Room " + roomID);
+    console.info(`(${new Date().toISOString()}) Deallocating Room ${roomID}`);
     r.destroy();
     roomList.delete(roomID);
 }

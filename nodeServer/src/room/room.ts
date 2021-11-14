@@ -57,7 +57,7 @@ export class Room {
         } else {
             this.constructed = false;
         }
-        console.info("Spooling Up Room: " + this.roomID);
+        console.info(`(${new Date().toISOString()}) Spooling Up Room: ${this.roomID}`);
         // Initialized indicates that the DB has been parsed and/or loaded
         // If initialized is true and constructed is false, then there was an error loading
         // and the room should be discarded.
@@ -145,7 +145,7 @@ export class Room {
     private seekVideo(time: number) {
         if (!this.constructed) return;
         if (this.currentVideo && !Number.isNaN(time)) {
-            this.currentVideo.timeStamp = Math.floor(time);
+            this.currentVideo.timeStamp = time;
             this.messageQueue.postMessage(MessageType.Sync, this.currentVideo.timeStamp);
             if (this.videoLoopActive) {
                 this.videoLoop.clearInterval();

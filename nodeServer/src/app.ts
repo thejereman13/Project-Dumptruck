@@ -9,7 +9,7 @@ import { v4 as randomUUID } from "uuid";
 
 import { readConfigFile, server_configuration, ConfigItems } from "./configuration";
 import { getUserLogin, userLogin, userLogout } from "./authentication";
-import { createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying, getRoomHistory, removeRoom } from "./site_room";
+import { createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying, getRoomHistory, removeRoom, listAllRooms } from "./site_room";
 import { clearUserInfo, getPublicUserInfo, getUserInfo, removeRecentRoom } from "./site_user";
 import { handleWebsocketConnection } from "./sockets";
 
@@ -38,7 +38,7 @@ app.use(session({
 	store: new redisStore({ client: redisClient })
 }));
 
-const WebServerVersion = "0.11.1";
+const WebServerVersion = "0.11.2";
 
 app.ws("/api/ws", handleWebsocketConnection);
 app.post("/api/login", userLogin);
@@ -61,4 +61,5 @@ app.get("/api/history/:id", getRoomHistory);
 
 console.info("Starting Web Server: " + WebServerVersion + " on port ", server_configuration[ConfigItems.Port]);
 server.listen(Number(server_configuration[ConfigItems.Port]));
-// app.listen(Number(server_configuration[configItems.Port]));
+
+setInterval(listAllRooms, 60 * 1000);
