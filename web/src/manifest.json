@@ -1,6 +1,6 @@
 {
-  "name": "jsTest",
-  "short_name": "jsTest",
+  "name": "Krono",
+  "short_name": "Krono",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

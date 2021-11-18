@@ -164,6 +164,8 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
                 this.player?.destroy();
                 this.playerMounted = false;
             } else {
+                this.lastTimestamp = 0;
+                this.lastSeek = 0;
                 this.player?.loadVideoById(id);
                 this.player?.pauseVideo();
             }
@@ -188,10 +190,11 @@ export class YouTubeVideo extends Component<YouTubeVideoProps> {
         const currTime = this.player.getCurrentTime();
         const currTimeFlat = Math.floor(currTime);
         const currCheck = new Date().getTime();
-
         // only try skipping if the last seekCheck was run recently (to avoid delayed callbacks)
+        // and skipping more than 2.5s forwards or backwards
+        // and not skipping to the same timestamp twice in a row
         if (currCheck - this.lastTimestampCheck < 1500 && Math.abs(currTime - this.lastTimestamp) > 2.5 && currTimeFlat !== this.lastSeek) {
-            console.log("Player Seek to ", currTime);
+            console.log("Player Seek to ", currTime, " from ", this.lastTimestamp);
             this.props.seekTo(currTimeFlat);
             this.player.seekTo(currTimeFlat, true);
             this.lastSeek = currTimeFlat;
