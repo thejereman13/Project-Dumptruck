@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    box-sizing: border-box;
+    --theme-background: #121212;
+    --theme-primary: #42a5f5;
+    --theme-primary-light: #80d6ff;
+    --theme-primary-dark: #0077c2;
+    --theme-secondary: #7e57c2;
+    --theme-secondary-light: #b085f5;
+    --theme-secondary-dark: #4d2c91;
+    --theme-error: #f44336ee;
+    --text-primary: #000000dd;
+    --text-secondary: #ffffffdd;
+    --text-secondary-medium: #ffffff99;
+    --text-secondary-disabled: #ffffff60;
+
+    --dp2-surface: #222222;
+    --dp4-surface: #272727;
+    --dp8-surface: #2e2e2e;
+    --dp16-surface: #353535;
+    --dp24-surface: #373737;
+
+    --navbar-height: 4rem;
+    font-family: "Roboto";
+
+    --animation-btn: 0;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+    background: var(--theme-background);
+    font-family: "Helvetica Neue", arial, sans-serif;
+    font-weight: 400;
+    color: var(--text-secondary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    font-size: 16px;
+}
+
+@media (max-width: 1280px) {
+    html {
+        font-size: 14px;
+    }
+}
+@media (max-width: 960px) {
+    html {
+        font-size: 12px;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 0.5rem;
+}
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+    border-radius: 1rem;
+}
+::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 1rem;
+}
+
+#root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+h3 {
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+}
+
+h2 {
+    font-weight: 400;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+#app {
+    height: 100%;
+    overflow: hidden;
+}

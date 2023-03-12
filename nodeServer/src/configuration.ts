@@ -10,7 +10,7 @@ export const server_configuration: Record<ConfigItems, any> = {
     ssl_key: "",
     web_dir: ".",
     web_port: "443",
-    youtube_api_key: ""
+    oauth_secret: "",
 };
 
 export enum ConfigItems {
@@ -21,10 +21,10 @@ export enum ConfigItems {
     DB_User = "database_username",  //username to use for the database
     DB_Pass = "database_password",  //password for the database
     DB_Name = "database_name",      //name of the database to connect to
-    GAPI_Key = "youtube_api_key",   //API key used by the Youtube API v3
+    OAuth_Secret = "oauth_secret",  //API secret for getting user auth tokens
 }
 
-const configFileName = "server_configuration.json";
+const configFileName = "configuration.json";
 
 export function readConfigFile(): void {
     if (!fs.statSync(configFileName).isFile())

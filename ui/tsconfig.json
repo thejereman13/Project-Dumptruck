@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "strict": true,
+    "jsxImportSource": "solid-js",
+    "types": ["vite/client", "node", "youtube"],
+    "noEmit": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "types/**/*"],
+  // "exclude": ["node_modules/**/*"]
+}

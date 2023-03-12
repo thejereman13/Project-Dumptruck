@@ -8,6 +8,10 @@ export interface SiteUser {
     name: string;
     email: string;
     recentRooms: number[];
+    access_token: string;
+    refresh_token: string;
+    expiry_date: number;
+    picture: string;
 }
 
 function constructSiteUser(data: string): SiteUser | null {
@@ -16,18 +20,28 @@ function constructSiteUser(data: string): SiteUser | null {
     return null;
 }
 
-export async function makeSiteUser(googleID: string, name: string, email: string): Promise<SiteUser> {
+export async function makeSiteUser(googleID: string, name: string, email: string, picture: string): Promise<SiteUser> {
     const foundID = await findGIDUser(googleID);
     if (foundID) {
         const data = constructSiteUser(await getUserData(foundID));
-        if (data) return data;
+        if (data) {
+            if (picture != data.picture) {
+                data.picture = picture;
+                setUserData(data.id, JSON.stringify(data));
+            }
+            return data;
+        }
     }
     const newUser: SiteUser = {
         id: randomUUID(),
         googleID,
         name,
         email,
-        recentRooms: []
+        picture,
+        recentRooms: [],
+        access_token: "",
+        refresh_token: "",
+        expiry_date: 0,
     };
     setUserData(newUser.id, JSON.stringify(newUser));
     setUserGID(newUser.id, googleID);
@@ -44,6 +58,16 @@ export async function addRecentRoomToUser(clientID: string, roomID: number): Pro
             data.recentRooms.splice(index, 1);
             data.recentRooms.push(roomID);
         }
+        await setUserData(clientID, JSON.stringify(data));
+    }
+}
+
+export async function updateUserAuth(clientID: string, access_token: string, refresh_token: string, expiry_date: number): Promise<void> {
+    const data = constructSiteUser(await getUserData(clientID));
+    if (data && data.googleID) {
+        data.access_token = access_token;
+        data.refresh_token = refresh_token;
+        data.expiry_date = expiry_date;
         await setUserData(clientID, JSON.stringify(data));
     }
 }
@@ -66,9 +90,12 @@ export async function getSiteUser(clientID: string): Promise<SiteUser | null> {
 export async function getUserInfo(req: Request, res: Response): Promise<void> {
     const id = req.session["clientID"];
     if (id) {
-        const data = await getUserData(id);
-        res.status(201).send(data);
-        return;
+        const user = constructSiteUser(await getUserData(id));
+        if (user) {
+            user.refresh_token = "";
+            res.status(201).json(user);
+            return;
+        }
     }
     res.sendStatus(400);
 }

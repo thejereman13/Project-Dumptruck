@@ -8,7 +8,7 @@ import https from "https";
 import { v4 as randomUUID } from "uuid";
 
 import { readConfigFile, server_configuration, ConfigItems } from "./configuration";
-import { getUserLogin, userLogin, userLogout } from "./authentication";
+import { authorizeAPIUser, getUserLogin, refreshAPIUser, userLogin, userLogout } from "./authentication";
 import { createNewRoom, getRoomSettings, getOpenRooms, getRoomPlaying, getRoomHistory, removeRoom, listAllRooms } from "./site_room";
 import { clearUserInfo, getPublicUserInfo, getUserInfo, removeRecentRoom } from "./site_user";
 import { handleWebsocketConnection } from "./sockets";
@@ -38,12 +38,14 @@ app.use(session({
 	store: new redisStore({ client: redisClient })
 }));
 
-const WebServerVersion = "0.11.2";
+const WebServerVersion = "0.12.0";
 
 app.ws("/api/ws", handleWebsocketConnection);
 app.post("/api/login", userLogin);
 app.get("/api/login", getUserLogin);
 app.post("/api/logout", userLogout);
+app.post("/api/auth", authorizeAPIUser);
+app.get("/api/authRefresh", refreshAPIUser);
 // router.get("/api/video/:id", &videoInfoRequest);
 app.get("/api/user", getUserInfo);
 app.delete("/api/user", clearUserInfo);
